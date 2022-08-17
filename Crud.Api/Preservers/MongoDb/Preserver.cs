@@ -87,7 +87,6 @@ namespace Crud.Api.Preservers.MongoDb
             var collection = database.GetCollection<BsonDocument>(tableName);
 
             FilterDefinition<BsonDocument> filter = new BsonDocument();
-
             if (queryParams is not null)
             {
                 foreach (var queryParam in queryParams)
@@ -103,33 +102,44 @@ namespace Crud.Api.Preservers.MongoDb
             return bsonDocuments.Select(bsonDocument => bsonDocument.FromBsonDocument<T>());
         }
 
-        public async Task<T> UpdateAsync<T>(T model, Guid id)
+        public async Task<T> UpdateAsync<T>(Guid id, IDictionary<String, String> propertyValues)
         {
-            if (model is null)
-                throw new Exception("Cannot update because model is null.");
+            if (propertyValues is null)
+                throw new ArgumentNullException(nameof(propertyValues));
 
             var dbClient = new MongoClient("mongodb://localhost");
 
             var database = dbClient.GetDatabase("testDb");
 
-            string? tableName = model.GetTableName();
+            var tType = typeof(T);
+            string? tableName = tType.GetTableName();
             if (tableName is null)
-                throw new Exception($"No table name found on {model.GetType().Name}.");
+                throw new Exception($"No table name found on {tType.GetType().Name}.");
 
             var collection = database.GetCollection<BsonDocument>(tableName, _mongoCollectionSettings);
 
             FilterDefinition<BsonDocument> filter;
-            if (model is IExternalEntity)
+            if (typeof(IExternalEntity).IsAssignableFrom(tType))
                 filter = Builders<BsonDocument>.Filter.Eq(nameof(IExternalEntity.ExternalId), id);
             else
                 filter = Builders<BsonDocument>.Filter.Eq("Id", id);
 
-            var bsonDocument = model.ToBsonDocument();
+            var updates = new List<UpdateDefinition<BsonDocument>>();
+            foreach (var propertyValue in propertyValues)
+            {
+                string key = propertyValue.Key.Pascalize();
+                dynamic value = propertyValue.Value.ChangeType(tType.GetProperty(key)!.PropertyType);
+                updates.Add(Builders<BsonDocument>.Update.Set(key, value));
+            }
 
+            var update = Builders<BsonDocument>.Update.Combine(updates);
 
-            await collection.InsertOneAsync(bsonDocument);
+            var bsonDocument = await collection.FindOneAndUpdateAsync(filter, update, new FindOneAndUpdateOptions<BsonDocument>
+            {
+                ReturnDocument = ReturnDocument.After
+            });
 
-            return model;
+            return bsonDocument.FromBsonDocument<T>();
         }
     }
 }

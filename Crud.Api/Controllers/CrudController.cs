@@ -92,7 +92,7 @@ public class CrudController : BaseApiController<CrudController>
     }
 
     [Route("{typeName}/{id:guid}"), HttpPut]
-    public async Task<IActionResult> UpdateAsync(String typeName)
+    public async Task<IActionResult> UpdateAsync(String typeName, Guid id)
     {
         // TODO: TRY/Catch error handling
         using (StreamReader reader = new StreamReader(Request.Body, Encoding.UTF8))
@@ -103,25 +103,22 @@ public class CrudController : BaseApiController<CrudController>
             if (String.IsNullOrWhiteSpace(json) || type is null)
                 return Ok();  // TODO: return error.
 
-            //dynamic? model = JsonConvert.DeserializeObject(json, type);
+            dynamic? model = JsonConvert.DeserializeObject(json, type);
 
-            dynamic dynJson = JsonConvert.DeserializeObject(json);
-            foreach (var item in dynJson)
+            var isValid = await _validator.ValidateUpdateAsync(id, model);
+
+            if (isValid)
             {
-                Console.WriteLine("{0} {1} {2} {3}\n", item.id, item.displayName,
-                    item.slug, item.imageUrl);
+                var propertyValues = JsonConvert.DeserializeObject<Dictionary<string, string>>(json);
+
+                var updateAsync = ReflectionHelper.GetGenericMethod(type, typeof(IPreserver), nameof(IPreserver.UpdateAsync), new Type[] { typeof(Guid), typeof(IDictionary<String, String>) });
+                var updatedModel = await (dynamic)updateAsync.Invoke(_preserver, new object[] { id, propertyValues });
+
+                return Ok(updatedModel);
             }
 
-            // var isValid = await _validator.ValidateUpdateAsync(model);
-
-            // if (isValid)
-            // {
-            //     await _preserver.CreateAsync(model);
-            // }
-
-            //return Ok(isValid);
-
-            return Ok(true);
+            // TODO: Do somethign when not valid.
+            return Ok("Not Valid");
         }
     }
 }

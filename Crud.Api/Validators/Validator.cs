@@ -42,21 +42,21 @@ namespace Crud.Api.Validators
             return ValidateReadAsync((object)user, queryParams);
         }
 
-        public Task<Boolean> ValidateUpdateAsync(Object model)
+        public Task<Boolean> ValidateUpdateAsync(Guid id, Object model)
         {
             return Task.FromResult(true);
         }
 
-        public Task<Boolean> ValidateUpdateAsync(User user)
+        public Task<Boolean> ValidateUpdateAsync(Guid id, User user)
         {
-            if (user is null)
-                return Task.FromResult(false);
+            // if (id == Guid.Empty)
+            //     return Task.FromResult(false);
 
-            if (user.ExternalId is not null)
-                return Task.FromResult(false);
+            // if (user is null)
+            //     return Task.FromResult(false);
 
-            if (String.IsNullOrWhiteSpace(user.Name))
-                return Task.FromResult(false);
+            // if (String.IsNullOrWhiteSpace(user.Name))
+            //     return Task.FromResult(false);
 
             return Task.FromResult(true);
         }

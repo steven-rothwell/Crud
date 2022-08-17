@@ -6,11 +6,16 @@ namespace Crud.Api
     {
 
 
-        public static PropertyInfo? GetProperty(this PropertyInfo[] properties, String propertyName, Char childPropertyDelimiter)
+        public static PropertyInfo? GetProperty(this PropertyInfo[] properties, String propertyName, Char childPropertyDelimiter = default)
         {
-            int childPropertyIndex = propertyName.IndexOf(childPropertyDelimiter);
-            if (childPropertyIndex == 0)
-                throw new ArgumentException($"{nameof(propertyName)} cannot begin with {childPropertyDelimiter}.");
+            int childPropertyIndex = -1;
+            if (childPropertyDelimiter != default)
+            {
+                childPropertyIndex = propertyName.IndexOf(childPropertyDelimiter);
+
+                if (childPropertyIndex == 0)
+                    throw new ArgumentException($"{nameof(propertyName)} cannot begin with {childPropertyDelimiter}.");
+            }
 
             if (childPropertyIndex == -1)
             {

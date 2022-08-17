@@ -8,7 +8,7 @@ namespace Crud.Api.Validators
         Task<Boolean> ValidateCreateAsync(User user);
         Task<Boolean> ValidateReadAsync(Object model, IDictionary<String, String>? queryParams);
         Task<Boolean> ValidateReadAsync(User user, IDictionary<String, String>? queryParams);
-        Task<Boolean> ValidateUpdateAsync(Object model);
-        Task<Boolean> ValidateUpdateAsync(User user);
+        Task<Boolean> ValidateUpdateAsync(Guid id, Object model);
+        Task<Boolean> ValidateUpdateAsync(Guid id, User user);
     }
 }
