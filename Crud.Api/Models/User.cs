@@ -12,5 +12,6 @@ namespace Crud.Api.Models
         public Address? Address { get; set; }
         public Int32? Age { get; set; }
         public String? HairColor { get; set; }
+        public ICollection<String>? FavoriteThings { get; set; }
     }
 }

@@ -39,5 +39,17 @@ namespace Crud.Api
 
             return valueBuilder.ToString(1, valueBuilder.Length - 1);
         }
+
+        public static String ValueAfterLastDelimiter(this String value, Char delimiter)
+        {
+            var indexOfLastDelimiter = value.LastIndexOf(delimiter);
+
+            if (indexOfLastDelimiter > -1)
+            {
+                return value.Substring(indexOfLastDelimiter + 1);
+            }
+
+            return value;
+        }
     }
 }

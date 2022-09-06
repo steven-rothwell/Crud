@@ -4,9 +4,7 @@ namespace Crud.Api
 {
     public static class PropertyInfoExtensions
     {
-
-
-        public static PropertyInfo? GetProperty(this PropertyInfo[] properties, String propertyName, Char childPropertyDelimiter = default)
+        public static PropertyInfo? GetProperty(this PropertyInfo[] properties, String propertyName, Char childPropertyDelimiter = default, StringComparison stringComparison = StringComparison.OrdinalIgnoreCase)
         {
             int childPropertyIndex = -1;
             if (childPropertyDelimiter != default)
@@ -19,13 +17,13 @@ namespace Crud.Api
 
             if (childPropertyIndex == -1)
             {
-                return properties.FirstOrDefault(property => property.Name.Equals(propertyName, StringComparison.OrdinalIgnoreCase));
+                return properties.FirstOrDefault(property => property.Name.Equals(propertyName, stringComparison));
             }
             else
             {
                 string childPropertyName = propertyName.Substring(0, childPropertyIndex);
 
-                var childPropertyInfo = properties.FirstOrDefault(property => property.Name.Equals(childPropertyName, StringComparison.OrdinalIgnoreCase));
+                var childPropertyInfo = properties.FirstOrDefault(property => property.Name.Equals(childPropertyName, stringComparison));
                 if (childPropertyInfo is null)
                     return null;
 
@@ -41,7 +39,7 @@ namespace Crud.Api
             }
         }
 
-        public static Boolean HasAllPropertyNames(this PropertyInfo[] properties, IEnumerable<String> propertyNames, Char childPropertyDelimiter)
+        public static Boolean HasAllPropertyNames(this PropertyInfo[] properties, IEnumerable<String> propertyNames, Char childPropertyDelimiter = default)
         {
             return propertyNames.All(propertyName => properties.GetProperty(propertyName, childPropertyDelimiter) is not null);
         }

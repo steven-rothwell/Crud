@@ -1,12 +1,12 @@
-using System.Reflection;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using Crud.Api.Constants;
 using Crud.Api.Helpers;
 using Crud.Api.Preservers;
 using Crud.Api.Validators;
 using Humanizer;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
 
 namespace Crud.Api.Controllers;
 
@@ -27,26 +27,28 @@ public class CrudController : BaseApiController<CrudController>
     [Route("{typeName}"), HttpPost]
     public async Task<IActionResult> CreateAsync(String typeName)
     {
+        string json = null;
         // TODO: TRY/Catch error handling
         using (StreamReader reader = new StreamReader(Request.Body, Encoding.UTF8))
         {
-            string json = await reader.ReadToEndAsync();
-            var type = Type.GetType($"{Namespace.Models}.{typeName.Singularize().Pascalize()}");
-
-            if (String.IsNullOrWhiteSpace(json) || type is null)
-                return Ok();  // TODO: return error.
-
-            dynamic? model = JsonConvert.DeserializeObject(json, type);
-
-            var isValid = await _validator.ValidateCreateAsync(model);
-
-            if (isValid)
-            {
-                await _preserver.CreateAsync(model);
-            }
-
-            return Ok(isValid);
+            json = await reader.ReadToEndAsync();
         }
+
+        var type = Type.GetType($"{Namespace.Models}.{typeName.Singularize().Pascalize()}");
+
+        if (String.IsNullOrWhiteSpace(json) || type is null)
+            return Ok();  // TODO: return error.
+
+        dynamic? model = JsonSerializer.Deserialize(json, type, JsonSerializerOption.Default);
+
+        var isValid = await _validator.ValidateCreateAsync(model);
+
+        if (isValid)
+        {
+            await _preserver.CreateAsync(model);
+        }
+
+        return Ok(isValid);
     }
 
     [Route("{typeName}/{id:guid}"), HttpGet]
@@ -94,31 +96,64 @@ public class CrudController : BaseApiController<CrudController>
     [Route("{typeName}/{id:guid}"), HttpPut]
     public async Task<IActionResult> UpdateAsync(String typeName, Guid id)
     {
+        string json = null;
+
         // TODO: TRY/Catch error handling
         using (StreamReader reader = new StreamReader(Request.Body, Encoding.UTF8))
         {
-            string json = await reader.ReadToEndAsync();
-            var type = Type.GetType($"{Namespace.Models}.{typeName.Singularize().Pascalize()}");
-
-            if (String.IsNullOrWhiteSpace(json) || type is null)
-                return Ok();  // TODO: return error.
-
-            dynamic? model = JsonConvert.DeserializeObject(json, type);
-
-            var isValid = await _validator.ValidateUpdateAsync(id, model);
-
-            if (isValid)
-            {
-                var propertyValues = JsonConvert.DeserializeObject<Dictionary<string, string>>(json);
-
-                var updateAsync = ReflectionHelper.GetGenericMethod(type, typeof(IPreserver), nameof(IPreserver.UpdateAsync), new Type[] { typeof(Guid), typeof(IDictionary<String, String>) });
-                var updatedModel = await (dynamic)updateAsync.Invoke(_preserver, new object[] { id, propertyValues });
-
-                return Ok(updatedModel);
-            }
-
-            // TODO: Do somethign when not valid.
-            return Ok("Not Valid");
+            json = await reader.ReadToEndAsync();
         }
+
+        var type = Type.GetType($"{Namespace.Models}.{typeName.Singularize().Pascalize()}");
+
+        if (String.IsNullOrWhiteSpace(json) || type is null)
+            return Ok();  // TODO: return error.
+
+        dynamic? model = JsonSerializer.Deserialize(json, type, JsonSerializerOption.Default);
+
+        var isValid = await _validator.ValidateUpdateAsync(id, model);
+
+        if (isValid)
+        {
+            var updatedModel = await _preserver.UpdateAsync(id, model);
+
+            return Ok(updatedModel);
+        }
+
+        // TODO: Do somethign when not valid.
+        return Ok("Not Valid");
+    }
+
+    [Route("{typeName}/{id:guid}"), HttpPatch]
+    public async Task<IActionResult> PartialUpdateAsync(String typeName, Guid id)
+    {
+        string json = null;
+
+        // TODO: TRY/Catch error handling
+        using (StreamReader reader = new StreamReader(Request.Body, Encoding.UTF8))
+        {
+            json = await reader.ReadToEndAsync();
+        }
+
+        var type = Type.GetType($"{Namespace.Models}.{typeName.Singularize().Pascalize()}");
+
+        if (String.IsNullOrWhiteSpace(json) || type is null)
+            return Ok();  // TODO: return error.
+
+        dynamic? model = JsonSerializer.Deserialize(json, type, JsonSerializerOption.Default);
+        var propertyValues = JsonSerializer.Deserialize<Dictionary<string, JsonNode>>(json, JsonSerializerOption.Default);
+
+        var isValid = await _validator.ValidatePartialUpdateAsync(id, model, propertyValues?.Keys);
+
+        if (isValid)
+        {
+            var updateAsync = ReflectionHelper.GetGenericMethod(type, typeof(IPreserver), nameof(IPreserver.PartialUpdateAsync), new Type[] { typeof(Guid), typeof(IDictionary<String, JsonNode>) });
+            var updatedModel = await (dynamic)updateAsync.Invoke(_preserver, new object[] { id, propertyValues });
+
+            return Ok(updatedModel);
+        }
+
+        // TODO: Do somethign when not valid.
+        return Ok("Not Valid");
     }
 }

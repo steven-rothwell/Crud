@@ -1,4 +1,6 @@
 using System;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using Crud.Api.Constants;
 using Crud.Api.Models;
 using Humanizer;
@@ -42,7 +44,6 @@ namespace Crud.Api.Preservers.MongoDb
             var collection = database.GetCollection<BsonDocument>(tableName, _mongoCollectionSettings);
 
             var bsonDocument = model.ToBsonDocument();
-
 
             await collection.InsertOneAsync(bsonDocument);
 
@@ -102,7 +103,34 @@ namespace Crud.Api.Preservers.MongoDb
             return bsonDocuments.Select(bsonDocument => bsonDocument.FromBsonDocument<T>());
         }
 
-        public async Task<T> UpdateAsync<T>(Guid id, IDictionary<String, String> propertyValues)
+        public async Task<T> UpdateAsync<T>(Guid id, T model)
+        {
+            var dbClient = new MongoClient("mongodb://localhost");
+
+            var database = dbClient.GetDatabase("testDb");
+
+            var tType = typeof(T);
+            string? tableName = tType.GetTableName();
+            if (tableName is null)
+                throw new Exception($"No table name found on {tType.GetType().Name}.");
+
+            var collection = database.GetCollection<BsonDocument>(tableName, _mongoCollectionSettings);
+
+            FilterDefinition<BsonDocument> filter;
+            if (typeof(IExternalEntity).IsAssignableFrom(tType))
+                filter = Builders<BsonDocument>.Filter.Eq(nameof(IExternalEntity.ExternalId), id);
+            else
+                filter = Builders<BsonDocument>.Filter.Eq("Id", id);
+
+            var bsonDocument = model.ToBsonDocument();
+
+            return await collection.FindOneAndReplaceAsync<T>(filter, bsonDocument, new FindOneAndReplaceOptions<BsonDocument, T>
+            {
+                ReturnDocument = ReturnDocument.After
+            });
+        }
+
+        public async Task<T> PartialUpdateAsync<T>(Guid id, IDictionary<String, JsonNode> propertyValues)
         {
             if (propertyValues is null)
                 throw new ArgumentNullException(nameof(propertyValues));
@@ -128,8 +156,7 @@ namespace Crud.Api.Preservers.MongoDb
             foreach (var propertyValue in propertyValues)
             {
                 string key = propertyValue.Key.Pascalize();
-                dynamic value = propertyValue.Value.ChangeType(tType.GetProperty(key)!.PropertyType);
-                updates.Add(Builders<BsonDocument>.Update.Set(key, value));
+                updates.AddRange(GetAllPropertiesToUpdate(key, tType, propertyValue.Value));
             }
 
             var update = Builders<BsonDocument>.Update.Combine(updates);
@@ -140,6 +167,28 @@ namespace Crud.Api.Preservers.MongoDb
             });
 
             return bsonDocument.FromBsonDocument<T>();
+        }
+
+        private IEnumerable<UpdateDefinition<BsonDocument>> GetAllPropertiesToUpdate(String propertyName, Type type, JsonNode jsonNode)
+        {
+            var updates = new List<UpdateDefinition<BsonDocument>>();
+            string currentPropertyName = propertyName.ValueAfterLastDelimiter(Delimiter.MongoDbChildProperty);
+
+            if (jsonNode is JsonObject)
+            {
+                var propertyValues = jsonNode.Deserialize<Dictionary<string, JsonNode>>();
+                foreach (var propertyValue in propertyValues!)
+                {
+                    updates.AddRange(GetAllPropertiesToUpdate($"{propertyName}{Delimiter.MongoDbChildProperty}{propertyValue.Key.Pascalize()}", type.GetProperty(currentPropertyName)!.PropertyType, propertyValue.Value));
+                }
+            }
+            else
+            {
+                dynamic? value = jsonNode.Deserialize(type.GetProperty(currentPropertyName)!.PropertyType, JsonSerializerOption.Default);
+                updates.Add(Builders<BsonDocument>.Update.Set(propertyName, value));
+            }
+
+            return updates;
         }
     }
 }
