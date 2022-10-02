@@ -152,12 +152,7 @@ namespace Crud.Api.Preservers.MongoDb
             else
                 filter = Builders<BsonDocument>.Filter.Eq("Id", id);
 
-            var updates = new List<UpdateDefinition<BsonDocument>>();
-            foreach (var propertyValue in propertyValues)
-            {
-                string key = propertyValue.Key.Pascalize();
-                updates.AddRange(GetAllPropertiesToUpdate(key, tType, propertyValue.Value));
-            }
+            var updates = GetShallowUpdates(propertyValues, tType);  // Can utilize GetDeepUpdates instead, if all child objects are guaranteed to be instantiated.
 
             var update = Builders<BsonDocument>.Update.Combine(updates);
 
@@ -167,6 +162,33 @@ namespace Crud.Api.Preservers.MongoDb
             });
 
             return bsonDocument.FromBsonDocument<T>();
+        }
+
+        private IEnumerable<UpdateDefinition<BsonDocument>> GetShallowUpdates(IDictionary<String, JsonNode> propertyValues, Type type)
+        {
+            var updates = new List<UpdateDefinition<BsonDocument>>();
+
+            foreach (var propertyValue in propertyValues)
+            {
+                string key = propertyValue.Key.Pascalize();
+                dynamic value = JsonSerializer.Deserialize(propertyValue.Value, type.GetProperty(key)!.PropertyType, JsonSerializerOption.Default);
+                updates.Add(Builders<BsonDocument>.Update.Set(key, value));
+            }
+
+            return updates;
+        }
+
+        private IEnumerable<UpdateDefinition<BsonDocument>> GetDeepUpdates(IDictionary<String, JsonNode> propertyValues, Type type)
+        {
+            var updates = new List<UpdateDefinition<BsonDocument>>();
+
+            foreach (var propertyValue in propertyValues)
+            {
+                string key = propertyValue.Key.Pascalize();
+                updates.AddRange(GetAllPropertiesToUpdate(key, type, propertyValue.Value));
+            }
+
+            return updates;
         }
 
         private IEnumerable<UpdateDefinition<BsonDocument>> GetAllPropertiesToUpdate(String propertyName, Type type, JsonNode jsonNode)
