@@ -12,5 +12,7 @@ namespace Crud.Api.Validators
         Task<Boolean> ValidateUpdateAsync(Guid id, User user);
         Task<Boolean> ValidatePartialUpdateAsync(Guid id, Object model, IReadOnlyCollection<String> propertiesToBeUpdated);
         Task<Boolean> ValidatePartialUpdateAsync(Guid id, User user, IReadOnlyCollection<String> propertiesToBeUpdated);
+        Task<Boolean> ValidatePartialUpdateAsync(Object model, IDictionary<String, String>? queryParams, IReadOnlyCollection<String> propertiesToBeUpdated);
+        Task<Boolean> ValidatePartialUpdateAsync(User user, IDictionary<String, String>? queryParams, IReadOnlyCollection<String> propertiesToBeUpdated);
     }
 }

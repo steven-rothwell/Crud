@@ -32,8 +32,6 @@ namespace Crud.Api.Validators
             if (queryParams is null || queryParams.Count == 0)  // Remove to allow returning all.
                 return Task.FromResult(false);
 
-            var propertyNames = model.GetType().GetProperties().Select(property => property.Name).ToList();
-
             if (!model.GetType().GetProperties().HasAllPropertyNames(queryParams.Select(queryParam => queryParam.Key), Delimiter.QueryParamChildProperty))
                 return Task.FromResult(false);
 
@@ -75,8 +73,6 @@ namespace Crud.Api.Validators
             if (propertiesToBeUpdated is null || propertiesToBeUpdated.Count == 0)
                 return Task.FromResult(false);
 
-            var propertyNames = model.GetType().GetProperties().Select(property => property.Name).ToList();
-
             if (!model.GetType().GetProperties().HasAllPropertyNames(propertiesToBeUpdated))
                 return Task.FromResult(false);
 
@@ -86,6 +82,43 @@ namespace Crud.Api.Validators
         public async Task<Boolean> ValidatePartialUpdateAsync(Guid id, User user, IReadOnlyCollection<String> propertiesToBeUpdated)
         {
             if (!await ValidatePartialUpdateAsync(id, (object)user, propertiesToBeUpdated))
+                return false;
+
+            if (user is null)
+                return false;
+
+            if (WillBeUpdated(nameof(user.ExternalId), propertiesToBeUpdated))  // Prevent updating this property.
+                return false;
+
+            if (WillBeUpdated(nameof(user.Name), propertiesToBeUpdated) && String.IsNullOrWhiteSpace(user.Name))
+                return false;
+
+            if (WillBeUpdated(nameof(user.Age), propertiesToBeUpdated) && user.Age < 0)
+                return false;
+
+            return true;
+        }
+
+        public Task<Boolean> ValidatePartialUpdateAsync(Object model, IDictionary<String, String>? queryParams, IReadOnlyCollection<String> propertiesToBeUpdated)
+        {
+            if (queryParams is null || queryParams.Count == 0)  // Remove to allow returning all.
+                return Task.FromResult(false);
+
+            if (!model.GetType().GetProperties().HasAllPropertyNames(queryParams.Select(queryParam => queryParam.Key), Delimiter.QueryParamChildProperty))
+                return Task.FromResult(false);
+
+            if (propertiesToBeUpdated is null || propertiesToBeUpdated.Count == 0)
+                return Task.FromResult(false);
+
+            if (!model.GetType().GetProperties().HasAllPropertyNames(propertiesToBeUpdated))
+                return Task.FromResult(false);
+
+            return Task.FromResult(true);
+        }
+
+        public async Task<Boolean> ValidatePartialUpdateAsync(User user, IDictionary<String, String>? queryParams, IReadOnlyCollection<String> propertiesToBeUpdated)
+        {
+            if (!await ValidatePartialUpdateAsync((object)user, queryParams, propertiesToBeUpdated))
                 return false;
 
             if (user is null)

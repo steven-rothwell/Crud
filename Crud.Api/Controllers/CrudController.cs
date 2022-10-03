@@ -45,7 +45,9 @@ public class CrudController : BaseApiController<CrudController>
 
         if (isValid)
         {
-            await _preserver.CreateAsync(model);
+            var createdModel = await _preserver.CreateAsync(model);
+
+            return Ok(createdModel);
         }
 
         return Ok(isValid);
@@ -117,6 +119,9 @@ public class CrudController : BaseApiController<CrudController>
         {
             var updatedModel = await _preserver.UpdateAsync(id, model);
 
+            if (updatedModel is null)
+                return NotFound(String.Format(ErrorMessage.NotFoundUpdate, typeName));
+
             return Ok(updatedModel);
         }
 
@@ -150,7 +155,47 @@ public class CrudController : BaseApiController<CrudController>
             var updateAsync = ReflectionHelper.GetGenericMethod(type, typeof(IPreserver), nameof(IPreserver.PartialUpdateAsync), new Type[] { typeof(Guid), typeof(IDictionary<String, JsonNode>) });
             var updatedModel = await (dynamic)updateAsync.Invoke(_preserver, new object[] { id, propertyValues });
 
+            if (updatedModel is null)
+                return NotFound(String.Format(ErrorMessage.NotFoundUpdate, typeName));
+
             return Ok(updatedModel);
+        }
+
+        // TODO: Do somethign when not valid.
+        return Ok("Not Valid");
+    }
+
+    [Route("{typeName}"), HttpPatch]
+    public async Task<IActionResult> PartialUpdateAsync(String typeName)
+    {
+        string json = null;
+
+        // TODO: TRY/Catch error handling
+        using (StreamReader reader = new StreamReader(Request.Body, Encoding.UTF8))
+        {
+            json = await reader.ReadToEndAsync();
+        }
+
+        var queryCollection = Request.Query;
+
+        var queryParams = queryCollection.ToDictionary(query => query.Key, query => query.Value.ToString());
+
+        var type = Type.GetType($"{Namespace.Models}.{typeName.Singularize().Pascalize()}");
+
+        if (String.IsNullOrWhiteSpace(json) || type is null)
+            return Ok();  // TODO: return error.
+
+        dynamic? model = JsonSerializer.Deserialize(json, type, JsonSerializerOption.Default);
+        var propertyValues = JsonSerializer.Deserialize<Dictionary<string, JsonNode>>(json, JsonSerializerOption.Default);
+
+        var isValid = await _validator.ValidatePartialUpdateAsync(model, queryParams, propertyValues?.Keys);
+
+        if (isValid)
+        {
+            var updateAsync = ReflectionHelper.GetGenericMethod(type, typeof(IPreserver), nameof(IPreserver.PartialUpdateAsync), new Type[] { typeof(IDictionary<String, String>), typeof(IDictionary<String, JsonNode>) });
+            var updatedCount = await (dynamic)updateAsync.Invoke(_preserver, new object[] { queryParams, propertyValues });
+
+            return Ok(updatedCount);
         }
 
         // TODO: Do somethign when not valid.

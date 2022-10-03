@@ -47,7 +47,7 @@ namespace Crud.Api.Preservers.MongoDb
 
             await collection.InsertOneAsync(bsonDocument);
 
-            return model;
+            return bsonDocument.FromBsonDocument<T>();
         }
 
         public async Task<T> ReadAsync<T>(Guid id)
@@ -98,9 +98,9 @@ namespace Crud.Api.Preservers.MongoDb
                 }
             }
 
-            var bsonDocuments = await collection.Find(filter).ToListAsync();
+            var models = await collection.FindAsync<T>(filter);
 
-            return bsonDocuments.Select(bsonDocument => bsonDocument.FromBsonDocument<T>());
+            return await models.ToListAsync();
         }
 
         public async Task<T> UpdateAsync<T>(Guid id, T model)
@@ -156,12 +156,46 @@ namespace Crud.Api.Preservers.MongoDb
 
             var update = Builders<BsonDocument>.Update.Combine(updates);
 
-            var bsonDocument = await collection.FindOneAndUpdateAsync(filter, update, new FindOneAndUpdateOptions<BsonDocument>
+            return await collection.FindOneAndUpdateAsync(filter, update, new FindOneAndUpdateOptions<BsonDocument, T>
             {
                 ReturnDocument = ReturnDocument.After
             });
+        }
 
-            return bsonDocument.FromBsonDocument<T>();
+        public async Task<Int64> PartialUpdateAsync<T>(IDictionary<String, String>? queryParams, IDictionary<String, JsonNode> propertyValues)
+        {
+            if (propertyValues is null)
+                throw new ArgumentNullException(nameof(propertyValues));
+
+            var dbClient = new MongoClient("mongodb://localhost");
+
+            var database = dbClient.GetDatabase("testDb");
+
+            var tType = typeof(T);
+            string? tableName = tType.GetTableName();
+            if (tableName is null)
+                throw new Exception($"No table name found on {tType.GetType().Name}.");
+
+            var collection = database.GetCollection<BsonDocument>(tableName, _mongoCollectionSettings);
+
+            FilterDefinition<BsonDocument> filter = new BsonDocument();
+            if (queryParams is not null)
+            {
+                foreach (var queryParam in queryParams)
+                {
+                    string key = queryParam.Key.Replace(Delimiter.QueryParamChildProperty, Delimiter.MongoDbChildProperty);
+                    dynamic value = queryParam.Value.ChangeType(tType.GetProperties().GetProperty(key, Delimiter.MongoDbChildProperty)!.PropertyType);
+                    filter &= Builders<BsonDocument>.Filter.Eq(key.Pascalize(Delimiter.MongoDbChildProperty), value);
+                }
+            }
+
+            var updates = GetShallowUpdates(propertyValues, tType);  // Can utilize GetDeepUpdates instead, if all child objects are guaranteed to be instantiated.
+
+            var update = Builders<BsonDocument>.Update.Combine(updates);
+
+            var updateResult = await collection.UpdateManyAsync(filter, update);
+
+            return updateResult.ModifiedCount;
         }
 
         private IEnumerable<UpdateDefinition<BsonDocument>> GetShallowUpdates(IDictionary<String, JsonNode> propertyValues, Type type)
