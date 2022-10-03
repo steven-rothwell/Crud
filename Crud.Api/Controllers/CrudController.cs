@@ -64,6 +64,9 @@ public class CrudController : BaseApiController<CrudController>
         var readAsync = ReflectionHelper.GetGenericMethod(type, typeof(IPreserver), nameof(IPreserver.ReadAsync), new Type[] { typeof(Guid) });
         var model = await (dynamic)readAsync.Invoke(_preserver, new object[] { id });
 
+        if (model is null)
+            return NotFound(String.Format(ErrorMessage.NotFoundRead, typeName));
+
         return Ok(model);
     }
 
@@ -196,6 +199,51 @@ public class CrudController : BaseApiController<CrudController>
             var updatedCount = await (dynamic)updateAsync.Invoke(_preserver, new object[] { queryParams, propertyValues });
 
             return Ok(updatedCount);
+        }
+
+        // TODO: Do somethign when not valid.
+        return Ok("Not Valid");
+    }
+
+    [Route("{typeName}/{id:guid}"), HttpDelete]
+    public async Task<IActionResult> DeleteAsync(String typeName, Guid id)
+    {
+        var type = Type.GetType($"{Namespace.Models}.{typeName.Singularize().Pascalize()}");
+
+        if (type is null)
+            return Ok();  // TODO: return error.
+
+        var readAsync = ReflectionHelper.GetGenericMethod(type, typeof(IPreserver), nameof(IPreserver.DeleteAsync), new Type[] { typeof(Guid) });
+        var deletedCount = await (dynamic)readAsync.Invoke(_preserver, new object[] { id });
+
+        if (deletedCount == 0)
+            return NotFound(String.Format(ErrorMessage.NotFoundDelete, typeName));
+
+        return Ok(deletedCount);
+    }
+
+    [Route("{typeName}"), HttpDelete]
+    public async Task<IActionResult> DeleteAsync(String typeName)
+    {
+        var queryCollection = Request.Query;
+
+        var queryParams = queryCollection.ToDictionary(query => query.Key, query => query.Value.ToString());
+
+        var type = Type.GetType($"{Namespace.Models}.{typeName.Singularize().Pascalize()}");
+
+        if (type is null)
+            return Ok();  // TODO: return error.
+
+        dynamic model = Convert.ChangeType(Activator.CreateInstance(type, null), type);
+
+        var isValid = await _validator.ValidateDeleteAsync(model!, queryParams);
+
+        if (isValid)
+        {
+            var readAsync = ReflectionHelper.GetGenericMethod(type, typeof(IPreserver), nameof(IPreserver.DeleteAsync), new Type[] { typeof(IDictionary<String, String>) });
+            var deletedCount = await (dynamic)readAsync.Invoke(_preserver, new object[] { queryParams });
+
+            return Ok(deletedCount);
         }
 
         // TODO: Do somethign when not valid.

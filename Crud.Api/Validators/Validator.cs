@@ -40,6 +40,8 @@ namespace Crud.Api.Validators
 
         public Task<Boolean> ValidateReadAsync(User user, IDictionary<String, String>? queryParams)
         {
+            // The user version of this method and call to object version is not necessary.
+            // This is only here to show how to override in case more user validation was necessary.
             return ValidateReadAsync((object)user, queryParams);
         }
 
@@ -134,6 +136,24 @@ namespace Crud.Api.Validators
                 return false;
 
             return true;
+        }
+
+        public Task<Boolean> ValidateDeleteAsync(Object model, IDictionary<String, String>? queryParams)
+        {
+            if (queryParams is null || queryParams.Count == 0)  // Remove to allow returning all.
+                return Task.FromResult(false);
+
+            if (!model.GetType().GetProperties().HasAllPropertyNames(queryParams.Select(queryParam => queryParam.Key), Delimiter.QueryParamChildProperty))
+                return Task.FromResult(false);
+
+            return Task.FromResult(true);
+        }
+
+        public Task<Boolean> ValidateDeleteAsync(User user, IDictionary<String, String>? queryParams)
+        {
+            // The user version of this method and call to object version is not necessary.
+            // This is only here to show how to override in case more user validation was necessary.
+            return ValidateDeleteAsync((object)user, queryParams);
         }
 
         private Boolean WillBeUpdated(String propertyName, IEnumerable<String> propertiesToBeUpdated)
