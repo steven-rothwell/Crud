@@ -1,5 +1,3 @@
-using System;
-
 namespace Crud.Api.Constants
 {
     public static class ErrorMessage

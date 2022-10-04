@@ -2,6 +2,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Crud.Api.Constants;
+using Crud.Api.Functions;
 using Crud.Api.Helpers;
 using Crud.Api.Preservers;
 using Crud.Api.Validators;
@@ -34,7 +35,7 @@ public class CrudController : BaseApiController<CrudController>
             json = await reader.ReadToEndAsync();
         }
 
-        var type = Type.GetType($"{Namespace.Models}.{typeName.Singularize().Pascalize()}");
+        var type = TypeFunc.GetModelType(typeName);
 
         if (String.IsNullOrWhiteSpace(json) || type is null)
             return Ok();  // TODO: return error.
@@ -56,7 +57,7 @@ public class CrudController : BaseApiController<CrudController>
     [Route("{typeName}/{id:guid}"), HttpGet]
     public async Task<IActionResult> ReadAsync(String typeName, Guid id)
     {
-        var type = Type.GetType($"{Namespace.Models}.{typeName.Singularize().Pascalize()}");
+        var type = TypeFunc.GetModelType(typeName);
 
         if (type is null)
             return Ok();  // TODO: return error.
@@ -77,7 +78,7 @@ public class CrudController : BaseApiController<CrudController>
 
         var queryParams = queryCollection.ToDictionary(query => query.Key, query => query.Value.ToString());
 
-        var type = Type.GetType($"{Namespace.Models}.{typeName.Singularize().Pascalize()}");
+        var type = TypeFunc.GetModelType(typeName);
 
         if (type is null)
             return Ok();  // TODO: return error.
@@ -109,7 +110,7 @@ public class CrudController : BaseApiController<CrudController>
             json = await reader.ReadToEndAsync();
         }
 
-        var type = Type.GetType($"{Namespace.Models}.{typeName.Singularize().Pascalize()}");
+        var type = TypeFunc.GetModelType(typeName);
 
         if (String.IsNullOrWhiteSpace(json) || type is null)
             return Ok();  // TODO: return error.
@@ -143,7 +144,7 @@ public class CrudController : BaseApiController<CrudController>
             json = await reader.ReadToEndAsync();
         }
 
-        var type = Type.GetType($"{Namespace.Models}.{typeName.Singularize().Pascalize()}");
+        var type = TypeFunc.GetModelType(typeName);
 
         if (String.IsNullOrWhiteSpace(json) || type is null)
             return Ok();  // TODO: return error.
@@ -183,7 +184,7 @@ public class CrudController : BaseApiController<CrudController>
 
         var queryParams = queryCollection.ToDictionary(query => query.Key, query => query.Value.ToString());
 
-        var type = Type.GetType($"{Namespace.Models}.{typeName.Singularize().Pascalize()}");
+        var type = TypeFunc.GetModelType(typeName);
 
         if (String.IsNullOrWhiteSpace(json) || type is null)
             return Ok();  // TODO: return error.
@@ -208,7 +209,7 @@ public class CrudController : BaseApiController<CrudController>
     [Route("{typeName}/{id:guid}"), HttpDelete]
     public async Task<IActionResult> DeleteAsync(String typeName, Guid id)
     {
-        var type = Type.GetType($"{Namespace.Models}.{typeName.Singularize().Pascalize()}");
+        var type = TypeFunc.GetModelType(typeName);
 
         if (type is null)
             return Ok();  // TODO: return error.
@@ -229,7 +230,7 @@ public class CrudController : BaseApiController<CrudController>
 
         var queryParams = queryCollection.ToDictionary(query => query.Key, query => query.Value.ToString());
 
-        var type = Type.GetType($"{Namespace.Models}.{typeName.Singularize().Pascalize()}");
+        var type = TypeFunc.GetModelType(typeName);
 
         if (type is null)
             return Ok();  // TODO: return error.
