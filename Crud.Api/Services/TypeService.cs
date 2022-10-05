@@ -1,11 +1,13 @@
 using Crud.Api.Constants;
 using Humanizer;
 
-namespace Crud.Api.Functions
+namespace Crud.Api.Services
 {
-    public static class TypeFunc
+    public class TypeService : ITypeService
     {
-        public static Type? GetType(String @namespace, String typeName)
+        public TypeService() { }
+
+        public Type? GetType(String @namespace, String typeName)
         {
             if (String.IsNullOrWhiteSpace(@namespace))
                 throw new ArgumentException($"{nameof(@namespace)} cannot be null or whitespace.");
@@ -16,7 +18,7 @@ namespace Crud.Api.Functions
             return Type.GetType($"{@namespace}.{typeName.Singularize().Pascalize()}");
         }
 
-        public static Type? GetModelType(String typeName)
+        public Type? GetModelType(String typeName)
         {
             return GetType(Namespace.Models, typeName);
         }

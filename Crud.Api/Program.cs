@@ -14,6 +14,7 @@ builder.Services.AddScoped<IValidator, Validator>();
 //builder.Services.AddScoped<IPreserver, Crud.Api.Preservers.Dapper.SqlServer.Preserver>();
 builder.Services.AddScoped<IPreserver, Crud.Api.Preservers.MongoDb.Preserver>();
 builder.Services.AddScoped<IStreamService, StreamService>();
+builder.Services.AddScoped<ITypeService, TypeService>();
 
 var conventionPack = new ConventionPack
 {
