@@ -33,7 +33,6 @@ namespace Crud.Api.Preservers.MongoDb
             }
 
             var dbClient = new MongoClient("mongodb://localhost");
-
             var database = dbClient.GetDatabase("testDb");
 
             string? tableName = model.GetTableName();
@@ -43,86 +42,49 @@ namespace Crud.Api.Preservers.MongoDb
             var collection = database.GetCollection<BsonDocument>(tableName, _mongoCollectionSettings);
 
             var bsonDocument = model.ToBsonDocument();
-
             await collection.InsertOneAsync(bsonDocument);
-
             return bsonDocument.FromBsonDocument<T>();
         }
 
         public async Task<T> ReadAsync<T>(Guid id)
         {
             var dbClient = new MongoClient("mongodb://localhost");
-
             var database = dbClient.GetDatabase("testDb");
 
             var tType = typeof(T);
-            string? tableName = tType.GetTableName();
-            if (tableName is null)
-                throw new Exception($"No table name found on {tType.GetType().Name}.");
-
+            string tableName = GetTableName(tType);
             var collection = database.GetCollection<BsonDocument>(tableName);
-
-            FilterDefinition<BsonDocument> filter;
-            if (typeof(IExternalEntity).IsAssignableFrom(tType))
-                filter = Builders<BsonDocument>.Filter.Eq(nameof(IExternalEntity.ExternalId), id);
-            else
-                filter = Builders<BsonDocument>.Filter.Eq("Id", id);
+            var filter = GetIdFilter(tType, id);
 
             var bsonDocument = await collection.Find(filter).FirstOrDefaultAsync();
-
             return bsonDocument.FromBsonDocument<T>();
         }
 
         public async Task<IEnumerable<T>> ReadAsync<T>(IDictionary<String, String>? queryParams)
         {
             var dbClient = new MongoClient("mongodb://localhost");
-
             var database = dbClient.GetDatabase("testDb");
 
             var tType = typeof(T);
-            string? tableName = tType.GetTableName();
-            if (tableName is null)
-                throw new Exception($"No table name found on {tType.GetType().Name}.");
-
+            string tableName = GetTableName(tType);
             var collection = database.GetCollection<BsonDocument>(tableName);
-
-            FilterDefinition<BsonDocument> filter = new BsonDocument();
-            if (queryParams is not null)
-            {
-                foreach (var queryParam in queryParams)
-                {
-                    string key = queryParam.Key.Replace(Delimiter.QueryParamChildProperty, Delimiter.MongoDbChildProperty);
-                    dynamic value = queryParam.Value.ChangeType(tType.GetProperties().GetProperty(key, Delimiter.MongoDbChildProperty)!.PropertyType);
-                    filter &= Builders<BsonDocument>.Filter.Eq(key.Pascalize(Delimiter.MongoDbChildProperty), value);
-                }
-            }
+            var filter = GetQueryParamFilter(tType, queryParams);
 
             var models = await collection.FindAsync<T>(filter);
-
             return await models.ToListAsync();
         }
 
         public async Task<T> UpdateAsync<T>(Guid id, T model)
         {
             var dbClient = new MongoClient("mongodb://localhost");
-
             var database = dbClient.GetDatabase("testDb");
 
             var tType = typeof(T);
-            string? tableName = tType.GetTableName();
-            if (tableName is null)
-                throw new Exception($"No table name found on {tType.GetType().Name}.");
-
+            string tableName = GetTableName(tType);
             var collection = database.GetCollection<BsonDocument>(tableName, _mongoCollectionSettings);
-
-            FilterDefinition<BsonDocument> filter;
-            if (typeof(IExternalEntity).IsAssignableFrom(tType))
-                filter = Builders<BsonDocument>.Filter.Eq(nameof(IExternalEntity.ExternalId), id);
-            else
-                filter = Builders<BsonDocument>.Filter.Eq("Id", id);
+            var filter = GetIdFilter(tType, id);
 
             var bsonDocument = model.ToBsonDocument();
-
             return await collection.FindOneAndReplaceAsync<T>(filter, bsonDocument, new FindOneAndReplaceOptions<BsonDocument, T>
             {
                 ReturnDocument = ReturnDocument.After
@@ -135,24 +97,13 @@ namespace Crud.Api.Preservers.MongoDb
                 throw new ArgumentNullException(nameof(propertyValues));
 
             var dbClient = new MongoClient("mongodb://localhost");
-
             var database = dbClient.GetDatabase("testDb");
 
             var tType = typeof(T);
-            string? tableName = tType.GetTableName();
-            if (tableName is null)
-                throw new Exception($"No table name found on {tType.GetType().Name}.");
-
+            string tableName = GetTableName(tType);
             var collection = database.GetCollection<BsonDocument>(tableName, _mongoCollectionSettings);
-
-            FilterDefinition<BsonDocument> filter;
-            if (typeof(IExternalEntity).IsAssignableFrom(tType))
-                filter = Builders<BsonDocument>.Filter.Eq(nameof(IExternalEntity.ExternalId), id);
-            else
-                filter = Builders<BsonDocument>.Filter.Eq("Id", id);
-
+            var filter = GetIdFilter(tType, id);
             var updates = GetShallowUpdates(propertyValues, tType);  // Can utilize GetDeepUpdates instead, if all child objects are guaranteed to be instantiated.
-
             var update = Builders<BsonDocument>.Update.Combine(updates);
 
             return await collection.FindOneAndUpdateAsync(filter, update, new FindOneAndUpdateOptions<BsonDocument, T>
@@ -167,87 +118,81 @@ namespace Crud.Api.Preservers.MongoDb
                 throw new ArgumentNullException(nameof(propertyValues));
 
             var dbClient = new MongoClient("mongodb://localhost");
-
             var database = dbClient.GetDatabase("testDb");
 
             var tType = typeof(T);
-            string? tableName = tType.GetTableName();
-            if (tableName is null)
-                throw new Exception($"No table name found on {tType.GetType().Name}.");
-
+            string tableName = GetTableName(tType);
             var collection = database.GetCollection<BsonDocument>(tableName, _mongoCollectionSettings);
-
-            FilterDefinition<BsonDocument> filter = new BsonDocument();
-            if (queryParams is not null)
-            {
-                foreach (var queryParam in queryParams)
-                {
-                    string key = queryParam.Key.Replace(Delimiter.QueryParamChildProperty, Delimiter.MongoDbChildProperty);
-                    dynamic value = queryParam.Value.ChangeType(tType.GetProperties().GetProperty(key, Delimiter.MongoDbChildProperty)!.PropertyType);
-                    filter &= Builders<BsonDocument>.Filter.Eq(key.Pascalize(Delimiter.MongoDbChildProperty), value);
-                }
-            }
-
+            var filter = GetQueryParamFilter(tType, queryParams);
             var updates = GetShallowUpdates(propertyValues, tType);  // Can utilize GetDeepUpdates instead, if all child objects are guaranteed to be instantiated.
-
             var update = Builders<BsonDocument>.Update.Combine(updates);
 
             var updateResult = await collection.UpdateManyAsync(filter, update);
-
             return updateResult.ModifiedCount;
         }
 
         public async Task<Int64> DeleteAsync<T>(Guid id)
         {
             var dbClient = new MongoClient("mongodb://localhost");
-
             var database = dbClient.GetDatabase("testDb");
 
             var tType = typeof(T);
-            string? tableName = tType.GetTableName();
-            if (tableName is null)
-                throw new Exception($"No table name found on {tType.GetType().Name}.");
-
+            string tableName = GetTableName(tType);
             var collection = database.GetCollection<BsonDocument>(tableName);
-
-            FilterDefinition<BsonDocument> filter;
-            if (typeof(IExternalEntity).IsAssignableFrom(tType))
-                filter = Builders<BsonDocument>.Filter.Eq(nameof(IExternalEntity.ExternalId), id);
-            else
-                filter = Builders<BsonDocument>.Filter.Eq("Id", id);
+            var filter = GetIdFilter(tType, id);
 
             var deleteResult = await collection.DeleteOneAsync(filter);
-
             return deleteResult.DeletedCount;
         }
 
         public async Task<Int64> DeleteAsync<T>(IDictionary<String, String>? queryParams)
         {
             var dbClient = new MongoClient("mongodb://localhost");
-
             var database = dbClient.GetDatabase("testDb");
 
             var tType = typeof(T);
-            string? tableName = tType.GetTableName();
-            if (tableName is null)
-                throw new Exception($"No table name found on {tType.GetType().Name}.");
-
+            string tableName = GetTableName(tType);
             var collection = database.GetCollection<BsonDocument>(tableName);
+            var filter = GetQueryParamFilter(tType, queryParams);
 
+            var deleteResult = await collection.DeleteManyAsync(filter);
+            return deleteResult.DeletedCount;
+        }
+
+        private String GetTableName(Type type)
+        {
+            string? tableName = type.GetTableName();
+            if (tableName is null)
+                throw new Exception($"No table name found on {type.GetType().Name}.");
+
+            return tableName;
+        }
+
+        private FilterDefinition<BsonDocument> GetIdFilter(Type type, Guid id)
+        {
+            FilterDefinition<BsonDocument> filter;
+            if (typeof(IExternalEntity).IsAssignableFrom(type))
+                filter = Builders<BsonDocument>.Filter.Eq(nameof(IExternalEntity.ExternalId), id);
+            else
+                filter = Builders<BsonDocument>.Filter.Eq("Id", id);
+
+            return filter;
+        }
+
+        private FilterDefinition<BsonDocument> GetQueryParamFilter(Type type, IDictionary<String, String>? queryParams)
+        {
             FilterDefinition<BsonDocument> filter = new BsonDocument();
             if (queryParams is not null)
             {
                 foreach (var queryParam in queryParams)
                 {
                     string key = queryParam.Key.Replace(Delimiter.QueryParamChildProperty, Delimiter.MongoDbChildProperty);
-                    dynamic value = queryParam.Value.ChangeType(tType.GetProperties().GetProperty(key, Delimiter.MongoDbChildProperty)!.PropertyType);
+                    dynamic value = queryParam.Value.ChangeType(type.GetProperties().GetProperty(key, Delimiter.MongoDbChildProperty)!.PropertyType);
                     filter &= Builders<BsonDocument>.Filter.Eq(key.Pascalize(Delimiter.MongoDbChildProperty), value);
                 }
             }
 
-            var deleteResult = await collection.DeleteManyAsync(filter);
-
-            return deleteResult.DeletedCount;
+            return filter;
         }
 
         private IEnumerable<UpdateDefinition<BsonDocument>> GetShallowUpdates(IDictionary<String, JsonNode> propertyValues, Type type)
