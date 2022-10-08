@@ -1,5 +1,6 @@
 using Crud.Api.Options;
 using Crud.Api.Preservers;
+using Crud.Api.Services;
 using Crud.Api.Validators;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
@@ -12,6 +13,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddScoped<IValidator, Validator>();
 //builder.Services.AddScoped<IPreserver, Crud.Api.Preservers.Dapper.SqlServer.Preserver>();
 builder.Services.AddScoped<IPreserver, Crud.Api.Preservers.MongoDb.Preserver>();
+builder.Services.AddScoped<IStreamService, StreamService>();
+builder.Services.AddScoped<ITypeService, TypeService>();
 
 var conventionPack = new ConventionPack
 {

@@ -4,8 +4,8 @@ using System.Text.Json.Nodes;
 using Crud.Api.Constants;
 using Crud.Api.Helpers;
 using Crud.Api.Preservers;
+using Crud.Api.Services;
 using Crud.Api.Validators;
-using Humanizer;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Crud.Api.Controllers;
@@ -16,33 +16,32 @@ public class CrudController : BaseApiController<CrudController>
 {
     private readonly IValidator _validator;
     private readonly IPreserver _preserver;
+    private readonly IStreamService _streamService;
+    private readonly ITypeService _typeService;
 
-    public CrudController(ILogger<CrudController> logger, IValidator validator, IPreserver preserver)
+    public CrudController(ILogger<CrudController> logger, IValidator validator, IPreserver preserver, IStreamService streamService, ITypeService typeService)
         : base(logger)
     {
         _validator = validator;
         _preserver = preserver;
+        _streamService = streamService;
+        _typeService = typeService;
     }
 
     [Route("{typeName}"), HttpPost]
     public async Task<IActionResult> CreateAsync(String typeName)
     {
-        string json = null;
-        // TODO: TRY/Catch error handling
-        using (StreamReader reader = new StreamReader(Request.Body, Encoding.UTF8))
-        {
-            json = await reader.ReadToEndAsync();
-        }
+        string json = await _streamService.ReadToEndThenDisposeAsync(Request.Body, Encoding.UTF8);
+        if (String.IsNullOrWhiteSpace(json))
+            return BadRequest(ErrorMessage.BadRequestBody);
 
-        var type = Type.GetType($"{Namespace.Models}.{typeName.Singularize().Pascalize()}");
-
-        if (String.IsNullOrWhiteSpace(json) || type is null)
-            return Ok();  // TODO: return error.
+        var type = _typeService.GetModelType(typeName);
+        if (type is null)
+            return BadRequest(ErrorMessage.BadRequestModelType);
 
         dynamic? model = JsonSerializer.Deserialize(json, type, JsonSerializerOption.Default);
 
         var isValid = await _validator.ValidateCreateAsync(model);
-
         if (isValid)
         {
             var createdModel = await _preserver.CreateAsync(model);
@@ -56,10 +55,9 @@ public class CrudController : BaseApiController<CrudController>
     [Route("{typeName}/{id:guid}"), HttpGet]
     public async Task<IActionResult> ReadAsync(String typeName, Guid id)
     {
-        var type = Type.GetType($"{Namespace.Models}.{typeName.Singularize().Pascalize()}");
-
+        var type = _typeService.GetModelType(typeName);
         if (type is null)
-            return Ok();  // TODO: return error.
+            return BadRequest(ErrorMessage.BadRequestModelType);
 
         var readAsync = ReflectionHelper.GetGenericMethod(type, typeof(IPreserver), nameof(IPreserver.ReadAsync), new Type[] { typeof(Guid) });
         var model = await (dynamic)readAsync.Invoke(_preserver, new object[] { id });
@@ -73,19 +71,16 @@ public class CrudController : BaseApiController<CrudController>
     [Route("{typeName}"), HttpGet]
     public async Task<IActionResult> ReadAsync(String typeName)
     {
-        var queryCollection = Request.Query;
-
-        var queryParams = queryCollection.ToDictionary(query => query.Key, query => query.Value.ToString());
-
-        var type = Type.GetType($"{Namespace.Models}.{typeName.Singularize().Pascalize()}");
-
+        var type = _typeService.GetModelType(typeName);
         if (type is null)
-            return Ok();  // TODO: return error.
+            return BadRequest(ErrorMessage.BadRequestModelType);
+
+        var queryCollection = Request.Query;
+        var queryParams = queryCollection.ToDictionary(query => query.Key, query => query.Value.ToString());
 
         dynamic model = Convert.ChangeType(Activator.CreateInstance(type, null), type);
 
         var isValid = await _validator.ValidateReadAsync(model!, queryParams);
-
         if (isValid)
         {
             var readAsync = ReflectionHelper.GetGenericMethod(type, typeof(IPreserver), nameof(IPreserver.ReadAsync), new Type[] { typeof(IDictionary<String, String>) });
@@ -101,23 +96,17 @@ public class CrudController : BaseApiController<CrudController>
     [Route("{typeName}/{id:guid}"), HttpPut]
     public async Task<IActionResult> UpdateAsync(String typeName, Guid id)
     {
-        string json = null;
+        string json = await _streamService.ReadToEndThenDisposeAsync(Request.Body, Encoding.UTF8);
+        if (String.IsNullOrWhiteSpace(json))
+            return BadRequest(ErrorMessage.BadRequestBody);
 
-        // TODO: TRY/Catch error handling
-        using (StreamReader reader = new StreamReader(Request.Body, Encoding.UTF8))
-        {
-            json = await reader.ReadToEndAsync();
-        }
-
-        var type = Type.GetType($"{Namespace.Models}.{typeName.Singularize().Pascalize()}");
-
-        if (String.IsNullOrWhiteSpace(json) || type is null)
-            return Ok();  // TODO: return error.
+        var type = _typeService.GetModelType(typeName);
+        if (type is null)
+            return BadRequest(ErrorMessage.BadRequestModelType);
 
         dynamic? model = JsonSerializer.Deserialize(json, type, JsonSerializerOption.Default);
 
         var isValid = await _validator.ValidateUpdateAsync(id, model);
-
         if (isValid)
         {
             var updatedModel = await _preserver.UpdateAsync(id, model);
@@ -135,24 +124,18 @@ public class CrudController : BaseApiController<CrudController>
     [Route("{typeName}/{id:guid}"), HttpPatch]
     public async Task<IActionResult> PartialUpdateAsync(String typeName, Guid id)
     {
-        string json = null;
+        string json = await _streamService.ReadToEndThenDisposeAsync(Request.Body, Encoding.UTF8);
+        if (String.IsNullOrWhiteSpace(json))
+            return BadRequest(ErrorMessage.BadRequestBody);
 
-        // TODO: TRY/Catch error handling
-        using (StreamReader reader = new StreamReader(Request.Body, Encoding.UTF8))
-        {
-            json = await reader.ReadToEndAsync();
-        }
-
-        var type = Type.GetType($"{Namespace.Models}.{typeName.Singularize().Pascalize()}");
-
-        if (String.IsNullOrWhiteSpace(json) || type is null)
-            return Ok();  // TODO: return error.
+        var type = _typeService.GetModelType(typeName);
+        if (type is null)
+            return BadRequest(ErrorMessage.BadRequestModelType);
 
         dynamic? model = JsonSerializer.Deserialize(json, type, JsonSerializerOption.Default);
         var propertyValues = JsonSerializer.Deserialize<Dictionary<string, JsonNode>>(json, JsonSerializerOption.Default);
 
         var isValid = await _validator.ValidatePartialUpdateAsync(id, model, propertyValues?.Keys);
-
         if (isValid)
         {
             var updateAsync = ReflectionHelper.GetGenericMethod(type, typeof(IPreserver), nameof(IPreserver.PartialUpdateAsync), new Type[] { typeof(Guid), typeof(IDictionary<String, JsonNode>) });
@@ -171,28 +154,21 @@ public class CrudController : BaseApiController<CrudController>
     [Route("{typeName}"), HttpPatch]
     public async Task<IActionResult> PartialUpdateAsync(String typeName)
     {
-        string json = null;
+        string json = await _streamService.ReadToEndThenDisposeAsync(Request.Body, Encoding.UTF8);
+        if (String.IsNullOrWhiteSpace(json))
+            return BadRequest(ErrorMessage.BadRequestBody);
 
-        // TODO: TRY/Catch error handling
-        using (StreamReader reader = new StreamReader(Request.Body, Encoding.UTF8))
-        {
-            json = await reader.ReadToEndAsync();
-        }
+        var type = _typeService.GetModelType(typeName);
+        if (type is null)
+            return BadRequest(ErrorMessage.BadRequestModelType);
 
         var queryCollection = Request.Query;
-
         var queryParams = queryCollection.ToDictionary(query => query.Key, query => query.Value.ToString());
-
-        var type = Type.GetType($"{Namespace.Models}.{typeName.Singularize().Pascalize()}");
-
-        if (String.IsNullOrWhiteSpace(json) || type is null)
-            return Ok();  // TODO: return error.
 
         dynamic? model = JsonSerializer.Deserialize(json, type, JsonSerializerOption.Default);
         var propertyValues = JsonSerializer.Deserialize<Dictionary<string, JsonNode>>(json, JsonSerializerOption.Default);
 
         var isValid = await _validator.ValidatePartialUpdateAsync(model, queryParams, propertyValues?.Keys);
-
         if (isValid)
         {
             var updateAsync = ReflectionHelper.GetGenericMethod(type, typeof(IPreserver), nameof(IPreserver.PartialUpdateAsync), new Type[] { typeof(IDictionary<String, String>), typeof(IDictionary<String, JsonNode>) });
@@ -208,10 +184,9 @@ public class CrudController : BaseApiController<CrudController>
     [Route("{typeName}/{id:guid}"), HttpDelete]
     public async Task<IActionResult> DeleteAsync(String typeName, Guid id)
     {
-        var type = Type.GetType($"{Namespace.Models}.{typeName.Singularize().Pascalize()}");
-
+        var type = _typeService.GetModelType(typeName);
         if (type is null)
-            return Ok();  // TODO: return error.
+            return BadRequest(ErrorMessage.BadRequestModelType);
 
         var readAsync = ReflectionHelper.GetGenericMethod(type, typeof(IPreserver), nameof(IPreserver.DeleteAsync), new Type[] { typeof(Guid) });
         var deletedCount = await (dynamic)readAsync.Invoke(_preserver, new object[] { id });
@@ -225,19 +200,16 @@ public class CrudController : BaseApiController<CrudController>
     [Route("{typeName}"), HttpDelete]
     public async Task<IActionResult> DeleteAsync(String typeName)
     {
-        var queryCollection = Request.Query;
-
-        var queryParams = queryCollection.ToDictionary(query => query.Key, query => query.Value.ToString());
-
-        var type = Type.GetType($"{Namespace.Models}.{typeName.Singularize().Pascalize()}");
-
+        var type = _typeService.GetModelType(typeName);
         if (type is null)
-            return Ok();  // TODO: return error.
+            return BadRequest(ErrorMessage.BadRequestModelType);
+
+        var queryCollection = Request.Query;
+        var queryParams = queryCollection.ToDictionary(query => query.Key, query => query.Value.ToString());
 
         dynamic model = Convert.ChangeType(Activator.CreateInstance(type, null), type);
 
         var isValid = await _validator.ValidateDeleteAsync(model!, queryParams);
-
         if (isValid)
         {
             var readAsync = ReflectionHelper.GetGenericMethod(type, typeof(IPreserver), nameof(IPreserver.DeleteAsync), new Type[] { typeof(IDictionary<String, String>) });
