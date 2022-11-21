@@ -41,15 +41,13 @@ public class CrudController : BaseApiController<CrudController>
 
         dynamic? model = JsonSerializer.Deserialize(json, type, JsonSerializerOption.Default);
 
-        var isValid = await _validator.ValidateCreateAsync(model);
-        if (isValid)
-        {
-            var createdModel = await _preserver.CreateAsync(model);
+        var validationResult = (ValidationResult)await _validator.ValidateCreateAsync(model);
+        if (!validationResult.IsValid)
+            return BadRequest(validationResult.Message);
 
-            return Ok(createdModel);
-        }
+        var createdModel = await _preserver.CreateAsync(model);
 
-        return Ok(isValid);
+        return Ok(createdModel);
     }
 
     [Route("{typeName}/{id:guid}"), HttpGet]
@@ -80,17 +78,14 @@ public class CrudController : BaseApiController<CrudController>
 
         dynamic model = Convert.ChangeType(Activator.CreateInstance(type, null), type);
 
-        var isValid = await _validator.ValidateReadAsync(model!, queryParams);
-        if (isValid)
-        {
-            var readAsync = ReflectionHelper.GetGenericMethod(type, typeof(IPreserver), nameof(IPreserver.ReadAsync), new Type[] { typeof(IDictionary<String, String>) });
-            var models = await (dynamic)readAsync.Invoke(_preserver, new object[] { queryParams });
+        var validationResult = (ValidationResult)await _validator.ValidateReadAsync(model!, queryParams);
+        if (!validationResult.IsValid)
+            return BadRequest(validationResult.Message);
 
-            return Ok(models);
-        }
+        var readAsync = ReflectionHelper.GetGenericMethod(type, typeof(IPreserver), nameof(IPreserver.ReadAsync), new Type[] { typeof(IDictionary<String, String>) });
+        var models = await (dynamic)readAsync.Invoke(_preserver, new object[] { queryParams });
 
-        // TODO: Do somethign when not valid.
-        return Ok("Not Valid");
+        return Ok(models);
     }
 
     [Route("{typeName}/{id:guid}"), HttpPut]
@@ -106,19 +101,16 @@ public class CrudController : BaseApiController<CrudController>
 
         dynamic? model = JsonSerializer.Deserialize(json, type, JsonSerializerOption.Default);
 
-        var isValid = await _validator.ValidateUpdateAsync(id, model);
-        if (isValid)
-        {
-            var updatedModel = await _preserver.UpdateAsync(id, model);
+        var validationResult = (ValidationResult)await _validator.ValidateUpdateAsync(id, model);
+        if (!validationResult.IsValid)
+            return BadRequest(validationResult.Message);
 
-            if (updatedModel is null)
-                return NotFound(String.Format(ErrorMessage.NotFoundUpdate, typeName));
+        var updatedModel = await _preserver.UpdateAsync(id, model);
 
-            return Ok(updatedModel);
-        }
+        if (updatedModel is null)
+            return NotFound(String.Format(ErrorMessage.NotFoundUpdate, typeName));
 
-        // TODO: Do somethign when not valid.
-        return Ok("Not Valid");
+        return Ok(updatedModel);
     }
 
     [Route("{typeName}/{id:guid}"), HttpPatch]
@@ -135,20 +127,17 @@ public class CrudController : BaseApiController<CrudController>
         dynamic? model = JsonSerializer.Deserialize(json, type, JsonSerializerOption.Default);
         var propertyValues = JsonSerializer.Deserialize<Dictionary<string, JsonNode>>(json, JsonSerializerOption.Default);
 
-        var isValid = await _validator.ValidatePartialUpdateAsync(id, model, propertyValues?.Keys);
-        if (isValid)
-        {
-            var updateAsync = ReflectionHelper.GetGenericMethod(type, typeof(IPreserver), nameof(IPreserver.PartialUpdateAsync), new Type[] { typeof(Guid), typeof(IDictionary<String, JsonNode>) });
-            var updatedModel = await (dynamic)updateAsync.Invoke(_preserver, new object[] { id, propertyValues });
+        var validationResult = (ValidationResult)await _validator.ValidatePartialUpdateAsync(id, model, propertyValues?.Keys);
+        if (!validationResult.IsValid)
+            return BadRequest(validationResult.Message);
 
-            if (updatedModel is null)
-                return NotFound(String.Format(ErrorMessage.NotFoundUpdate, typeName));
+        var updateAsync = ReflectionHelper.GetGenericMethod(type, typeof(IPreserver), nameof(IPreserver.PartialUpdateAsync), new Type[] { typeof(Guid), typeof(IDictionary<String, JsonNode>) });
+        var updatedModel = await (dynamic)updateAsync.Invoke(_preserver, new object[] { id, propertyValues });
 
-            return Ok(updatedModel);
-        }
+        if (updatedModel is null)
+            return NotFound(String.Format(ErrorMessage.NotFoundUpdate, typeName));
 
-        // TODO: Do somethign when not valid.
-        return Ok("Not Valid");
+        return Ok(updatedModel);
     }
 
     [Route("{typeName}"), HttpPatch]
@@ -168,17 +157,14 @@ public class CrudController : BaseApiController<CrudController>
         dynamic? model = JsonSerializer.Deserialize(json, type, JsonSerializerOption.Default);
         var propertyValues = JsonSerializer.Deserialize<Dictionary<string, JsonNode>>(json, JsonSerializerOption.Default);
 
-        var isValid = await _validator.ValidatePartialUpdateAsync(model, queryParams, propertyValues?.Keys);
-        if (isValid)
-        {
-            var updateAsync = ReflectionHelper.GetGenericMethod(type, typeof(IPreserver), nameof(IPreserver.PartialUpdateAsync), new Type[] { typeof(IDictionary<String, String>), typeof(IDictionary<String, JsonNode>) });
-            var updatedCount = await (dynamic)updateAsync.Invoke(_preserver, new object[] { queryParams, propertyValues });
+        var validationResult = (ValidationResult)await _validator.ValidatePartialUpdateAsync(model, queryParams, propertyValues?.Keys);
+        if (!validationResult.IsValid)
+            return BadRequest(validationResult.Message);
 
-            return Ok(updatedCount);
-        }
+        var updateAsync = ReflectionHelper.GetGenericMethod(type, typeof(IPreserver), nameof(IPreserver.PartialUpdateAsync), new Type[] { typeof(IDictionary<String, String>), typeof(IDictionary<String, JsonNode>) });
+        var updatedCount = await (dynamic)updateAsync.Invoke(_preserver, new object[] { queryParams, propertyValues });
 
-        // TODO: Do somethign when not valid.
-        return Ok("Not Valid");
+        return Ok(updatedCount);
     }
 
     [Route("{typeName}/{id:guid}"), HttpDelete]
@@ -209,16 +195,13 @@ public class CrudController : BaseApiController<CrudController>
 
         dynamic model = Convert.ChangeType(Activator.CreateInstance(type, null), type);
 
-        var isValid = await _validator.ValidateDeleteAsync(model!, queryParams);
-        if (isValid)
-        {
-            var readAsync = ReflectionHelper.GetGenericMethod(type, typeof(IPreserver), nameof(IPreserver.DeleteAsync), new Type[] { typeof(IDictionary<String, String>) });
-            var deletedCount = await (dynamic)readAsync.Invoke(_preserver, new object[] { queryParams });
+        var validationResult = (ValidationResult)await _validator.ValidateDeleteAsync(model!, queryParams);
+        if (!validationResult.IsValid)
+            return BadRequest(validationResult.Message);
 
-            return Ok(deletedCount);
-        }
+        var readAsync = ReflectionHelper.GetGenericMethod(type, typeof(IPreserver), nameof(IPreserver.DeleteAsync), new Type[] { typeof(IDictionary<String, String>) });
+        var deletedCount = await (dynamic)readAsync.Invoke(_preserver, new object[] { queryParams });
 
-        // TODO: Do somethign when not valid.
-        return Ok("Not Valid");
+        return Ok(deletedCount);
     }
 }
