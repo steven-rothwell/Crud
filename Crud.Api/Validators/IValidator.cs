@@ -4,17 +4,17 @@ namespace Crud.Api.Validators
 {
     public interface IValidator
     {
-        Task<Boolean> ValidateCreateAsync(Object model);
-        Task<Boolean> ValidateCreateAsync(User user);
-        Task<Boolean> ValidateReadAsync(Object model, IDictionary<String, String>? queryParams);
-        Task<Boolean> ValidateReadAsync(User user, IDictionary<String, String>? queryParams);
-        Task<Boolean> ValidateUpdateAsync(Guid id, Object model);
-        Task<Boolean> ValidateUpdateAsync(Guid id, User user);
-        Task<Boolean> ValidatePartialUpdateAsync(Guid id, Object model, IReadOnlyCollection<String> propertiesToBeUpdated);
-        Task<Boolean> ValidatePartialUpdateAsync(Guid id, User user, IReadOnlyCollection<String> propertiesToBeUpdated);
-        Task<Boolean> ValidatePartialUpdateAsync(Object model, IDictionary<String, String>? queryParams, IReadOnlyCollection<String> propertiesToBeUpdated);
-        Task<Boolean> ValidatePartialUpdateAsync(User user, IDictionary<String, String>? queryParams, IReadOnlyCollection<String> propertiesToBeUpdated);
-        Task<Boolean> ValidateDeleteAsync(Object model, IDictionary<String, String>? queryParams);
-        Task<Boolean> ValidateDeleteAsync(User user, IDictionary<String, String>? queryParams);
+        Task<ValidationResult> ValidateCreateAsync(Object model);
+        Task<ValidationResult> ValidateCreateAsync(User user);
+        Task<ValidationResult> ValidateReadAsync(Object model, IDictionary<String, String>? queryParams);
+        Task<ValidationResult> ValidateReadAsync(User user, IDictionary<String, String>? queryParams);
+        Task<ValidationResult> ValidateUpdateAsync(Guid id, Object model);
+        Task<ValidationResult> ValidateUpdateAsync(Guid id, User user);
+        Task<ValidationResult> ValidatePartialUpdateAsync(Guid id, Object model, IReadOnlyCollection<String> propertiesToBeUpdated);
+        Task<ValidationResult> ValidatePartialUpdateAsync(Guid id, User user, IReadOnlyCollection<String> propertiesToBeUpdated);
+        Task<ValidationResult> ValidatePartialUpdateAsync(Object model, IDictionary<String, String>? queryParams, IReadOnlyCollection<String> propertiesToBeUpdated);
+        Task<ValidationResult> ValidatePartialUpdateAsync(User user, IDictionary<String, String>? queryParams, IReadOnlyCollection<String> propertiesToBeUpdated);
+        Task<ValidationResult> ValidateDeleteAsync(Object model, IDictionary<String, String>? queryParams);
+        Task<ValidationResult> ValidateDeleteAsync(User user, IDictionary<String, String>? queryParams);
     }
 }

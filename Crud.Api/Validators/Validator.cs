@@ -5,151 +5,150 @@ namespace Crud.Api.Validators
 {
     public class Validator : IValidator
     {
-        public Task<Boolean> ValidateCreateAsync(Object model)
+        public Task<ValidationResult> ValidateCreateAsync(Object model)
         {
-            return Task.FromResult(true);
+            return Task.FromResult(new ValidationResult(true));
         }
 
-        public Task<Boolean> ValidateCreateAsync(User user)
+        public Task<ValidationResult> ValidateCreateAsync(User user)
         {
             if (user is null)
-                return Task.FromResult(false);
+                return Task.FromResult(new ValidationResult(false, $"{nameof(User)} cannot be null."));
 
             if (user.ExternalId is not null)
-                return Task.FromResult(false);
+                return Task.FromResult(new ValidationResult(false, $"{nameof(user.ExternalId)} cannot be set on create."));
 
             if (String.IsNullOrWhiteSpace(user.Name))
-                return Task.FromResult(false);
+                return Task.FromResult(new ValidationResult(false, $"{nameof(user.Name)} cannot be empty."));
 
             if (user.Age < 0)
-                return Task.FromResult(false);
+                return Task.FromResult(new ValidationResult(false, $"{nameof(user.Age)} cannot be less than 0."));
 
-            return Task.FromResult(true);
+            return Task.FromResult(new ValidationResult(true));
         }
 
-        public Task<Boolean> ValidateReadAsync(Object model, IDictionary<String, String>? queryParams)
+        public Task<ValidationResult> ValidateReadAsync(Object model, IDictionary<String, String>? queryParams)
         {
             if (queryParams is null || queryParams.Count == 0)  // Remove to allow returning all.
-                return Task.FromResult(false);
+                return Task.FromResult(new ValidationResult(false, "Filter cannot be empty."));
 
             if (!model.GetType().GetProperties().HasAllPropertyNames(queryParams.Select(queryParam => queryParam.Key), Delimiter.QueryParamChildProperty))
-                return Task.FromResult(false);
+                return Task.FromResult(new ValidationResult(false, "Filter cannot contain properties that the model does not have."));
 
-            return Task.FromResult(true);
+            return Task.FromResult(new ValidationResult(true));
         }
 
-        public Task<Boolean> ValidateReadAsync(User user, IDictionary<String, String>? queryParams)
+        public Task<ValidationResult> ValidateReadAsync(User user, IDictionary<String, String>? queryParams)
         {
             // The user version of this method and call to object version is not necessary.
             // This is only here to show how to override in case more user validation was necessary.
             return ValidateReadAsync((object)user, queryParams);
         }
 
-        public Task<Boolean> ValidateUpdateAsync(Guid id, Object model)
+        public Task<ValidationResult> ValidateUpdateAsync(Guid id, Object model)
         {
-            return Task.FromResult(true);
+            return Task.FromResult(new ValidationResult(true));
         }
 
-        public Task<Boolean> ValidateUpdateAsync(Guid id, User user)
+        public Task<ValidationResult> ValidateUpdateAsync(Guid id, User user)
         {
             if (id == Guid.Empty)
-                return Task.FromResult(false);
+                return Task.FromResult(new ValidationResult(false, "Id cannot be empty."));
 
             if (user is null)
-                return Task.FromResult(false);
+                return Task.FromResult(new ValidationResult(false, $"{nameof(User)} cannot be null."));
 
             if (id != user.ExternalId)
-                return Task.FromResult(false);
+                return Task.FromResult(new ValidationResult(false, $"{nameof(user.ExternalId)} cannot be altered."));
 
             if (String.IsNullOrWhiteSpace(user.Name))
-                return Task.FromResult(false);
+                return Task.FromResult(new ValidationResult(false, $"{nameof(user.Name)} cannot be empty."));
 
             if (user.Age < 0)
-                return Task.FromResult(false);
+                return Task.FromResult(new ValidationResult(false, $"{nameof(user.Age)} cannot be less than zero."));
 
-            return Task.FromResult(true);
+            return Task.FromResult(new ValidationResult(true));
         }
 
-        public Task<Boolean> ValidatePartialUpdateAsync(Guid id, Object model, IReadOnlyCollection<String> propertiesToBeUpdated)
+        public Task<ValidationResult> ValidatePartialUpdateAsync(Guid id, Object model, IReadOnlyCollection<String> propertiesToBeUpdated)
         {
             if (propertiesToBeUpdated is null || propertiesToBeUpdated.Count == 0)
-                return Task.FromResult(false);
+                return Task.FromResult(new ValidationResult(false, "Updated properties cannot be empty."));
 
             if (!model.GetType().GetProperties().HasAllPropertyNames(propertiesToBeUpdated))
-                return Task.FromResult(false);
+                return Task.FromResult(new ValidationResult(false, "Updated properties cannot contain properties that the model does not have."));
 
-            return Task.FromResult(true);
+            return Task.FromResult(new ValidationResult(true));
         }
 
-        public async Task<Boolean> ValidatePartialUpdateAsync(Guid id, User user, IReadOnlyCollection<String> propertiesToBeUpdated)
+        public async Task<ValidationResult> ValidatePartialUpdateAsync(Guid id, User user, IReadOnlyCollection<String> propertiesToBeUpdated)
         {
-            if (!await ValidatePartialUpdateAsync(id, (object)user, propertiesToBeUpdated))
-                return false;
+            var objectValidationResult = await ValidatePartialUpdateAsync(id, (object)user, propertiesToBeUpdated);
+            if (!objectValidationResult.IsValid)
+                return objectValidationResult;
 
-            if (user is null)
-                return false;
-
-            if (WillBeUpdated(nameof(user.ExternalId), propertiesToBeUpdated))  // Prevent updating this property.
-                return false;
+            if (WillBeUpdated(nameof(user.ExternalId), propertiesToBeUpdated))  // Prevents updating this property.
+                return new ValidationResult(false, $"{nameof(user.ExternalId)} cannot be altered.");
 
             if (WillBeUpdated(nameof(user.Name), propertiesToBeUpdated) && String.IsNullOrWhiteSpace(user.Name))
-                return false;
+                return new ValidationResult(false, $"{nameof(user.Name)} cannot be empty.");
 
             if (WillBeUpdated(nameof(user.Age), propertiesToBeUpdated) && user.Age < 0)
-                return false;
+                return new ValidationResult(false, $"{nameof(user.Age)} cannot be less than zero.");
 
-            return true;
+            return new ValidationResult(true);
         }
 
-        public Task<Boolean> ValidatePartialUpdateAsync(Object model, IDictionary<String, String>? queryParams, IReadOnlyCollection<String> propertiesToBeUpdated)
+        public Task<ValidationResult> ValidatePartialUpdateAsync(Object model, IDictionary<String, String>? queryParams, IReadOnlyCollection<String> propertiesToBeUpdated)
         {
             if (queryParams is null || queryParams.Count == 0)  // Remove to allow returning all.
-                return Task.FromResult(false);
+                return Task.FromResult(new ValidationResult(false, "Filter cannot be empty."));
 
             if (!model.GetType().GetProperties().HasAllPropertyNames(queryParams.Select(queryParam => queryParam.Key), Delimiter.QueryParamChildProperty))
-                return Task.FromResult(false);
+                return Task.FromResult(new ValidationResult(false, "Filter cannot contain properties that the model does not have."));
 
             if (propertiesToBeUpdated is null || propertiesToBeUpdated.Count == 0)
-                return Task.FromResult(false);
+                return Task.FromResult(new ValidationResult(false, "Updated properties cannot be empty."));
 
             if (!model.GetType().GetProperties().HasAllPropertyNames(propertiesToBeUpdated))
-                return Task.FromResult(false);
+                return Task.FromResult(new ValidationResult(false, "Updated properties cannot contain properties that the model does not have."));
 
-            return Task.FromResult(true);
+            return Task.FromResult(new ValidationResult(true));
         }
 
-        public async Task<Boolean> ValidatePartialUpdateAsync(User user, IDictionary<String, String>? queryParams, IReadOnlyCollection<String> propertiesToBeUpdated)
+        public async Task<ValidationResult> ValidatePartialUpdateAsync(User user, IDictionary<String, String>? queryParams, IReadOnlyCollection<String> propertiesToBeUpdated)
         {
-            if (!await ValidatePartialUpdateAsync((object)user, queryParams, propertiesToBeUpdated))
-                return false;
+            var objectValidationResult = await ValidatePartialUpdateAsync((object)user, queryParams, propertiesToBeUpdated);
+            if (!objectValidationResult.IsValid)
+                return objectValidationResult;
 
             if (user is null)
-                return false;
+                return new ValidationResult(false, $"{nameof(User)} cannot be null.");
 
-            if (WillBeUpdated(nameof(user.ExternalId), propertiesToBeUpdated))  // Prevent updating this property.
-                return false;
+            if (WillBeUpdated(nameof(user.ExternalId), propertiesToBeUpdated))  // Prevents updating this property.
+                return new ValidationResult(false, $"{nameof(user.ExternalId)} cannot be altered.");
 
             if (WillBeUpdated(nameof(user.Name), propertiesToBeUpdated) && String.IsNullOrWhiteSpace(user.Name))
-                return false;
+                return new ValidationResult(false, $"{nameof(user.Name)} cannot be empty.");
 
             if (WillBeUpdated(nameof(user.Age), propertiesToBeUpdated) && user.Age < 0)
-                return false;
+                return new ValidationResult(false, $"{nameof(user.Age)} cannot be less than zero.");
 
-            return true;
+            return new ValidationResult(true);
         }
 
-        public Task<Boolean> ValidateDeleteAsync(Object model, IDictionary<String, String>? queryParams)
+        public Task<ValidationResult> ValidateDeleteAsync(Object model, IDictionary<String, String>? queryParams)
         {
             if (queryParams is null || queryParams.Count == 0)  // Remove to allow returning all.
-                return Task.FromResult(false);
+                return Task.FromResult(new ValidationResult(false, "Filter cannot be empty."));
 
             if (!model.GetType().GetProperties().HasAllPropertyNames(queryParams.Select(queryParam => queryParam.Key), Delimiter.QueryParamChildProperty))
-                return Task.FromResult(false);
+                return Task.FromResult(new ValidationResult(false, "Filter cannot contain properties that the model does not have."));
 
-            return Task.FromResult(true);
+            return Task.FromResult(new ValidationResult(true));
         }
 
-        public Task<Boolean> ValidateDeleteAsync(User user, IDictionary<String, String>? queryParams)
+        public Task<ValidationResult> ValidateDeleteAsync(User user, IDictionary<String, String>? queryParams)
         {
             // The user version of this method and call to object version is not necessary.
             // This is only here to show how to override in case more user validation was necessary.
