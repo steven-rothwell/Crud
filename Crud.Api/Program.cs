@@ -28,6 +28,7 @@ BsonSerializer.RegisterSerializer(new GuidSerializer(GuidRepresentation.Standard
 
 //builder.Services.Configure<SqlServerOptions>(builder.Configuration.GetSection(nameof(SqlServerOptions)));
 builder.Services.Configure<MongoDbOptions>(builder.Configuration.GetSection(nameof(MongoDbOptions)));
+builder.Services.Configure<SettingOptions>(builder.Configuration.GetSection(nameof(SettingOptions)));
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

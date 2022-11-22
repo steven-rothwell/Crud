@@ -3,10 +3,12 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using Crud.Api.Constants;
 using Crud.Api.Helpers;
+using Crud.Api.Options;
 using Crud.Api.Preservers;
 using Crud.Api.Services;
 using Crud.Api.Validators;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 
 namespace Crud.Api.Controllers;
 
@@ -14,14 +16,16 @@ namespace Crud.Api.Controllers;
 [Route("api")]
 public class CrudController : BaseApiController<CrudController>
 {
+    private readonly ILogger<CrudController> _logger;
     private readonly IValidator _validator;
     private readonly IPreserver _preserver;
     private readonly IStreamService _streamService;
     private readonly ITypeService _typeService;
 
-    public CrudController(ILogger<CrudController> logger, IValidator validator, IPreserver preserver, IStreamService streamService, ITypeService typeService)
-        : base(logger)
+    public CrudController(IOptions<SettingOptions> settingOptions, ILogger<CrudController> logger, IValidator validator, IPreserver preserver, IStreamService streamService, ITypeService typeService)
+        : base(settingOptions)
     {
+        _logger = logger;
         _validator = validator;
         _preserver = preserver;
         _streamService = streamService;
@@ -31,177 +35,243 @@ public class CrudController : BaseApiController<CrudController>
     [Route("{typeName}"), HttpPost]
     public async Task<IActionResult> CreateAsync(String typeName)
     {
-        string json = await _streamService.ReadToEndThenDisposeAsync(Request.Body, Encoding.UTF8);
-        if (String.IsNullOrWhiteSpace(json))
-            return BadRequest(ErrorMessage.BadRequestBody);
+        try
+        {
+            var test0 = 0;
+            var test = 1 / test0;
+            string json = await _streamService.ReadToEndThenDisposeAsync(Request.Body, Encoding.UTF8);
+            if (String.IsNullOrWhiteSpace(json))
+                return BadRequest(ErrorMessage.BadRequestBody);
 
-        var type = _typeService.GetModelType(typeName);
-        if (type is null)
-            return BadRequest(ErrorMessage.BadRequestModelType);
+            var type = _typeService.GetModelType(typeName);
+            if (type is null)
+                return BadRequest(ErrorMessage.BadRequestModelType);
 
-        dynamic? model = JsonSerializer.Deserialize(json, type, JsonSerializerOption.Default);
+            dynamic? model = JsonSerializer.Deserialize(json, type, JsonSerializerOption.Default);
 
-        var validationResult = (ValidationResult)await _validator.ValidateCreateAsync(model);
-        if (!validationResult.IsValid)
-            return BadRequest(validationResult.Message);
+            var validationResult = (ValidationResult)await _validator.ValidateCreateAsync(model);
+            if (!validationResult.IsValid)
+                return BadRequest(validationResult.Message);
 
-        var createdModel = await _preserver.CreateAsync(model);
+            var createdModel = await _preserver.CreateAsync(model);
 
-        return Ok(createdModel);
+            return Ok(createdModel);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error creating with typeName: {typeName}.");
+            return InternalServerError(ex);
+        }
     }
 
     [Route("{typeName}/{id:guid}"), HttpGet]
     public async Task<IActionResult> ReadAsync(String typeName, Guid id)
     {
-        var type = _typeService.GetModelType(typeName);
-        if (type is null)
-            return BadRequest(ErrorMessage.BadRequestModelType);
+        try
+        {
+            var type = _typeService.GetModelType(typeName);
+            if (type is null)
+                return BadRequest(ErrorMessage.BadRequestModelType);
 
-        var readAsync = ReflectionHelper.GetGenericMethod(type, typeof(IPreserver), nameof(IPreserver.ReadAsync), new Type[] { typeof(Guid) });
-        var model = await (dynamic)readAsync.Invoke(_preserver, new object[] { id });
+            var readAsync = ReflectionHelper.GetGenericMethod(type, typeof(IPreserver), nameof(IPreserver.ReadAsync), new Type[] { typeof(Guid) });
+            var model = await (dynamic)readAsync.Invoke(_preserver, new object[] { id });
 
-        if (model is null)
-            return NotFound(String.Format(ErrorMessage.NotFoundRead, typeName));
+            if (model is null)
+                return NotFound(String.Format(ErrorMessage.NotFoundRead, typeName));
 
-        return Ok(model);
+            return Ok(model);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error reading with typeName: {typeName}, id: {id}.");
+            return InternalServerError(ex);
+        }
     }
 
     [Route("{typeName}"), HttpGet]
     public async Task<IActionResult> ReadAsync(String typeName)
     {
-        var type = _typeService.GetModelType(typeName);
-        if (type is null)
-            return BadRequest(ErrorMessage.BadRequestModelType);
+        try
+        {
+            var type = _typeService.GetModelType(typeName);
+            if (type is null)
+                return BadRequest(ErrorMessage.BadRequestModelType);
 
-        var queryCollection = Request.Query;
-        var queryParams = queryCollection.ToDictionary(query => query.Key, query => query.Value.ToString());
+            var queryCollection = Request.Query;
+            var queryParams = queryCollection.ToDictionary(query => query.Key, query => query.Value.ToString());
 
-        dynamic model = Convert.ChangeType(Activator.CreateInstance(type, null), type);
+            dynamic model = Convert.ChangeType(Activator.CreateInstance(type, null), type);
 
-        var validationResult = (ValidationResult)await _validator.ValidateReadAsync(model!, queryParams);
-        if (!validationResult.IsValid)
-            return BadRequest(validationResult.Message);
+            var validationResult = (ValidationResult)await _validator.ValidateReadAsync(model!, queryParams);
+            if (!validationResult.IsValid)
+                return BadRequest(validationResult.Message);
 
-        var readAsync = ReflectionHelper.GetGenericMethod(type, typeof(IPreserver), nameof(IPreserver.ReadAsync), new Type[] { typeof(IDictionary<String, String>) });
-        var models = await (dynamic)readAsync.Invoke(_preserver, new object[] { queryParams });
+            var readAsync = ReflectionHelper.GetGenericMethod(type, typeof(IPreserver), nameof(IPreserver.ReadAsync), new Type[] { typeof(IDictionary<String, String>) });
+            var models = await (dynamic)readAsync.Invoke(_preserver, new object[] { queryParams });
 
-        return Ok(models);
+            return Ok(models);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error reading with typeName: {typeName}.");
+            return InternalServerError(ex);
+        }
     }
 
     [Route("{typeName}/{id:guid}"), HttpPut]
     public async Task<IActionResult> UpdateAsync(String typeName, Guid id)
     {
-        string json = await _streamService.ReadToEndThenDisposeAsync(Request.Body, Encoding.UTF8);
-        if (String.IsNullOrWhiteSpace(json))
-            return BadRequest(ErrorMessage.BadRequestBody);
+        try
+        {
+            string json = await _streamService.ReadToEndThenDisposeAsync(Request.Body, Encoding.UTF8);
+            if (String.IsNullOrWhiteSpace(json))
+                return BadRequest(ErrorMessage.BadRequestBody);
 
-        var type = _typeService.GetModelType(typeName);
-        if (type is null)
-            return BadRequest(ErrorMessage.BadRequestModelType);
+            var type = _typeService.GetModelType(typeName);
+            if (type is null)
+                return BadRequest(ErrorMessage.BadRequestModelType);
 
-        dynamic? model = JsonSerializer.Deserialize(json, type, JsonSerializerOption.Default);
+            dynamic? model = JsonSerializer.Deserialize(json, type, JsonSerializerOption.Default);
 
-        var validationResult = (ValidationResult)await _validator.ValidateUpdateAsync(id, model);
-        if (!validationResult.IsValid)
-            return BadRequest(validationResult.Message);
+            var validationResult = (ValidationResult)await _validator.ValidateUpdateAsync(id, model);
+            if (!validationResult.IsValid)
+                return BadRequest(validationResult.Message);
 
-        var updatedModel = await _preserver.UpdateAsync(id, model);
+            var updatedModel = await _preserver.UpdateAsync(id, model);
 
-        if (updatedModel is null)
-            return NotFound(String.Format(ErrorMessage.NotFoundUpdate, typeName));
+            if (updatedModel is null)
+                return NotFound(String.Format(ErrorMessage.NotFoundUpdate, typeName));
 
-        return Ok(updatedModel);
+            return Ok(updatedModel);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error updating with typeName: {typeName}, id: {id}.");
+            return InternalServerError(ex);
+        }
     }
 
     [Route("{typeName}/{id:guid}"), HttpPatch]
     public async Task<IActionResult> PartialUpdateAsync(String typeName, Guid id)
     {
-        string json = await _streamService.ReadToEndThenDisposeAsync(Request.Body, Encoding.UTF8);
-        if (String.IsNullOrWhiteSpace(json))
-            return BadRequest(ErrorMessage.BadRequestBody);
+        try
+        {
+            string json = await _streamService.ReadToEndThenDisposeAsync(Request.Body, Encoding.UTF8);
+            if (String.IsNullOrWhiteSpace(json))
+                return BadRequest(ErrorMessage.BadRequestBody);
 
-        var type = _typeService.GetModelType(typeName);
-        if (type is null)
-            return BadRequest(ErrorMessage.BadRequestModelType);
+            var type = _typeService.GetModelType(typeName);
+            if (type is null)
+                return BadRequest(ErrorMessage.BadRequestModelType);
 
-        dynamic? model = JsonSerializer.Deserialize(json, type, JsonSerializerOption.Default);
-        var propertyValues = JsonSerializer.Deserialize<Dictionary<string, JsonNode>>(json, JsonSerializerOption.Default);
+            dynamic? model = JsonSerializer.Deserialize(json, type, JsonSerializerOption.Default);
+            var propertyValues = JsonSerializer.Deserialize<Dictionary<string, JsonNode>>(json, JsonSerializerOption.Default);
 
-        var validationResult = (ValidationResult)await _validator.ValidatePartialUpdateAsync(id, model, propertyValues?.Keys);
-        if (!validationResult.IsValid)
-            return BadRequest(validationResult.Message);
+            var validationResult = (ValidationResult)await _validator.ValidatePartialUpdateAsync(id, model, propertyValues?.Keys);
+            if (!validationResult.IsValid)
+                return BadRequest(validationResult.Message);
 
-        var updateAsync = ReflectionHelper.GetGenericMethod(type, typeof(IPreserver), nameof(IPreserver.PartialUpdateAsync), new Type[] { typeof(Guid), typeof(IDictionary<String, JsonNode>) });
-        var updatedModel = await (dynamic)updateAsync.Invoke(_preserver, new object[] { id, propertyValues });
+            var updateAsync = ReflectionHelper.GetGenericMethod(type, typeof(IPreserver), nameof(IPreserver.PartialUpdateAsync), new Type[] { typeof(Guid), typeof(IDictionary<String, JsonNode>) });
+            var updatedModel = await (dynamic)updateAsync.Invoke(_preserver, new object[] { id, propertyValues });
 
-        if (updatedModel is null)
-            return NotFound(String.Format(ErrorMessage.NotFoundUpdate, typeName));
+            if (updatedModel is null)
+                return NotFound(String.Format(ErrorMessage.NotFoundUpdate, typeName));
 
-        return Ok(updatedModel);
+            return Ok(updatedModel);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error partially updating with typeName: {typeName}, id {id}.");
+            return InternalServerError(ex);
+        }
     }
 
     [Route("{typeName}"), HttpPatch]
     public async Task<IActionResult> PartialUpdateAsync(String typeName)
     {
-        string json = await _streamService.ReadToEndThenDisposeAsync(Request.Body, Encoding.UTF8);
-        if (String.IsNullOrWhiteSpace(json))
-            return BadRequest(ErrorMessage.BadRequestBody);
+        try
+        {
+            string json = await _streamService.ReadToEndThenDisposeAsync(Request.Body, Encoding.UTF8);
+            if (String.IsNullOrWhiteSpace(json))
+                return BadRequest(ErrorMessage.BadRequestBody);
 
-        var type = _typeService.GetModelType(typeName);
-        if (type is null)
-            return BadRequest(ErrorMessage.BadRequestModelType);
+            var type = _typeService.GetModelType(typeName);
+            if (type is null)
+                return BadRequest(ErrorMessage.BadRequestModelType);
 
-        var queryCollection = Request.Query;
-        var queryParams = queryCollection.ToDictionary(query => query.Key, query => query.Value.ToString());
+            var queryCollection = Request.Query;
+            var queryParams = queryCollection.ToDictionary(query => query.Key, query => query.Value.ToString());
 
-        dynamic? model = JsonSerializer.Deserialize(json, type, JsonSerializerOption.Default);
-        var propertyValues = JsonSerializer.Deserialize<Dictionary<string, JsonNode>>(json, JsonSerializerOption.Default);
+            dynamic? model = JsonSerializer.Deserialize(json, type, JsonSerializerOption.Default);
+            var propertyValues = JsonSerializer.Deserialize<Dictionary<string, JsonNode>>(json, JsonSerializerOption.Default);
 
-        var validationResult = (ValidationResult)await _validator.ValidatePartialUpdateAsync(model, queryParams, propertyValues?.Keys);
-        if (!validationResult.IsValid)
-            return BadRequest(validationResult.Message);
+            var validationResult = (ValidationResult)await _validator.ValidatePartialUpdateAsync(model, queryParams, propertyValues?.Keys);
+            if (!validationResult.IsValid)
+                return BadRequest(validationResult.Message);
 
-        var updateAsync = ReflectionHelper.GetGenericMethod(type, typeof(IPreserver), nameof(IPreserver.PartialUpdateAsync), new Type[] { typeof(IDictionary<String, String>), typeof(IDictionary<String, JsonNode>) });
-        var updatedCount = await (dynamic)updateAsync.Invoke(_preserver, new object[] { queryParams, propertyValues });
+            var updateAsync = ReflectionHelper.GetGenericMethod(type, typeof(IPreserver), nameof(IPreserver.PartialUpdateAsync), new Type[] { typeof(IDictionary<String, String>), typeof(IDictionary<String, JsonNode>) });
+            var updatedCount = await (dynamic)updateAsync.Invoke(_preserver, new object[] { queryParams, propertyValues });
 
-        return Ok(updatedCount);
+            return Ok(updatedCount);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error partially updating with typeName: {typeName}.");
+            return InternalServerError(ex);
+        }
     }
 
     [Route("{typeName}/{id:guid}"), HttpDelete]
     public async Task<IActionResult> DeleteAsync(String typeName, Guid id)
     {
-        var type = _typeService.GetModelType(typeName);
-        if (type is null)
-            return BadRequest(ErrorMessage.BadRequestModelType);
+        try
+        {
+            var type = _typeService.GetModelType(typeName);
+            if (type is null)
+                return BadRequest(ErrorMessage.BadRequestModelType);
 
-        var readAsync = ReflectionHelper.GetGenericMethod(type, typeof(IPreserver), nameof(IPreserver.DeleteAsync), new Type[] { typeof(Guid) });
-        var deletedCount = await (dynamic)readAsync.Invoke(_preserver, new object[] { id });
+            var readAsync = ReflectionHelper.GetGenericMethod(type, typeof(IPreserver), nameof(IPreserver.DeleteAsync), new Type[] { typeof(Guid) });
+            var deletedCount = await (dynamic)readAsync.Invoke(_preserver, new object[] { id });
 
-        if (deletedCount == 0)
-            return NotFound(String.Format(ErrorMessage.NotFoundDelete, typeName));
+            if (deletedCount == 0)
+                return NotFound(String.Format(ErrorMessage.NotFoundDelete, typeName));
 
-        return Ok(deletedCount);
+            return Ok(deletedCount);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error deleting with typeName: {typeName}, id: {id}.");
+            return InternalServerError(ex);
+        }
     }
 
     [Route("{typeName}"), HttpDelete]
     public async Task<IActionResult> DeleteAsync(String typeName)
     {
-        var type = _typeService.GetModelType(typeName);
-        if (type is null)
-            return BadRequest(ErrorMessage.BadRequestModelType);
+        try
+        {
+            var type = _typeService.GetModelType(typeName);
+            if (type is null)
+                return BadRequest(ErrorMessage.BadRequestModelType);
 
-        var queryCollection = Request.Query;
-        var queryParams = queryCollection.ToDictionary(query => query.Key, query => query.Value.ToString());
+            var queryCollection = Request.Query;
+            var queryParams = queryCollection.ToDictionary(query => query.Key, query => query.Value.ToString());
 
-        dynamic model = Convert.ChangeType(Activator.CreateInstance(type, null), type);
+            dynamic model = Convert.ChangeType(Activator.CreateInstance(type, null), type);
 
-        var validationResult = (ValidationResult)await _validator.ValidateDeleteAsync(model!, queryParams);
-        if (!validationResult.IsValid)
-            return BadRequest(validationResult.Message);
+            var validationResult = (ValidationResult)await _validator.ValidateDeleteAsync(model!, queryParams);
+            if (!validationResult.IsValid)
+                return BadRequest(validationResult.Message);
 
-        var readAsync = ReflectionHelper.GetGenericMethod(type, typeof(IPreserver), nameof(IPreserver.DeleteAsync), new Type[] { typeof(IDictionary<String, String>) });
-        var deletedCount = await (dynamic)readAsync.Invoke(_preserver, new object[] { queryParams });
+            var readAsync = ReflectionHelper.GetGenericMethod(type, typeof(IPreserver), nameof(IPreserver.DeleteAsync), new Type[] { typeof(IDictionary<String, String>) });
+            var deletedCount = await (dynamic)readAsync.Invoke(_preserver, new object[] { queryParams });
 
-        return Ok(deletedCount);
+            return Ok(deletedCount);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error deleting with typeName: {typeName}.");
+            return InternalServerError(ex);
+        }
     }
 }
