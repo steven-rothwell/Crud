@@ -2,7 +2,9 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using Crud.Api.Constants;
 using Crud.Api.Models;
+using Crud.Api.Options;
 using Humanizer;
+using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 using MongoDB.Driver;
 
@@ -11,11 +13,13 @@ namespace Crud.Api.Preservers.MongoDb
     public class Preserver : IPreserver
     {
         private readonly String _connectionString;
+        private readonly String _databaseName;
         private readonly MongoCollectionSettings _mongoCollectionSettings;
 
-        public Preserver()//IOptions<SqlServerOptions> options)
+        public Preserver(IOptions<MongoDbOptions> options)
         {
-            //_connectionString = options.Value.ConnectionString;
+            _connectionString = options?.Value.ConnectionString ?? String.Empty;
+            _databaseName = options?.Value.DatabaseName ?? String.Empty;
             _mongoCollectionSettings = new MongoCollectionSettings
             {
                 AssignIdOnInsert = true
@@ -32,8 +36,8 @@ namespace Crud.Api.Preservers.MongoDb
                 entity.ExternalId = Guid.NewGuid();
             }
 
-            var dbClient = new MongoClient("mongodb://localhost");
-            var database = dbClient.GetDatabase("testDb");
+            var dbClient = new MongoClient(_connectionString);
+            var database = dbClient.GetDatabase(_databaseName);
 
             string? tableName = model.GetTableName();
             if (tableName is null)
@@ -48,8 +52,8 @@ namespace Crud.Api.Preservers.MongoDb
 
         public async Task<T> ReadAsync<T>(Guid id)
         {
-            var dbClient = new MongoClient("mongodb://localhost");
-            var database = dbClient.GetDatabase("testDb");
+            var dbClient = new MongoClient(_connectionString);
+            var database = dbClient.GetDatabase(_databaseName);
 
             var tType = typeof(T);
             string tableName = GetTableName(tType);
@@ -62,8 +66,8 @@ namespace Crud.Api.Preservers.MongoDb
 
         public async Task<IEnumerable<T>> ReadAsync<T>(IDictionary<String, String>? queryParams)
         {
-            var dbClient = new MongoClient("mongodb://localhost");
-            var database = dbClient.GetDatabase("testDb");
+            var dbClient = new MongoClient(_connectionString);
+            var database = dbClient.GetDatabase(_databaseName);
 
             var tType = typeof(T);
             string tableName = GetTableName(tType);
@@ -76,8 +80,8 @@ namespace Crud.Api.Preservers.MongoDb
 
         public async Task<T> UpdateAsync<T>(Guid id, T model)
         {
-            var dbClient = new MongoClient("mongodb://localhost");
-            var database = dbClient.GetDatabase("testDb");
+            var dbClient = new MongoClient(_connectionString);
+            var database = dbClient.GetDatabase(_databaseName);
 
             var tType = typeof(T);
             string tableName = GetTableName(tType);
@@ -96,8 +100,8 @@ namespace Crud.Api.Preservers.MongoDb
             if (propertyValues is null)
                 throw new ArgumentNullException(nameof(propertyValues));
 
-            var dbClient = new MongoClient("mongodb://localhost");
-            var database = dbClient.GetDatabase("testDb");
+            var dbClient = new MongoClient(_connectionString);
+            var database = dbClient.GetDatabase(_databaseName);
 
             var tType = typeof(T);
             string tableName = GetTableName(tType);
@@ -117,8 +121,8 @@ namespace Crud.Api.Preservers.MongoDb
             if (propertyValues is null)
                 throw new ArgumentNullException(nameof(propertyValues));
 
-            var dbClient = new MongoClient("mongodb://localhost");
-            var database = dbClient.GetDatabase("testDb");
+            var dbClient = new MongoClient(_connectionString);
+            var database = dbClient.GetDatabase(_databaseName);
 
             var tType = typeof(T);
             string tableName = GetTableName(tType);
@@ -133,8 +137,8 @@ namespace Crud.Api.Preservers.MongoDb
 
         public async Task<Int64> DeleteAsync<T>(Guid id)
         {
-            var dbClient = new MongoClient("mongodb://localhost");
-            var database = dbClient.GetDatabase("testDb");
+            var dbClient = new MongoClient(_connectionString);
+            var database = dbClient.GetDatabase(_databaseName);
 
             var tType = typeof(T);
             string tableName = GetTableName(tType);
@@ -147,8 +151,8 @@ namespace Crud.Api.Preservers.MongoDb
 
         public async Task<Int64> DeleteAsync<T>(IDictionary<String, String>? queryParams)
         {
-            var dbClient = new MongoClient("mongodb://localhost");
-            var database = dbClient.GetDatabase("testDb");
+            var dbClient = new MongoClient(_connectionString);
+            var database = dbClient.GetDatabase(_databaseName);
 
             var tType = typeof(T);
             string tableName = GetTableName(tType);
