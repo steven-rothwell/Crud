@@ -1,30 +1,42 @@
 using Crud.Api.Constants;
 using Crud.Api.Models;
+using Crud.Api.Preservers;
 
 namespace Crud.Api.Validators
 {
     public class Validator : IValidator
     {
+        private readonly IPreserver _preserver;
+
+        public Validator(IPreserver preserver)
+        {
+            _preserver = preserver;
+        }
+
         public Task<ValidationResult> ValidateCreateAsync(Object model)
         {
             return Task.FromResult(new ValidationResult(true));
         }
 
-        public Task<ValidationResult> ValidateCreateAsync(User user)
+        public async Task<ValidationResult> ValidateCreateAsync(User user)
         {
             if (user is null)
-                return Task.FromResult(new ValidationResult(false, $"{nameof(User)} cannot be null."));
+                return new ValidationResult(false, $"{nameof(User)} cannot be null.");
 
             if (user.ExternalId is not null)
-                return Task.FromResult(new ValidationResult(false, $"{nameof(user.ExternalId)} cannot be set on create."));
+                return new ValidationResult(false, $"{nameof(user.ExternalId)} cannot be set on create.");
 
             if (String.IsNullOrWhiteSpace(user.Name))
-                return Task.FromResult(new ValidationResult(false, $"{nameof(user.Name)} cannot be empty."));
+                return new ValidationResult(false, $"{nameof(user.Name)} cannot be empty.");
+
+            var existingUsers = await _preserver.ReadAsync<User>(new Dictionary<string, string> { { nameof(user.Name), user.Name } });
+            if (existingUsers.Any())
+                return new ValidationResult(false, $"A {nameof(User)} with the {nameof(user.Name)}: '{user.Name}' already exists.");
 
             if (user.Age < 0)
-                return Task.FromResult(new ValidationResult(false, $"{nameof(user.Age)} cannot be less than 0."));
+                return new ValidationResult(false, $"{nameof(user.Age)} cannot be less than 0.");
 
-            return Task.FromResult(new ValidationResult(true));
+            return new ValidationResult(true);
         }
 
         public Task<ValidationResult> ValidateReadAsync(Object model, IDictionary<String, String>? queryParams)
