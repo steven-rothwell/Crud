@@ -22,8 +22,8 @@ public class CrudController : BaseApiController<CrudController>
     private readonly IStreamService _streamService;
     private readonly ITypeService _typeService;
 
-    public CrudController(IOptions<SettingOptions> settingOptions, ILogger<CrudController> logger, IValidator validator, IPreserver preserver, IStreamService streamService, ITypeService typeService)
-        : base(settingOptions)
+    public CrudController(IOptions<ApplicationOptions> applicationOptions, ILogger<CrudController> logger, IValidator validator, IPreserver preserver, IStreamService streamService, ITypeService typeService)
+        : base(applicationOptions)
     {
         _logger = logger;
         _validator = validator;
@@ -37,8 +37,6 @@ public class CrudController : BaseApiController<CrudController>
     {
         try
         {
-            var test0 = 0;
-            var test = 1 / test0;
             string json = await _streamService.ReadToEndThenDisposeAsync(Request.Body, Encoding.UTF8);
             if (String.IsNullOrWhiteSpace(json))
                 return BadRequest(ErrorMessage.BadRequestBody);

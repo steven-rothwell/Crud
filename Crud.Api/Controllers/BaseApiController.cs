@@ -6,11 +6,11 @@ namespace Crud.Api.Controllers
 {
     public abstract class BaseApiController<Controller> : ControllerBase
     {
-        protected readonly SettingOptions _settingOptions;
+        protected readonly ApplicationOptions _applicationOptions;
 
-        public BaseApiController(IOptions<SettingOptions> settingOptions)
+        public BaseApiController(IOptions<ApplicationOptions> applicationOptions)
         {
-            _settingOptions = settingOptions.Value;
+            _applicationOptions = applicationOptions.Value;
         }
 
         protected virtual StatusCodeResult InternalServerError()
@@ -20,8 +20,8 @@ namespace Crud.Api.Controllers
 
         protected virtual ActionResult InternalServerError(Exception exception)
         {
-            if (_settingOptions.ShowExceptions)
-                return StatusCode(StatusCodes.Status500InternalServerError, exception.Message);
+            if (_applicationOptions.ShowExceptions)
+                return StatusCode(StatusCodes.Status500InternalServerError, exception.ToString());
 
             return InternalServerError();
         }
