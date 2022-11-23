@@ -14,7 +14,7 @@ namespace Crud.Api.Controllers;
 
 [ApiController]
 [Route("api")]
-public class CrudController : BaseApiController<CrudController>
+public class CrudController : BaseApiController
 {
     private readonly ILogger<CrudController> _logger;
     private readonly IValidator _validator;
@@ -37,13 +37,13 @@ public class CrudController : BaseApiController<CrudController>
     {
         try
         {
-            string json = await _streamService.ReadToEndThenDisposeAsync(Request.Body, Encoding.UTF8);
-            if (String.IsNullOrWhiteSpace(json))
-                return BadRequest(ErrorMessage.BadRequestBody);
-
             var type = _typeService.GetModelType(typeName);
             if (type is null)
                 return BadRequest(ErrorMessage.BadRequestModelType);
+
+            string json = await _streamService.ReadToEndThenDisposeAsync(Request.Body, Encoding.UTF8);
+            if (String.IsNullOrWhiteSpace(json))
+                return BadRequest(ErrorMessage.BadRequestBody);
 
             dynamic? model = JsonSerializer.Deserialize(json, type, JsonSerializerOption.Default);
 
@@ -121,13 +121,13 @@ public class CrudController : BaseApiController<CrudController>
     {
         try
         {
-            string json = await _streamService.ReadToEndThenDisposeAsync(Request.Body, Encoding.UTF8);
-            if (String.IsNullOrWhiteSpace(json))
-                return BadRequest(ErrorMessage.BadRequestBody);
-
             var type = _typeService.GetModelType(typeName);
             if (type is null)
                 return BadRequest(ErrorMessage.BadRequestModelType);
+
+            string json = await _streamService.ReadToEndThenDisposeAsync(Request.Body, Encoding.UTF8);
+            if (String.IsNullOrWhiteSpace(json))
+                return BadRequest(ErrorMessage.BadRequestBody);
 
             dynamic? model = JsonSerializer.Deserialize(json, type, JsonSerializerOption.Default);
 
@@ -154,13 +154,13 @@ public class CrudController : BaseApiController<CrudController>
     {
         try
         {
-            string json = await _streamService.ReadToEndThenDisposeAsync(Request.Body, Encoding.UTF8);
-            if (String.IsNullOrWhiteSpace(json))
-                return BadRequest(ErrorMessage.BadRequestBody);
-
             var type = _typeService.GetModelType(typeName);
             if (type is null)
                 return BadRequest(ErrorMessage.BadRequestModelType);
+
+            string json = await _streamService.ReadToEndThenDisposeAsync(Request.Body, Encoding.UTF8);
+            if (String.IsNullOrWhiteSpace(json))
+                return BadRequest(ErrorMessage.BadRequestBody);
 
             dynamic? model = JsonSerializer.Deserialize(json, type, JsonSerializerOption.Default);
             var propertyValues = JsonSerializer.Deserialize<Dictionary<string, JsonNode>>(json, JsonSerializerOption.Default);
@@ -189,13 +189,13 @@ public class CrudController : BaseApiController<CrudController>
     {
         try
         {
-            string json = await _streamService.ReadToEndThenDisposeAsync(Request.Body, Encoding.UTF8);
-            if (String.IsNullOrWhiteSpace(json))
-                return BadRequest(ErrorMessage.BadRequestBody);
-
             var type = _typeService.GetModelType(typeName);
             if (type is null)
                 return BadRequest(ErrorMessage.BadRequestModelType);
+
+            string json = await _streamService.ReadToEndThenDisposeAsync(Request.Body, Encoding.UTF8);
+            if (String.IsNullOrWhiteSpace(json))
+                return BadRequest(ErrorMessage.BadRequestBody);
 
             var queryCollection = Request.Query;
             var queryParams = queryCollection.ToDictionary(query => query.Key, query => query.Value.ToString());
