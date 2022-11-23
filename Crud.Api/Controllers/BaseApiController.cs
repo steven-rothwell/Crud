@@ -1,14 +1,16 @@
+using Crud.Api.Options;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 
 namespace Crud.Api.Controllers
 {
     public abstract class BaseApiController<Controller> : ControllerBase
     {
-        protected readonly ILogger _logger;
+        protected readonly ApplicationOptions _applicationOptions;
 
-        public BaseApiController(ILogger logger)
+        public BaseApiController(IOptions<ApplicationOptions> applicationOptions)
         {
-            _logger = logger;
+            _applicationOptions = applicationOptions.Value;
         }
 
         protected virtual StatusCodeResult InternalServerError()
@@ -18,11 +20,10 @@ namespace Crud.Api.Controllers
 
         protected virtual ActionResult InternalServerError(Exception exception)
         {
-#if (DEBUG)
-            return StatusCode(StatusCodes.Status500InternalServerError, exception);
-#else
+            if (_applicationOptions.ShowExceptions)
+                return StatusCode(StatusCodes.Status500InternalServerError, exception.ToString());
+
             return InternalServerError();
-#endif
         }
     }
 }
