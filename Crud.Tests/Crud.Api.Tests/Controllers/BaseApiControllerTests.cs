@@ -20,7 +20,7 @@ namespace Crud.Api.Tests.Controllers
         [Fact]
         public void InternalServerError_ShowExceptionsIsTrue_Returns500AndException()
         {
-            var exception = new Exception("An error occurred.");
+            var exception = new Exception("an-error-occurred");
 
             _applicationOptions.Value.ShowExceptions = true;
 
@@ -34,7 +34,7 @@ namespace Crud.Api.Tests.Controllers
         [Fact]
         public void InternalServerError_ShowExceptionsIsFalse_Returns500()
         {
-            var exception = new Exception("An error occurred.");
+            var exception = new Exception("an-error-occurred");
 
             _applicationOptions.Value.ShowExceptions = false;
 
