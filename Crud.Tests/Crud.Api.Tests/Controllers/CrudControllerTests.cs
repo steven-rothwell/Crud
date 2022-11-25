@@ -35,10 +35,7 @@ namespace Crud.Api.Tests.Controllers
             _streamService = new Mock<IStreamService>();
             _typeService = new Mock<ITypeService>();
             _stream = new MemoryStream(Encoding.UTF8.GetBytes("this-does-not-matter"));
-            var httpContext = new DefaultHttpContext()
-            {
-                Request = { Body = _stream, ContentLength = _stream.Length }
-            };
+            var httpContext = new DefaultHttpContext() { Request = { Body = _stream, ContentLength = _stream.Length } };
             var controllerContext = new ControllerContext { HttpContext = httpContext };
 
             _controller = new CrudController(_applicationOptions, _logger.Object, _validator.Object, _preserver.Object, _streamService.Object, _typeService.Object) { ControllerContext = controllerContext };
@@ -49,6 +46,7 @@ namespace Crud.Api.Tests.Controllers
             _stream.Dispose();
         }
 
+        #region CreateAsync
         [Fact]
         public async Task CreateAsync_TypeIsNull_ReturnsBadRequest()
         {
@@ -84,10 +82,7 @@ namespace Crud.Api.Tests.Controllers
         public async Task CreateAsync_ValidationResultIsInvalid_ReturnsBadRequest()
         {
             var typeName = "some-type-name";
-            var user = new User
-            {
-                Age = 22
-            };
+            var user = new User { Age = 1 };
             var json = JsonSerializer.Serialize(user);
             var validationResult = new ValidationResult
             {
@@ -109,10 +104,7 @@ namespace Crud.Api.Tests.Controllers
         public async Task CreateAsync_ModelCreated_ReturnsOkCreatedModel()
         {
             var typeName = "some-type-name";
-            var user = new User
-            {
-                Age = 22
-            };
+            var user = new User { Age = 1 };
             var json = JsonSerializer.Serialize(user);
             var validationResult = new ValidationResult
             {
@@ -147,5 +139,76 @@ namespace Crud.Api.Tests.Controllers
             Assert.NotNull(result);
             Assert.Equal(StatusCodes.Status500InternalServerError, result.StatusCode);
         }
+        #endregion
+
+        #region ReadAsync_WithStringGuid
+        [Fact]
+        public async Task ReadAsync_WithStringGuid_TypeIsNull_ReturnsBadRequest()
+        {
+            var typeName = "some-type-name";
+            Type? type = null;
+            Guid id = Guid.Empty;
+
+            _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(type);
+
+            var result = await _controller.ReadAsync(typeName, id) as BadRequestObjectResult;
+
+            Assert.NotNull(result);
+            Assert.Equal(ErrorMessage.BadRequestModelType, result.Value);
+        }
+
+        [Fact]
+        public async Task ReadAsync_WithStringGuid_ModelIsNull_ReturnsNotFound()
+        {
+            var typeName = "some-type-name";
+            Type? type = typeof(User);
+            Guid id = Guid.Empty;
+            User user = null;
+
+            _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(type);
+            _preserver.Setup(m => m.ReadAsync<User>(It.IsAny<Guid>())).ReturnsAsync(user);
+
+            var result = await _controller.ReadAsync(typeName, id) as NotFoundObjectResult;
+
+            Assert.NotNull(result);
+            Assert.Equal(String.Format(ErrorMessage.NotFoundRead, typeName), result.Value);
+        }
+
+        [Fact]
+        public async Task ReadAsync_WithStringGuid_ModelIsFound_ReturnsFoundModel()
+        {
+            var typeName = "some-type-name";
+            Type? type = typeof(User);
+            Guid id = Guid.Empty;
+            User user = new User { Age = 1 };
+
+            _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(type);
+            _preserver.Setup(m => m.ReadAsync<User>(It.IsAny<Guid>())).ReturnsAsync(user);
+
+            var result = await _controller.ReadAsync(typeName, id) as OkObjectResult;
+
+            Assert.NotNull(result);
+
+            var typedResult = result.Value as User;
+
+            Assert.NotNull(typedResult);
+            Assert.Equal(user.Age, typedResult.Age);
+        }
+
+        [Fact]
+        public async Task ReadAsync_WithStringGuid_ExceptionThrown_ReturnsInternalServerError()
+        {
+            var typeName = "some-type-name";
+            Guid id = Guid.Empty;
+            var exception = new Exception("an-error-occurred");
+
+            _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Throws(exception);
+
+            var result = await _controller.ReadAsync(typeName, id) as StatusCodeResult;
+
+            Assert.NotNull(result);
+            Assert.Equal(StatusCodes.Status500InternalServerError, result.StatusCode);
+        }
+        #endregion
     }
 }
