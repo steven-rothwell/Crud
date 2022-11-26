@@ -1,5 +1,6 @@
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using Crud.Api.Constants;
 using Crud.Api.Controllers;
 using Crud.Api.Options;
@@ -254,8 +255,8 @@ namespace Crud.Api.Tests.Controllers
             var validationResult = new ValidationResult { IsValid = true };
 
             _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(type);
-            _preserver.Setup(m => m.ReadAsync<Model>(It.IsAny<IDictionary<string, string>>())).ReturnsAsync(models);
             _validator.Setup(m => m.ValidateReadAsync(It.IsAny<Model>(), It.IsAny<IDictionary<string, string>>())).ReturnsAsync(validationResult);
+            _preserver.Setup(m => m.ReadAsync<Model>(It.IsAny<IDictionary<string, string>>())).ReturnsAsync(models);
 
             var result = await _controller.ReadAsync(typeName) as OkObjectResult;
 
@@ -360,7 +361,6 @@ namespace Crud.Api.Tests.Controllers
 
             Assert.NotNull(result);
             Assert.Equal(String.Format(ErrorMessage.NotFoundUpdate, typeName), result.Value);
-
         }
 
         [Fact]
@@ -399,6 +399,128 @@ namespace Crud.Api.Tests.Controllers
             _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Throws(exception);
 
             var result = await _controller.UpdateAsync(typeName, id) as StatusCodeResult;
+
+            Assert.NotNull(result);
+            Assert.Equal(StatusCodes.Status500InternalServerError, result.StatusCode);
+        }
+        #endregion
+
+        #region PartialUpdateAsync_WithStringGuid
+        [Fact]
+        public async Task PartialUpdateAsync_WithStringGuid_TypeIsNull_ReturnsBadRequest()
+        {
+            var typeName = "some-type-name";
+            Type? type = null;
+            Guid id = Guid.Empty;
+
+            _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(type);
+
+            var result = await _controller.PartialUpdateAsync(typeName, id) as BadRequestObjectResult;
+
+            Assert.NotNull(result);
+            Assert.Equal(ErrorMessage.BadRequestModelType, result.Value);
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        public async Task PartialUpdateAsync_WithStringGuid_JsonIsNullOrEmpty_ReturnsBadRequest(String json)
+        {
+            var typeName = "some-type-name";
+            Type? type = typeof(Model);
+            Guid id = Guid.Empty;
+
+            _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(type);
+            _streamService.Setup(m => m.ReadToEndThenDisposeAsync(It.IsAny<Stream>(), It.IsAny<Encoding>())).ReturnsAsync(json);
+
+            var result = await _controller.PartialUpdateAsync(typeName, id) as BadRequestObjectResult;
+
+            Assert.NotNull(result);
+            Assert.Equal(ErrorMessage.BadRequestBody, result.Value);
+        }
+
+        [Fact]
+        public async Task PartialUpdateAsync_WithStringGuid_ValidationResultIsInvalid_ReturnsBadRequest()
+        {
+            var typeName = "some-type-name";
+            Type? type = typeof(Model);
+            Guid id = Guid.Empty;
+            var model = new Model { Id = 1 };
+            var json = JsonSerializer.Serialize(model);
+            var validationResult = new ValidationResult
+            {
+                IsValid = false,
+                Message = "some-message"
+            };
+
+            _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(type);
+            _streamService.Setup(m => m.ReadToEndThenDisposeAsync(It.IsAny<Stream>(), It.IsAny<Encoding>())).ReturnsAsync(json);
+            _validator.Setup(m => m.ValidatePartialUpdateAsync(It.IsAny<Guid>(), It.IsAny<Model>(), It.IsAny<IReadOnlyCollection<string>>())).ReturnsAsync(validationResult);
+
+            var result = await _controller.PartialUpdateAsync(typeName, id) as BadRequestObjectResult;
+
+            Assert.NotNull(result);
+            Assert.Equal(validationResult.Message, result.Value);
+        }
+
+        [Fact]
+        public async Task PartialUpdateAsync_WithStringGuid_UpdatedModelIsNull_ReturnsNotFound()
+        {
+            var typeName = "some-type-name";
+            Type? type = typeof(Model);
+            Guid id = Guid.Empty;
+            var model = new Model { Id = 1 };
+            var json = JsonSerializer.Serialize(model);
+            var validationResult = new ValidationResult { IsValid = true };
+            Model updatedModel = null;
+
+            _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(type);
+            _streamService.Setup(m => m.ReadToEndThenDisposeAsync(It.IsAny<Stream>(), It.IsAny<Encoding>())).ReturnsAsync(json);
+            _validator.Setup(m => m.ValidatePartialUpdateAsync(It.IsAny<Guid>(), It.IsAny<Model>(), It.IsAny<IReadOnlyCollection<string>>())).ReturnsAsync(validationResult);
+            _preserver.Setup(m => m.PartialUpdateAsync<Model>(It.IsAny<Guid>(), It.IsAny<IDictionary<String, JsonNode>>())).ReturnsAsync(updatedModel);
+
+            var result = await _controller.PartialUpdateAsync(typeName, id) as NotFoundObjectResult;
+
+            Assert.NotNull(result);
+            Assert.Equal(String.Format(ErrorMessage.NotFoundUpdate, typeName), result.Value);
+        }
+
+        [Fact]
+        public async Task PartialUpdateAsync_WithStringGuid_UpdatedModelIsFound_ReturnsUpdatedModel()
+        {
+            var typeName = "some-type-name";
+            Type? type = typeof(Model);
+            Guid id = Guid.Empty;
+            var model = new Model { Id = 1 };
+            var json = JsonSerializer.Serialize(model);
+            var validationResult = new ValidationResult { IsValid = true };
+            Model updatedModel = model;
+
+            _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(type);
+            _streamService.Setup(m => m.ReadToEndThenDisposeAsync(It.IsAny<Stream>(), It.IsAny<Encoding>())).ReturnsAsync(json);
+            _validator.Setup(m => m.ValidatePartialUpdateAsync(It.IsAny<Guid>(), It.IsAny<Model>(), It.IsAny<IReadOnlyCollection<string>>())).ReturnsAsync(validationResult);
+            _preserver.Setup(m => m.PartialUpdateAsync<Model>(It.IsAny<Guid>(), It.IsAny<IDictionary<String, JsonNode>>())).ReturnsAsync(updatedModel);
+
+            var result = await _controller.PartialUpdateAsync(typeName, id) as OkObjectResult;
+
+            Assert.NotNull(result);
+
+            var typedResult = result.Value as Model;
+
+            Assert.NotNull(typedResult);
+            Assert.Equal(model.Id, typedResult.Id);
+        }
+
+        [Fact]
+        public async Task PartialUpdateAsync_WithStringGuid_ExceptionThrown_ReturnsInternalServerError()
+        {
+            var typeName = "some-type-name";
+            Guid id = Guid.Empty;
+            var exception = new Exception("an-error-occurred");
+
+            _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Throws(exception);
+
+            var result = await _controller.PartialUpdateAsync(typeName, id) as StatusCodeResult;
 
             Assert.NotNull(result);
             Assert.Equal(StatusCodes.Status500InternalServerError, result.StatusCode);
