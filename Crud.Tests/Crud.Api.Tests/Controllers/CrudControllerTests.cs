@@ -2,10 +2,10 @@ using System.Text;
 using System.Text.Json;
 using Crud.Api.Constants;
 using Crud.Api.Controllers;
-using Crud.Api.Models;
 using Crud.Api.Options;
 using Crud.Api.Preservers;
 using Crud.Api.Services;
+using Crud.Api.Tests.TestingModels;
 using Crud.Api.Validators;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -23,6 +23,7 @@ namespace Crud.Api.Tests.Controllers
         private Mock<IPreserver> _preserver;
         private Mock<IStreamService> _streamService;
         private Mock<ITypeService> _typeService;
+        private Mock<IQueryCollectionService> _queryCollectionService;
         private CrudController _controller;
         private Stream _stream;
 
@@ -34,11 +35,12 @@ namespace Crud.Api.Tests.Controllers
             _preserver = new Mock<IPreserver>();
             _streamService = new Mock<IStreamService>();
             _typeService = new Mock<ITypeService>();
+            _queryCollectionService = new Mock<IQueryCollectionService>();
             _stream = new MemoryStream(Encoding.UTF8.GetBytes("this-does-not-matter"));
             var httpContext = new DefaultHttpContext() { Request = { Body = _stream, ContentLength = _stream.Length } };
             var controllerContext = new ControllerContext { HttpContext = httpContext };
 
-            _controller = new CrudController(_applicationOptions, _logger.Object, _validator.Object, _preserver.Object, _streamService.Object, _typeService.Object) { ControllerContext = controllerContext };
+            _controller = new CrudController(_applicationOptions, _logger.Object, _validator.Object, _preserver.Object, _streamService.Object, _typeService.Object, _queryCollectionService.Object) { ControllerContext = controllerContext };
         }
 
         public void Dispose()
@@ -67,7 +69,7 @@ namespace Crud.Api.Tests.Controllers
         public async Task CreateAsync_JsonIsNullOrEmpty_ReturnsBadRequest(String json)
         {
             var typeName = "some-type-name";
-            Type? type = typeof(User);
+            Type? type = typeof(Model);
 
             _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(type);
             _streamService.Setup(m => m.ReadToEndThenDisposeAsync(It.IsAny<Stream>(), It.IsAny<Encoding>())).ReturnsAsync(json);
@@ -82,17 +84,17 @@ namespace Crud.Api.Tests.Controllers
         public async Task CreateAsync_ValidationResultIsInvalid_ReturnsBadRequest()
         {
             var typeName = "some-type-name";
-            var user = new User { Age = 1 };
-            var json = JsonSerializer.Serialize(user);
+            var model = new Model { Id = 1 };
+            var json = JsonSerializer.Serialize(model);
             var validationResult = new ValidationResult
             {
                 IsValid = false,
                 Message = "some-message"
             };
 
-            _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(user.GetType());
+            _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(model.GetType());
             _streamService.Setup(m => m.ReadToEndThenDisposeAsync(It.IsAny<Stream>(), It.IsAny<Encoding>())).ReturnsAsync(json);
-            _validator.Setup(m => m.ValidateCreateAsync(It.IsAny<User>())).ReturnsAsync(validationResult);
+            _validator.Setup(m => m.ValidateCreateAsync(It.IsAny<Model>())).ReturnsAsync(validationResult);
 
             var result = await _controller.CreateAsync(typeName) as BadRequestObjectResult;
 
@@ -104,26 +106,23 @@ namespace Crud.Api.Tests.Controllers
         public async Task CreateAsync_ModelCreated_ReturnsOkCreatedModel()
         {
             var typeName = "some-type-name";
-            var user = new User { Age = 1 };
-            var json = JsonSerializer.Serialize(user);
-            var validationResult = new ValidationResult
-            {
-                IsValid = true
-            };
+            var model = new Model { Id = 1 };
+            var json = JsonSerializer.Serialize(model);
+            var validationResult = new ValidationResult { IsValid = true };
 
-            _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(user.GetType());
+            _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(model.GetType());
             _streamService.Setup(m => m.ReadToEndThenDisposeAsync(It.IsAny<Stream>(), It.IsAny<Encoding>())).ReturnsAsync(json);
-            _validator.Setup(m => m.ValidateCreateAsync(It.IsAny<User>())).ReturnsAsync(validationResult);
-            _preserver.Setup(m => m.CreateAsync(It.IsAny<User>())).ReturnsAsync(user);
+            _validator.Setup(m => m.ValidateCreateAsync(It.IsAny<Model>())).ReturnsAsync(validationResult);
+            _preserver.Setup(m => m.CreateAsync(It.IsAny<Model>())).ReturnsAsync(model);
 
             var result = await _controller.CreateAsync(typeName) as OkObjectResult;
 
             Assert.NotNull(result);
 
-            var typedResult = result.Value as User;
+            var typedResult = result.Value as Model;
 
             Assert.NotNull(typedResult);
-            Assert.Equal(user.Age, typedResult.Age);
+            Assert.Equal(model.Id, typedResult.Id);
         }
 
         [Fact]
@@ -161,12 +160,12 @@ namespace Crud.Api.Tests.Controllers
         public async Task ReadAsync_WithStringGuid_ModelIsNull_ReturnsNotFound()
         {
             var typeName = "some-type-name";
-            Type? type = typeof(User);
+            Type? type = typeof(Model);
             Guid id = Guid.Empty;
-            User user = null;
+            Model model = null;
 
             _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(type);
-            _preserver.Setup(m => m.ReadAsync<User>(It.IsAny<Guid>())).ReturnsAsync(user);
+            _preserver.Setup(m => m.ReadAsync<Model>(It.IsAny<Guid>())).ReturnsAsync(model);
 
             var result = await _controller.ReadAsync(typeName, id) as NotFoundObjectResult;
 
@@ -178,21 +177,21 @@ namespace Crud.Api.Tests.Controllers
         public async Task ReadAsync_WithStringGuid_ModelIsFound_ReturnsFoundModel()
         {
             var typeName = "some-type-name";
-            Type? type = typeof(User);
+            Type? type = typeof(Model);
             Guid id = Guid.Empty;
-            User user = new User { Age = 1 };
+            var model = new Model { Id = 1 };
 
             _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(type);
-            _preserver.Setup(m => m.ReadAsync<User>(It.IsAny<Guid>())).ReturnsAsync(user);
+            _preserver.Setup(m => m.ReadAsync<Model>(It.IsAny<Guid>())).ReturnsAsync(model);
 
             var result = await _controller.ReadAsync(typeName, id) as OkObjectResult;
 
             Assert.NotNull(result);
 
-            var typedResult = result.Value as User;
+            var typedResult = result.Value as Model;
 
             Assert.NotNull(typedResult);
-            Assert.Equal(user.Age, typedResult.Age);
+            Assert.Equal(model.Id, typedResult.Id);
         }
 
         [Fact]
@@ -205,6 +204,78 @@ namespace Crud.Api.Tests.Controllers
             _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Throws(exception);
 
             var result = await _controller.ReadAsync(typeName, id) as StatusCodeResult;
+
+            Assert.NotNull(result);
+            Assert.Equal(StatusCodes.Status500InternalServerError, result.StatusCode);
+        }
+        #endregion
+
+        #region ReadAsync_WithString
+        [Fact]
+        public async Task ReadAsync_WithString_TypeIsNull_ReturnsBadRequest()
+        {
+            var typeName = "some-type-name";
+            Type? type = null;
+
+            _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(type);
+
+            var result = await _controller.ReadAsync(typeName) as BadRequestObjectResult;
+
+            Assert.NotNull(result);
+            Assert.Equal(ErrorMessage.BadRequestModelType, result.Value);
+        }
+
+        [Fact]
+        public async Task ReadAsync_WithString_ValidationResultIsInvalid_ReturnsBadRequest()
+        {
+            var typeName = "some-type-name";
+            Type? type = typeof(Model);
+            var validationResult = new ValidationResult
+            {
+                IsValid = false,
+                Message = "some-message"
+            };
+
+            _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(type);
+            _validator.Setup(m => m.ValidateReadAsync(It.IsAny<Model>(), It.IsAny<IDictionary<string, string>>())).ReturnsAsync(validationResult);
+
+            var result = await _controller.ReadAsync(typeName) as BadRequestObjectResult;
+
+            Assert.NotNull(result);
+            Assert.Equal(validationResult.Message, result.Value);
+        }
+
+        [Fact]
+        public async Task ReadAsync_WithString_ModelsAreFound_ReturnsFoundModels()
+        {
+            var typeName = "some-type-name";
+            Type? type = typeof(Model);
+            var models = new List<Model> { new Model { Id = 1 } };
+            var validationResult = new ValidationResult { IsValid = true };
+
+            _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(type);
+            _preserver.Setup(m => m.ReadAsync<Model>(It.IsAny<IDictionary<string, string>>())).ReturnsAsync(models);
+            _validator.Setup(m => m.ValidateReadAsync(It.IsAny<Model>(), It.IsAny<IDictionary<string, string>>())).ReturnsAsync(validationResult);
+
+            var result = await _controller.ReadAsync(typeName) as OkObjectResult;
+
+            Assert.NotNull(result);
+
+            var typedResult = result.Value as IEnumerable<Model>;
+
+            Assert.NotNull(typedResult);
+            Assert.Equal(models.FirstOrDefault()!.Id, typedResult.FirstOrDefault()?.Id);
+        }
+
+        [Fact]
+        public async Task ReadAsync_WithString_ExceptionThrown_ReturnsInternalServerError()
+        {
+            var typeName = "some-type-name";
+            var exception = new Exception("an-error-occurred");
+
+            _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Throws(exception);
+
+            var result = await _controller.ReadAsync(typeName) as StatusCodeResult;
 
             Assert.NotNull(result);
             Assert.Equal(StatusCodes.Status500InternalServerError, result.StatusCode);

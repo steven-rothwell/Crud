@@ -21,8 +21,9 @@ public class CrudController : BaseApiController
     private readonly IPreserver _preserver;
     private readonly IStreamService _streamService;
     private readonly ITypeService _typeService;
+    private readonly IQueryCollectionService _queryCollectionService;
 
-    public CrudController(IOptions<ApplicationOptions> applicationOptions, ILogger<CrudController> logger, IValidator validator, IPreserver preserver, IStreamService streamService, ITypeService typeService)
+    public CrudController(IOptions<ApplicationOptions> applicationOptions, ILogger<CrudController> logger, IValidator validator, IPreserver preserver, IStreamService streamService, ITypeService typeService, IQueryCollectionService queryCollectionService)
         : base(applicationOptions)
     {
         _logger = logger;
@@ -30,6 +31,7 @@ public class CrudController : BaseApiController
         _preserver = preserver;
         _streamService = streamService;
         _typeService = typeService;
+        _queryCollectionService = queryCollectionService;
     }
 
     [Route("{typeName}"), HttpPost]
@@ -95,8 +97,7 @@ public class CrudController : BaseApiController
             if (type is null)
                 return BadRequest(ErrorMessage.BadRequestModelType);
 
-            var queryCollection = Request.Query;
-            var queryParams = queryCollection.ToDictionary(query => query.Key, query => query.Value.ToString());
+            var queryParams = _queryCollectionService.ConvertToDictionary(Request.Query);
 
             dynamic model = Convert.ChangeType(Activator.CreateInstance(type, null), type);
 
@@ -197,8 +198,7 @@ public class CrudController : BaseApiController
             if (String.IsNullOrWhiteSpace(json))
                 return BadRequest(ErrorMessage.BadRequestBody);
 
-            var queryCollection = Request.Query;
-            var queryParams = queryCollection.ToDictionary(query => query.Key, query => query.Value.ToString());
+            var queryParams = _queryCollectionService.ConvertToDictionary(Request.Query);
 
             dynamic? model = JsonSerializer.Deserialize(json, type, JsonSerializerOption.Default);
             var propertyValues = JsonSerializer.Deserialize<Dictionary<string, JsonNode>>(json, JsonSerializerOption.Default);
@@ -252,8 +252,7 @@ public class CrudController : BaseApiController
             if (type is null)
                 return BadRequest(ErrorMessage.BadRequestModelType);
 
-            var queryCollection = Request.Query;
-            var queryParams = queryCollection.ToDictionary(query => query.Key, query => query.Value.ToString());
+            var queryParams = _queryCollectionService.ConvertToDictionary(Request.Query);
 
             dynamic model = Convert.ChangeType(Activator.CreateInstance(type, null), type);
 
