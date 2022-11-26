@@ -390,7 +390,7 @@ namespace Crud.Api.Tests.Controllers
         }
 
         [Fact]
-        public async Task UpdateAsync_WithString_ExceptionThrown_ReturnsInternalServerError()
+        public async Task UpdateAsync_ExceptionThrown_ReturnsInternalServerError()
         {
             var typeName = "some-type-name";
             Guid id = Guid.Empty;
