@@ -170,8 +170,8 @@ public class CrudController : BaseApiController
             if (!validationResult.IsValid)
                 return BadRequest(validationResult.Message);
 
-            var updateAsync = ReflectionHelper.GetGenericMethod(type, typeof(IPreserver), nameof(IPreserver.PartialUpdateAsync), new Type[] { typeof(Guid), typeof(IDictionary<String, JsonNode>) });
-            var updatedModel = await (dynamic)updateAsync.Invoke(_preserver, new object[] { id, propertyValues });
+            var partialUpdateAsync = ReflectionHelper.GetGenericMethod(type, typeof(IPreserver), nameof(IPreserver.PartialUpdateAsync), new Type[] { typeof(Guid), typeof(IDictionary<String, JsonNode>) });
+            var updatedModel = await (dynamic)partialUpdateAsync.Invoke(_preserver, new object[] { id, propertyValues });
 
             if (updatedModel is null)
                 return NotFound(String.Format(ErrorMessage.NotFoundUpdate, typeName));
@@ -207,8 +207,8 @@ public class CrudController : BaseApiController
             if (!validationResult.IsValid)
                 return BadRequest(validationResult.Message);
 
-            var updateAsync = ReflectionHelper.GetGenericMethod(type, typeof(IPreserver), nameof(IPreserver.PartialUpdateAsync), new Type[] { typeof(IDictionary<String, String>), typeof(IDictionary<String, JsonNode>) });
-            var updatedCount = await (dynamic)updateAsync.Invoke(_preserver, new object[] { queryParams, propertyValues });
+            var partialUpdateAsync = ReflectionHelper.GetGenericMethod(type, typeof(IPreserver), nameof(IPreserver.PartialUpdateAsync), new Type[] { typeof(IDictionary<String, String>), typeof(IDictionary<String, JsonNode>) });
+            var updatedCount = await (dynamic)partialUpdateAsync.Invoke(_preserver, new object[] { queryParams, propertyValues });
 
             return Ok(updatedCount);
         }
@@ -228,8 +228,8 @@ public class CrudController : BaseApiController
             if (type is null)
                 return BadRequest(ErrorMessage.BadRequestModelType);
 
-            var readAsync = ReflectionHelper.GetGenericMethod(type, typeof(IPreserver), nameof(IPreserver.DeleteAsync), new Type[] { typeof(Guid) });
-            var deletedCount = await (dynamic)readAsync.Invoke(_preserver, new object[] { id });
+            var deleteAsync = ReflectionHelper.GetGenericMethod(type, typeof(IPreserver), nameof(IPreserver.DeleteAsync), new Type[] { typeof(Guid) });
+            var deletedCount = await (dynamic)deleteAsync.Invoke(_preserver, new object[] { id });
 
             if (deletedCount == 0)
                 return NotFound(String.Format(ErrorMessage.NotFoundDelete, typeName));
@@ -260,8 +260,8 @@ public class CrudController : BaseApiController
             if (!validationResult.IsValid)
                 return BadRequest(validationResult.Message);
 
-            var readAsync = ReflectionHelper.GetGenericMethod(type, typeof(IPreserver), nameof(IPreserver.DeleteAsync), new Type[] { typeof(IDictionary<String, String>) });
-            var deletedCount = await (dynamic)readAsync.Invoke(_preserver, new object[] { queryParams });
+            var deleteAsync = ReflectionHelper.GetGenericMethod(type, typeof(IPreserver), nameof(IPreserver.DeleteAsync), new Type[] { typeof(IDictionary<String, String>) });
+            var deletedCount = await (dynamic)deleteAsync.Invoke(_preserver, new object[] { queryParams });
 
             return Ok(deletedCount);
         }

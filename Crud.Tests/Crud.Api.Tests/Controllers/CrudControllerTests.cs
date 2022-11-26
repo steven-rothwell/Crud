@@ -477,7 +477,7 @@ namespace Crud.Api.Tests.Controllers
             _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(type);
             _streamService.Setup(m => m.ReadToEndThenDisposeAsync(It.IsAny<Stream>(), It.IsAny<Encoding>())).ReturnsAsync(json);
             _validator.Setup(m => m.ValidatePartialUpdateAsync(It.IsAny<Guid>(), It.IsAny<Model>(), It.IsAny<IReadOnlyCollection<string>>())).ReturnsAsync(validationResult);
-            _preserver.Setup(m => m.PartialUpdateAsync<Model>(It.IsAny<Guid>(), It.IsAny<IDictionary<String, JsonNode>>())).ReturnsAsync(updatedModel);
+            _preserver.Setup(m => m.PartialUpdateAsync<Model>(It.IsAny<Guid>(), It.IsAny<IDictionary<string, JsonNode>>())).ReturnsAsync(updatedModel);
 
             var result = await _controller.PartialUpdateAsync(typeName, id) as NotFoundObjectResult;
 
@@ -499,7 +499,7 @@ namespace Crud.Api.Tests.Controllers
             _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(type);
             _streamService.Setup(m => m.ReadToEndThenDisposeAsync(It.IsAny<Stream>(), It.IsAny<Encoding>())).ReturnsAsync(json);
             _validator.Setup(m => m.ValidatePartialUpdateAsync(It.IsAny<Guid>(), It.IsAny<Model>(), It.IsAny<IReadOnlyCollection<string>>())).ReturnsAsync(validationResult);
-            _preserver.Setup(m => m.PartialUpdateAsync<Model>(It.IsAny<Guid>(), It.IsAny<IDictionary<String, JsonNode>>())).ReturnsAsync(updatedModel);
+            _preserver.Setup(m => m.PartialUpdateAsync<Model>(It.IsAny<Guid>(), It.IsAny<IDictionary<string, JsonNode>>())).ReturnsAsync(updatedModel);
 
             var result = await _controller.PartialUpdateAsync(typeName, id) as OkObjectResult;
 
@@ -521,6 +521,98 @@ namespace Crud.Api.Tests.Controllers
             _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Throws(exception);
 
             var result = await _controller.PartialUpdateAsync(typeName, id) as StatusCodeResult;
+
+            Assert.NotNull(result);
+            Assert.Equal(StatusCodes.Status500InternalServerError, result.StatusCode);
+        }
+        #endregion
+
+        #region PartialUpdateAsync_WithString
+        [Fact]
+        public async Task PartialUpdateAsync_WithString_TypeIsNull_ReturnsBadRequest()
+        {
+            var typeName = "some-type-name";
+            Type? type = null;
+
+            _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(type);
+
+            var result = await _controller.PartialUpdateAsync(typeName) as BadRequestObjectResult;
+
+            Assert.NotNull(result);
+            Assert.Equal(ErrorMessage.BadRequestModelType, result.Value);
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        public async Task PartialUpdateAsync_WithString_JsonIsNullOrEmpty_ReturnsBadRequest(String json)
+        {
+            var typeName = "some-type-name";
+            Type? type = typeof(Model);
+
+            _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(type);
+            _streamService.Setup(m => m.ReadToEndThenDisposeAsync(It.IsAny<Stream>(), It.IsAny<Encoding>())).ReturnsAsync(json);
+
+            var result = await _controller.PartialUpdateAsync(typeName) as BadRequestObjectResult;
+
+            Assert.NotNull(result);
+            Assert.Equal(ErrorMessage.BadRequestBody, result.Value);
+        }
+
+        [Fact]
+        public async Task PartialUpdateAsync_WithString_ValidationResultIsInvalid_ReturnsBadRequest()
+        {
+            var typeName = "some-type-name";
+            Type? type = typeof(Model);
+            var model = new Model { Id = 1 };
+            var json = JsonSerializer.Serialize(model);
+            var validationResult = new ValidationResult
+            {
+                IsValid = false,
+                Message = "some-message"
+            };
+
+            _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(type);
+            _streamService.Setup(m => m.ReadToEndThenDisposeAsync(It.IsAny<Stream>(), It.IsAny<Encoding>())).ReturnsAsync(json);
+            _validator.Setup(m => m.ValidatePartialUpdateAsync(It.IsAny<Model>(), It.IsAny<IDictionary<string, string>?>(), It.IsAny<IReadOnlyCollection<string>>())).ReturnsAsync(validationResult);
+
+            var result = await _controller.PartialUpdateAsync(typeName) as BadRequestObjectResult;
+
+            Assert.NotNull(result);
+            Assert.Equal(validationResult.Message, result.Value);
+        }
+
+        [Fact]
+        public async Task PartialUpdateAsync_WithString_UpdatedCountReturned_ReturnsUpdatedCount()
+        {
+            var typeName = "some-type-name";
+            Type? type = typeof(Model);
+            var model = new Model { Id = 1 };
+            var json = JsonSerializer.Serialize(model);
+            var validationResult = new ValidationResult { IsValid = true };
+            var updatedCount = 1;
+
+            _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(type);
+            _streamService.Setup(m => m.ReadToEndThenDisposeAsync(It.IsAny<Stream>(), It.IsAny<Encoding>())).ReturnsAsync(json);
+            _validator.Setup(m => m.ValidatePartialUpdateAsync(It.IsAny<Model>(), It.IsAny<IDictionary<string, string>?>(), It.IsAny<IReadOnlyCollection<string>>())).ReturnsAsync(validationResult);
+            _preserver.Setup(m => m.PartialUpdateAsync<Model>(It.IsAny<IDictionary<String, String>>(), It.IsAny<IDictionary<string, JsonNode>>())).ReturnsAsync(updatedCount);
+
+            var result = await _controller.PartialUpdateAsync(typeName) as OkObjectResult;
+
+            Assert.NotNull(result);
+            Assert.True(result.Value is long);
+            Assert.Equal(updatedCount, (long)result.Value);
+        }
+
+        [Fact]
+        public async Task PartialUpdateAsync_WithString_ExceptionThrown_ReturnsInternalServerError()
+        {
+            var typeName = "some-type-name";
+            var exception = new Exception("an-error-occurred");
+
+            _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Throws(exception);
+
+            var result = await _controller.PartialUpdateAsync(typeName) as StatusCodeResult;
 
             Assert.NotNull(result);
             Assert.Equal(StatusCodes.Status500InternalServerError, result.StatusCode);
