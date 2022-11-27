@@ -685,5 +685,81 @@ namespace Crud.Api.Tests.Controllers
             Assert.Equal(StatusCodes.Status500InternalServerError, result.StatusCode);
         }
         #endregion
+
+        #region DeleteAsync_WithString
+        [Fact]
+        public async Task DeleteAsync_WithString_TypeIsNull_ReturnsBadRequest()
+        {
+            var typeName = "some-type-name";
+            Type? type = null;
+
+            _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(type);
+
+            var result = await _controller.DeleteAsync(typeName) as BadRequestObjectResult;
+
+            Assert.NotNull(result);
+            Assert.Equal(ErrorMessage.BadRequestModelType, result.Value);
+        }
+
+        [Fact]
+        public async Task DeleteAsync_WithString_ValidationResultIsInvalid_ReturnsBadRequest()
+        {
+            var typeName = "some-type-name";
+            Type? type = typeof(Model);
+            var model = new Model { Id = 1 };
+            var json = JsonSerializer.Serialize(model);
+            var validationResult = new ValidationResult
+            {
+                IsValid = false,
+                Message = "some-message"
+            };
+
+            _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(type);
+            _streamService.Setup(m => m.ReadToEndThenDisposeAsync(It.IsAny<Stream>(), It.IsAny<Encoding>())).ReturnsAsync(json);
+            _validator.Setup(m => m.ValidateDeleteAsync(It.IsAny<Model>(), It.IsAny<IDictionary<string, string>?>())).ReturnsAsync(validationResult);
+
+            var result = await _controller.DeleteAsync(typeName) as BadRequestObjectResult;
+
+            Assert.NotNull(result);
+            Assert.Equal(validationResult.Message, result.Value);
+        }
+
+        [Fact]
+        public async Task DeleteAsync_WithString_DeletedCountReturned_ReturnsDeletedCount()
+        {
+            var typeName = "some-type-name";
+            Type? type = typeof(Model);
+            var model = new Model { Id = 1 };
+            var json = JsonSerializer.Serialize(model);
+            var validationResult = new ValidationResult { IsValid = true };
+            var deletedCount = 1;
+
+            _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(type);
+            _streamService.Setup(m => m.ReadToEndThenDisposeAsync(It.IsAny<Stream>(), It.IsAny<Encoding>())).ReturnsAsync(json);
+            _validator.Setup(m => m.ValidateDeleteAsync(It.IsAny<Model>(), It.IsAny<IDictionary<string, string>?>())).ReturnsAsync(validationResult);
+            _preserver.Setup(m => m.DeleteAsync<Model>(It.IsAny<IDictionary<string, string>>())).ReturnsAsync(deletedCount);
+
+            var result = await _controller.DeleteAsync(typeName) as OkObjectResult;
+
+            Assert.NotNull(result);
+            Assert.True(result.Value is long);
+            Assert.Equal(deletedCount, (long)result.Value);
+        }
+
+        [Fact]
+        public async Task DeleteAsync_WithString_ExceptionThrown_ReturnsInternalServerError()
+        {
+            var typeName = "some-type-name";
+            Guid id = Guid.Empty;
+            var exception = new Exception("an-error-occurred");
+
+            _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Throws(exception);
+
+            var result = await _controller.DeleteAsync(typeName, id) as StatusCodeResult;
+
+            Assert.NotNull(result);
+            Assert.Equal(StatusCodes.Status500InternalServerError, result.StatusCode);
+        }
+        #endregion
     }
 }
