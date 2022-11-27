@@ -48,7 +48,7 @@ namespace Crud.Api.Preservers.MongoDb
             return bsonDocument.FromBsonDocument<T>();
         }
 
-        public async Task<T> ReadAsync<T>(Guid id)
+        public async Task<T?> ReadAsync<T>(Guid id)
         {
             var dbClient = new MongoClient(_mongoDbOptions.ConnectionString);
             var database = dbClient.GetDatabase(_mongoDbOptions.DatabaseName);
