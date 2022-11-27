@@ -618,5 +618,72 @@ namespace Crud.Api.Tests.Controllers
             Assert.Equal(StatusCodes.Status500InternalServerError, result.StatusCode);
         }
         #endregion
+
+        #region DeleteAsync_WithStringGuid
+        [Fact]
+        public async Task DeleteAsync_WithStringGuid_TypeIsNull_ReturnsBadRequest()
+        {
+            var typeName = "some-type-name";
+            Type? type = null;
+            Guid id = Guid.Empty;
+
+            _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(type);
+
+            var result = await _controller.DeleteAsync(typeName, id) as BadRequestObjectResult;
+
+            Assert.NotNull(result);
+            Assert.Equal(ErrorMessage.BadRequestModelType, result.Value);
+        }
+
+        [Fact]
+        public async Task DeleteAsync_WithStringGuid_DeletedCountIsZero_ReturnsNotFound()
+        {
+            var typeName = "some-type-name";
+            Type? type = typeof(Model);
+            Guid id = Guid.Empty;
+            var deletedCount = 0;
+
+            _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(type);
+            _preserver.Setup(m => m.DeleteAsync<Model>(It.IsAny<Guid>())).ReturnsAsync(deletedCount);
+
+            var result = await _controller.DeleteAsync(typeName, id) as NotFoundObjectResult;
+
+            Assert.NotNull(result);
+            Assert.Equal(String.Format(ErrorMessage.NotFoundDelete, typeName), result.Value);
+        }
+
+        [Fact]
+        public async Task DeleteAsync_WithStringGuid_DeletedCountIsNotZero_ReturnsDeletedCount()
+        {
+            var typeName = "some-type-name";
+            Type? type = typeof(Model);
+            Guid id = Guid.Empty;
+            var deletedCount = 1;
+
+            _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(type);
+            _preserver.Setup(m => m.DeleteAsync<Model>(It.IsAny<Guid>())).ReturnsAsync(deletedCount);
+
+            var result = await _controller.DeleteAsync(typeName, id) as OkObjectResult;
+
+            Assert.NotNull(result);
+            Assert.True(result.Value is long);
+            Assert.Equal(deletedCount, (long)result.Value);
+        }
+
+        [Fact]
+        public async Task DeleteAsync_WithStringGuid_ExceptionThrown_ReturnsInternalServerError()
+        {
+            var typeName = "some-type-name";
+            Guid id = Guid.Empty;
+            var exception = new Exception("an-error-occurred");
+
+            _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Throws(exception);
+
+            var result = await _controller.DeleteAsync(typeName, id) as StatusCodeResult;
+
+            Assert.NotNull(result);
+            Assert.Equal(StatusCodes.Status500InternalServerError, result.StatusCode);
+        }
+        #endregion
     }
 }
