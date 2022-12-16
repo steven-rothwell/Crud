@@ -6,24 +6,27 @@ namespace Crud.Api
     {
         public static PropertyInfo? GetProperty(this PropertyInfo[] properties, String propertyName, Char childPropertyDelimiter = default, StringComparison stringComparison = StringComparison.OrdinalIgnoreCase)
         {
-            int childPropertyIndex = -1;
+            if (properties is null)
+                return null;
+
+            int childPropertyDelimiterIndex = -1;
             if (childPropertyDelimiter != default)
             {
-                childPropertyIndex = propertyName.IndexOf(childPropertyDelimiter);
+                childPropertyDelimiterIndex = propertyName.IndexOf(childPropertyDelimiter, stringComparison);
 
-                if (childPropertyIndex == 0)
+                if (childPropertyDelimiterIndex == 0)
                     throw new ArgumentException($"{nameof(propertyName)} cannot begin with {childPropertyDelimiter}.");
             }
 
-            if (childPropertyIndex == -1)
+            if (childPropertyDelimiterIndex == -1)
             {
                 return properties.FirstOrDefault(property => property.Name.Equals(propertyName, stringComparison));
             }
             else
             {
-                string childPropertyName = propertyName.Substring(0, childPropertyIndex);
+                string parentPropertyName = propertyName.Substring(0, childPropertyDelimiterIndex);
 
-                var childPropertyInfo = properties.FirstOrDefault(property => property.Name.Equals(childPropertyName, stringComparison));
+                var childPropertyInfo = properties.FirstOrDefault(property => property.Name.Equals(parentPropertyName, stringComparison));
                 if (childPropertyInfo is null)
                     return null;
 
@@ -31,11 +34,11 @@ namespace Crud.Api
 
                 if (childPropertyType.IsClass)
                 {
-                    string nextPropertyName = propertyName.Substring(childPropertyIndex + 1);
+                    string nextPropertyName = propertyName.Substring(childPropertyDelimiterIndex + 1);
                     return childPropertyType.GetProperties().GetProperty(nextPropertyName, childPropertyDelimiter);
                 }
 
-                throw new NotSupportedException($"Child property {childPropertyName} of type {childPropertyType} is unsupported.");
+                throw new NotSupportedException($"Child property {parentPropertyName} of type {childPropertyType} is unsupported.");
             }
         }
 
