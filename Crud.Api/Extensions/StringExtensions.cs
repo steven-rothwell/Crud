@@ -7,16 +7,14 @@ namespace Crud.Api
     {
         public static dynamic ChangeType(this String value, Type type)
         {
+            if (value is null)
+                return null;
+
             if (type is null)
                 throw new ArgumentNullException(nameof(type));
 
             if (type.IsGenericType && type.GetGenericTypeDefinition().Equals(typeof(Nullable<>)))
             {
-                if (value is null)
-                {
-                    return null;
-                }
-
                 type = Nullable.GetUnderlyingType(type);
             }
 
@@ -26,6 +24,9 @@ namespace Crud.Api
 
         public static String Pascalize(this String value, Char delimiter)
         {
+            if (value is null)
+                throw new ArgumentNullException(nameof(value));
+
             var subValues = value.Split(delimiter);
 
             if (subValues.Length == 1)
@@ -40,8 +41,11 @@ namespace Crud.Api
             return valueBuilder.ToString(1, valueBuilder.Length - 1);
         }
 
-        public static String ValueAfterLastDelimiter(this String value, Char delimiter)
+        public static String GetValueAfterLastDelimiter(this String value, Char delimiter)
         {
+            if (value is null)
+                throw new ArgumentNullException(nameof(value));
+
             var indexOfLastDelimiter = value.LastIndexOf(delimiter);
 
             if (indexOfLastDelimiter > -1)

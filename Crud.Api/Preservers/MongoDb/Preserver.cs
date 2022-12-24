@@ -48,7 +48,7 @@ namespace Crud.Api.Preservers.MongoDb
             return bsonDocument.FromBsonDocument<T>();
         }
 
-        public async Task<T> ReadAsync<T>(Guid id)
+        public async Task<T?> ReadAsync<T>(Guid id)
         {
             var dbClient = new MongoClient(_mongoDbOptions.ConnectionString);
             var database = dbClient.GetDatabase(_mongoDbOptions.DatabaseName);
@@ -227,7 +227,7 @@ namespace Crud.Api.Preservers.MongoDb
         private IEnumerable<UpdateDefinition<BsonDocument>> GetAllPropertiesToUpdate(String propertyName, Type type, JsonNode jsonNode)
         {
             var updates = new List<UpdateDefinition<BsonDocument>>();
-            string currentPropertyName = propertyName.ValueAfterLastDelimiter(Delimiter.MongoDbChildProperty);
+            string currentPropertyName = propertyName.GetValueAfterLastDelimiter(Delimiter.MongoDbChildProperty);
 
             if (jsonNode is JsonObject)
             {

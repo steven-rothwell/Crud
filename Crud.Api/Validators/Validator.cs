@@ -82,7 +82,7 @@ namespace Crud.Api.Validators
             return Task.FromResult(new ValidationResult(true));
         }
 
-        public Task<ValidationResult> ValidatePartialUpdateAsync(Guid id, Object model, IReadOnlyCollection<String> propertiesToBeUpdated)
+        public Task<ValidationResult> ValidatePartialUpdateAsync(Guid id, Object model, IReadOnlyCollection<String>? propertiesToBeUpdated)
         {
             if (propertiesToBeUpdated is null || propertiesToBeUpdated.Count == 0)
                 return Task.FromResult(new ValidationResult(false, "Updated properties cannot be empty."));
@@ -93,7 +93,7 @@ namespace Crud.Api.Validators
             return Task.FromResult(new ValidationResult(true));
         }
 
-        public async Task<ValidationResult> ValidatePartialUpdateAsync(Guid id, User user, IReadOnlyCollection<String> propertiesToBeUpdated)
+        public async Task<ValidationResult> ValidatePartialUpdateAsync(Guid id, User user, IReadOnlyCollection<String>? propertiesToBeUpdated)
         {
             var objectValidationResult = await ValidatePartialUpdateAsync(id, (object)user, propertiesToBeUpdated);
             if (!objectValidationResult.IsValid)
@@ -111,7 +111,7 @@ namespace Crud.Api.Validators
             return new ValidationResult(true);
         }
 
-        public Task<ValidationResult> ValidatePartialUpdateAsync(Object model, IDictionary<String, String>? queryParams, IReadOnlyCollection<String> propertiesToBeUpdated)
+        public Task<ValidationResult> ValidatePartialUpdateAsync(Object model, IDictionary<String, String>? queryParams, IReadOnlyCollection<String>? propertiesToBeUpdated)
         {
             if (queryParams is null || queryParams.Count == 0)  // Remove to allow returning all.
                 return Task.FromResult(new ValidationResult(false, "Filter cannot be empty."));
@@ -128,7 +128,7 @@ namespace Crud.Api.Validators
             return Task.FromResult(new ValidationResult(true));
         }
 
-        public async Task<ValidationResult> ValidatePartialUpdateAsync(User user, IDictionary<String, String>? queryParams, IReadOnlyCollection<String> propertiesToBeUpdated)
+        public async Task<ValidationResult> ValidatePartialUpdateAsync(User user, IDictionary<String, String>? queryParams, IReadOnlyCollection<String>? propertiesToBeUpdated)
         {
             var objectValidationResult = await ValidatePartialUpdateAsync((object)user, queryParams, propertiesToBeUpdated);
             if (!objectValidationResult.IsValid)

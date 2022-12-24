@@ -1,0 +1,33 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Crud.Api", "Crud.Api\Crud.Api.csproj", "{F1E61854-BD30-4C4D-B415-085351DD22ED}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Crud.Tests", "Crud.Tests", "{D9F69C7E-B52F-4740-A266-938B8983A061}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Crud.Api.Tests", "Crud.Tests\Crud.Api.Tests\Crud.Api.Tests.csproj", "{9F5E84F1-9845-48A1-9410-E687DA711969}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F1E61854-BD30-4C4D-B415-085351DD22ED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F1E61854-BD30-4C4D-B415-085351DD22ED}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F1E61854-BD30-4C4D-B415-085351DD22ED}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F1E61854-BD30-4C4D-B415-085351DD22ED}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9F5E84F1-9845-48A1-9410-E687DA711969}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9F5E84F1-9845-48A1-9410-E687DA711969}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9F5E84F1-9845-48A1-9410-E687DA711969}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9F5E84F1-9845-48A1-9410-E687DA711969}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{9F5E84F1-9845-48A1-9410-E687DA711969} = {D9F69C7E-B52F-4740-A266-938B8983A061}
+	EndGlobalSection
+EndGlobal
