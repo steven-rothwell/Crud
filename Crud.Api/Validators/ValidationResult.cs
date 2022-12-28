@@ -9,7 +9,7 @@ namespace Crud.Api.Validators
             IsValid = isValid;
         }
 
-        public ValidationResult(Boolean isValid, String message)
+        public ValidationResult(Boolean isValid, String? message)
         {
             IsValid = isValid;
             Message = message;

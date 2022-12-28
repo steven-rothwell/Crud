@@ -15,6 +15,10 @@ namespace Crud.Api.Validators
 
         public Task<ValidationResult> ValidateCreateAsync(Object model)
         {
+            var validationResult = model.ValidateDataAnnotations();
+            if (!validationResult.IsValid)
+                return Task.FromResult(validationResult);
+
             return Task.FromResult(new ValidationResult(true));
         }
 
@@ -22,6 +26,10 @@ namespace Crud.Api.Validators
         {
             if (user is null)
                 return new ValidationResult(false, $"{nameof(User)} cannot be null.");
+
+            var objectValidationResult = await ValidateCreateAsync((object)user);
+            if (!objectValidationResult.IsValid)
+                return objectValidationResult;
 
             if (user.ExternalId is not null)
                 return new ValidationResult(false, $"{nameof(user.ExternalId)} cannot be set on create.");
@@ -59,27 +67,35 @@ namespace Crud.Api.Validators
 
         public Task<ValidationResult> ValidateUpdateAsync(Guid id, Object model)
         {
+            var validationResult = model.ValidateDataAnnotations();
+            if (!validationResult.IsValid)
+                return Task.FromResult(validationResult);
+
             return Task.FromResult(new ValidationResult(true));
         }
 
-        public Task<ValidationResult> ValidateUpdateAsync(Guid id, User user)
+        public async Task<ValidationResult> ValidateUpdateAsync(Guid id, User user)
         {
+            var objectValidationResult = await ValidateUpdateAsync(id, (object)user);
+            if (!objectValidationResult.IsValid)
+                return objectValidationResult;
+
             if (id == Guid.Empty)
-                return Task.FromResult(new ValidationResult(false, "Id cannot be empty."));
+                return new ValidationResult(false, "Id cannot be empty.");
 
             if (user is null)
-                return Task.FromResult(new ValidationResult(false, $"{nameof(User)} cannot be null."));
+                return new ValidationResult(false, $"{nameof(User)} cannot be null.");
 
             if (id != user.ExternalId)
-                return Task.FromResult(new ValidationResult(false, $"{nameof(user.ExternalId)} cannot be altered."));
+                return new ValidationResult(false, $"{nameof(user.ExternalId)} cannot be altered.");
 
             if (String.IsNullOrWhiteSpace(user.Name))
-                return Task.FromResult(new ValidationResult(false, $"{nameof(user.Name)} cannot be empty."));
+                return new ValidationResult(false, $"{nameof(user.Name)} cannot be empty.");
 
             if (user.Age < 0)
-                return Task.FromResult(new ValidationResult(false, $"{nameof(user.Age)} cannot be less than zero."));
+                return new ValidationResult(false, $"{nameof(user.Age)} cannot be less than zero.");
 
-            return Task.FromResult(new ValidationResult(true));
+            return new ValidationResult(true);
         }
 
         public Task<ValidationResult> ValidatePartialUpdateAsync(Guid id, Object model, IReadOnlyCollection<String>? propertiesToBeUpdated)
@@ -89,6 +105,10 @@ namespace Crud.Api.Validators
 
             if (!model.GetType().GetProperties().HasAllPropertyNames(propertiesToBeUpdated))
                 return Task.FromResult(new ValidationResult(false, "Updated properties cannot contain properties that the model does not have."));
+
+            var validationResult = model.ValidateDataAnnotations(propertiesToBeUpdated);
+            if (!validationResult.IsValid)
+                return Task.FromResult(validationResult);
 
             return Task.FromResult(new ValidationResult(true));
         }
@@ -124,6 +144,10 @@ namespace Crud.Api.Validators
 
             if (!model.GetType().GetProperties().HasAllPropertyNames(propertiesToBeUpdated))
                 return Task.FromResult(new ValidationResult(false, "Updated properties cannot contain properties that the model does not have."));
+
+            var validationResult = model.ValidateDataAnnotations(propertiesToBeUpdated);
+            if (!validationResult.IsValid)
+                return Task.FromResult(validationResult);
 
             return Task.FromResult(new ValidationResult(true));
         }
@@ -167,7 +191,7 @@ namespace Crud.Api.Validators
             return ValidateDeleteAsync((object)user, queryParams);
         }
 
-        private Boolean WillBeUpdated(String propertyName, IEnumerable<String> propertiesToBeUpdated)
+        private Boolean WillBeUpdated(String propertyName, IEnumerable<String>? propertiesToBeUpdated)
         {
             return propertiesToBeUpdated?.Contains(propertyName, StringComparer.OrdinalIgnoreCase) ?? false;
         }
