@@ -1,6 +1,7 @@
 using Crud.Api.Preservers;
 using Crud.Api.Validators;
 using Moq;
+using DataAnnotations = System.ComponentModel.DataAnnotations;
 
 namespace Crud.Api.Tests.Validators
 {
@@ -17,9 +18,21 @@ namespace Crud.Api.Tests.Validators
         }
 
         [Fact]
-        public async Task ValidateCreateAsync_WithObject_NoLogic_ReturnsTrueValidationResult()
+        public async Task ValidateCreateAsync_WithObject_DataAnnotationsValidationIsInvalid_ReturnsFalseValidationResult()
         {
-            object model = new Object();
+            object model = new ModelForValidation { Id = 1 };
+
+            var result = await _validator.ValidateCreateAsync(model);
+
+            Assert.NotNull(result);
+            Assert.False(result.IsValid);
+            Assert.Equal($"The {nameof(ModelForValidation.Name)} field is required.", result.Message);
+        }
+
+        [Fact]
+        public async Task ValidateCreateAsync_WithObject_DataAnnotationsValidationIsValid_ReturnsTrueValidationResult()
+        {
+            object model = new ModelForValidation { Id = 1, Name = "Test" };
 
             var result = await _validator.ValidateCreateAsync(model);
 
@@ -72,10 +85,23 @@ namespace Crud.Api.Tests.Validators
         }
 
         [Fact]
-        public async Task ValidateUpdateAsync__WithGuidObject_NoLogic_ReturnsTrueValidationResult()
+        public async Task ValidateUpdateAsync_WithGuidObject_DataAnnotationsValidationIsInvalid_ReturnsFalseValidationResult()
         {
             var id = Guid.Empty;
-            object model = new Object();
+            object model = new ModelForValidation { Id = 1 };
+
+            var result = await _validator.ValidateUpdateAsync(id, model);
+
+            Assert.NotNull(result);
+            Assert.False(result.IsValid);
+            Assert.Equal($"The {nameof(ModelForValidation.Name)} field is required.", result.Message);
+        }
+
+        [Fact]
+        public async Task ValidateUpdateAsync_WithGuidObject_DataAnnotationsValidationIsValid_ReturnsTrueValidationResult()
+        {
+            var id = Guid.Empty;
+            object model = new ModelForValidation { Id = 1, Name = "Test" };
 
             var result = await _validator.ValidateUpdateAsync(id, model);
 
@@ -122,6 +148,41 @@ namespace Crud.Api.Tests.Validators
             IReadOnlyCollection<String>? propertiesToBeUpdated = new List<string>
             {
                 nameof(ModelForValidation.Id)
+            };
+
+            var result = await _validator.ValidatePartialUpdateAsync(id, model, propertiesToBeUpdated);
+
+            Assert.NotNull(result);
+            Assert.True(result.IsValid);
+        }
+
+        [Fact]
+        public async Task ValidatePartialUpdateAsync_WithGuidObjectIReadOnlyCollectionOfString_DataAnnotationsValidationIsInvalid_ReturnsFalseValidationResult()
+        {
+            var id = Guid.Empty;
+            object model = new ModelForValidation { Id = 1 };
+            IReadOnlyCollection<String>? propertiesToBeUpdated = new List<string>
+            {
+                nameof(ModelForValidation.Id),
+                nameof(ModelForValidation.Name)
+            };
+
+            var result = await _validator.ValidatePartialUpdateAsync(id, model, propertiesToBeUpdated);
+
+            Assert.NotNull(result);
+            Assert.False(result.IsValid);
+            Assert.Equal($"The {nameof(ModelForValidation.Name)} field is required.", result.Message);
+        }
+
+        [Fact]
+        public async Task ValidatePartialUpdateAsync_WithGuidObjectIReadOnlyCollectionOfString_DataAnnotationsValidationIsValid_ReturnsTrueValidationResult()
+        {
+            var id = Guid.Empty;
+            object model = new ModelForValidation { Id = 1, Name = "Test" };
+            IReadOnlyCollection<String>? propertiesToBeUpdated = new List<string>
+            {
+                nameof(ModelForValidation.Id),
+                nameof(ModelForValidation.Name)
             };
 
             var result = await _validator.ValidatePartialUpdateAsync(id, model, propertiesToBeUpdated);
@@ -199,6 +260,47 @@ namespace Crud.Api.Tests.Validators
         }
 
         [Fact]
+        public async Task ValidatePartialUpdateAsync_WithObjectIDictionaryOfStringStringIReadOnlyCollectionOfString_DataAnnotationsValidationIsInvalid_ReturnsFalseValidationResult()
+        {
+            object model = new ModelForValidation { Id = 1 };
+            IDictionary<string, string>? queryParams = new Dictionary<string, string>
+            {
+                { nameof(ModelForValidation.Id), "value" }
+            };
+            IReadOnlyCollection<String>? propertiesToBeUpdated = new List<string>
+            {
+                nameof(ModelForValidation.Id),
+                nameof(ModelForValidation.Name)
+            };
+
+            var result = await _validator.ValidatePartialUpdateAsync(model, queryParams, propertiesToBeUpdated);
+
+            Assert.NotNull(result);
+            Assert.False(result.IsValid);
+            Assert.Equal($"The {nameof(ModelForValidation.Name)} field is required.", result.Message);
+        }
+
+        [Fact]
+        public async Task ValidatePartialUpdateAsync_WithObjectIDictionaryOfStringStringIReadOnlyCollectionOfString_DataAnnotationsValidationIsValid_ReturnsTrueValidationResult()
+        {
+            object model = new ModelForValidation { Id = 1, Name = "Test" };
+            IDictionary<string, string>? queryParams = new Dictionary<string, string>
+            {
+                { nameof(ModelForValidation.Id), "value" }
+            };
+            IReadOnlyCollection<String>? propertiesToBeUpdated = new List<string>
+            {
+                nameof(ModelForValidation.Id),
+                nameof(ModelForValidation.Name)
+            };
+
+            var result = await _validator.ValidatePartialUpdateAsync(model, queryParams, propertiesToBeUpdated);
+
+            Assert.NotNull(result);
+            Assert.True(result.IsValid);
+        }
+
+        [Fact]
         public async Task ValidatePartialUpdateAsync_WithObjectIDictionaryOfStringStringIReadOnlyCollectionOfString_ModelHasAllPropertiesInPropertiesToBeUpdated_ReturnsTrueValidationResult()
         {
             object model = new ModelForValidation { Id = 1 };
@@ -264,6 +366,8 @@ namespace Crud.Api.Tests.Validators
         private class ModelForValidation
         {
             public Int32 Id { get; set; }
+            [DataAnnotations.Required]
+            public String? Name { get; set; }
         }
 
         private class QueryParamsIsNullOrEmpty : TheoryData<IDictionary<String, String>?>
