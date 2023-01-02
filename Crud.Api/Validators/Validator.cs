@@ -106,7 +106,7 @@ namespace Crud.Api.Validators
             if (!model.GetType().GetProperties().HasAllPropertyNames(propertiesToBeUpdated))
                 return Task.FromResult(new ValidationResult(false, "Updated properties cannot contain properties that the model does not have."));
 
-            var validationResult = model.ValidateDataAnnotations(propertiesToBeUpdated);
+            var validationResult = model.ValidateDataAnnotations(true, propertiesToBeUpdated);
             if (!validationResult.IsValid)
                 return Task.FromResult(validationResult);
 
@@ -145,7 +145,7 @@ namespace Crud.Api.Validators
             if (!model.GetType().GetProperties().HasAllPropertyNames(propertiesToBeUpdated))
                 return Task.FromResult(new ValidationResult(false, "Updated properties cannot contain properties that the model does not have."));
 
-            var validationResult = model.ValidateDataAnnotations(propertiesToBeUpdated);
+            var validationResult = model.ValidateDataAnnotations(true, propertiesToBeUpdated);
             if (!validationResult.IsValid)
                 return Task.FromResult(validationResult);
 

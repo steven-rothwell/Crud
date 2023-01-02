@@ -98,7 +98,41 @@ namespace Crud.Api.Tests.Extensions
         }
 
         [Fact]
-        public void ValueAfterLastDelimiter_ValueIsNull_ThrowsArgumentNullException()
+        public void GetValueAfterFirstDelimiter_ValueIsNull_ThrowsArgumentNullException()
+        {
+            string value = null;
+            char delimiter = Delimiter.MongoDbChildProperty;
+
+            var action = () => value.GetValueAfterFirstDelimiter(delimiter);
+
+            var exception = Assert.Throws<ArgumentNullException>(action);
+            Assert.Equal("value", exception.ParamName);
+        }
+
+        [Fact]
+        public void GetValueAfterFirstDelimiter_DelimiterInValue_ReturnsValueAfterLastDelimiter()
+        {
+            char delimiter = Delimiter.MongoDbChildProperty;
+            string value = $"this{delimiter}does{delimiter}contain{delimiter}a{delimiter}delimiter";
+
+            var result = value.GetValueAfterFirstDelimiter(delimiter);
+
+            Assert.Equal($"does{delimiter}contain{delimiter}a{delimiter}delimiter", result);
+        }
+
+        [Fact]
+        public void GetValueAfterFirstDelimiter_NoDelimiterInValue_ReturnsValue()
+        {
+            char delimiter = Delimiter.MongoDbChildProperty;
+            string value = "thisDoesNotContainADelimiter";
+
+            var result = value.GetValueAfterFirstDelimiter(delimiter);
+
+            Assert.Equal(value, result);
+        }
+
+        [Fact]
+        public void GetValueAfterLastDelimiter_ValueIsNull_ThrowsArgumentNullException()
         {
             string value = null;
             char delimiter = Delimiter.MongoDbChildProperty;

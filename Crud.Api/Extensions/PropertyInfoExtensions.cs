@@ -32,7 +32,7 @@ namespace Crud.Api
 
                 var childPropertyType = childPropertyInfo.PropertyType;
 
-                if (childPropertyType.IsClass)
+                if (childPropertyType.IsClass && childPropertyType != typeof(string))
                 {
                     string nextPropertyName = propertyName.Substring(childPropertyDelimiterIndex + 1);
                     return childPropertyType.GetProperties().GetProperty(nextPropertyName, childPropertyDelimiter);
