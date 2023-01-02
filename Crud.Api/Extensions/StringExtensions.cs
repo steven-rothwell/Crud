@@ -41,6 +41,21 @@ namespace Crud.Api
             return valueBuilder.ToString(1, valueBuilder.Length - 1);
         }
 
+        public static String GetValueAfterFirstDelimiter(this String value, Char delimiter)
+        {
+            if (value is null)
+                throw new ArgumentNullException(nameof(value));
+
+            var indexOfFirstDelimiter = value.IndexOf(delimiter);
+
+            if (indexOfFirstDelimiter > -1)
+            {
+                return value.Substring(indexOfFirstDelimiter + 1);
+            }
+
+            return value;
+        }
+
         public static String GetValueAfterLastDelimiter(this String value, Char delimiter)
         {
             if (value is null)
