@@ -3,6 +3,8 @@ using System.Text.Json.Nodes;
 using Crud.Api.Constants;
 using Crud.Api.Models;
 using Crud.Api.Options;
+using Crud.Api.QueryModels;
+using Crud.Api.Services;
 using Humanizer;
 using Microsoft.Extensions.Options;
 using MongoDB.Bson;
@@ -14,14 +16,16 @@ namespace Crud.Api.Preservers.MongoDb
     {
         private readonly MongoDbOptions _mongoDbOptions;
         private readonly MongoCollectionSettings _mongoCollectionSettings;
+        private readonly IMongoDbService _mongoDbService;
 
-        public Preserver(IOptions<MongoDbOptions> mongoDbOptions)
+        public Preserver(IOptions<MongoDbOptions> mongoDbOptions, IMongoDbService mongoDbService)
         {
             _mongoDbOptions = mongoDbOptions.Value;
             _mongoCollectionSettings = new MongoCollectionSettings
             {
                 AssignIdOnInsert = true
             };
+            _mongoDbService = mongoDbService;
         }
 
         public async Task<T> CreateAsync<T>(T model)
@@ -71,6 +75,20 @@ namespace Crud.Api.Preservers.MongoDb
             string tableName = GetTableName(tType);
             var collection = database.GetCollection<BsonDocument>(tableName);
             var filter = GetQueryParamFilter(tType, queryParams);
+
+            var models = await collection.FindAsync<T>(filter);
+            return await models.ToListAsync();
+        }
+
+        public async Task<IEnumerable<T>> QueryReadAsync<T>(Query query)
+        {
+            var dbClient = new MongoClient(_mongoDbOptions.ConnectionString);
+            var database = dbClient.GetDatabase(_mongoDbOptions.DatabaseName);
+
+            var tType = typeof(T);
+            string tableName = GetTableName(tType);
+            var collection = database.GetCollection<BsonDocument>(tableName);
+            var filter = _mongoDbService.GetConditionsFilter(tType, query.Where);
 
             var models = await collection.FindAsync<T>(filter);
             return await models.ToListAsync();
