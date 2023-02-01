@@ -155,7 +155,7 @@ namespace Crud.Api.Services
         public FilterDefinition<BsonDocument> GetLogicalOperatorFilter(String logicalOperator, IEnumerable<FilterDefinition<BsonDocument>> filters)
         {
             if (!Operator.LogicalAliasLookup.ContainsKey(logicalOperator))
-                throw new NotImplementedException($"{nameof(GroupedCondition.LogicalOperator)} '{logicalOperator}' is not implemented.");
+                throw new KeyNotFoundException($"{nameof(GroupedCondition.LogicalOperator)} '{logicalOperator}' was not found in {Operator.LogicalAliasLookup}.");
 
             return Operator.LogicalAliasLookup[logicalOperator] switch
             {
@@ -168,7 +168,7 @@ namespace Crud.Api.Services
         public FilterDefinition<BsonDocument> GetComparisonOperatorFilter(String field, String comparisonOperator, dynamic value)
         {
             if (!Operator.ComparisonAliasLookup.ContainsKey(comparisonOperator))
-                throw new NotImplementedException($"Unable to compare {field} to {value}. {nameof(Condition.ComparisonOperator)} '{comparisonOperator}' is not implemented.");
+                throw new KeyNotFoundException($"{nameof(Condition.ComparisonOperator)} '{comparisonOperator}' was not found in {Operator.ComparisonAliasLookup}.");
 
             return Operator.ComparisonAliasLookup[comparisonOperator] switch
             {
