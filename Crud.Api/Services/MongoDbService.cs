@@ -111,11 +111,7 @@ namespace Crud.Api.Services
                 string field = condition.Field!.Pascalize(Delimiter.MongoDbChildProperty);
                 dynamic value = condition.Value!.ChangeType(type.GetProperties().GetProperty(condition.Field, Delimiter.MongoDbChildProperty)!.PropertyType);
 
-                filter = condition.ComparisonOperator switch
-                {
-                    Operator.Equality => Builders<BsonDocument>.Filter.Eq(field, value),
-                    _ => throw new NotImplementedException($"Unable to compare {field} to {value}. {nameof(Condition.ComparisonOperator)} '{condition.ComparisonOperator}' is not implemented.")
-                };
+                filter = GetComparisonOperatorFilter(field, condition.ComparisonOperator, value);
             }
             else
             {
@@ -163,6 +159,15 @@ namespace Crud.Api.Services
                 Operator.And => Builders<BsonDocument>.Filter.And(filters),
                 Operator.Or => Builders<BsonDocument>.Filter.Or(filters),
                 _ => throw new NotImplementedException($"{nameof(GroupedCondition.LogicalOperator)} '{logicalOperator}' is not implemented.")
+            };
+        }
+
+        public FilterDefinition<BsonDocument> GetComparisonOperatorFilter(String field, String comparisonOperator, dynamic value)
+        {
+            return comparisonOperator switch
+            {
+                Operator.Equality => Builders<BsonDocument>.Filter.Eq(field, value),
+                _ => throw new NotImplementedException($"Unable to compare {field} to {value}. {nameof(Condition.ComparisonOperator)} '{comparisonOperator}' is not implemented.")
             };
         }
     }

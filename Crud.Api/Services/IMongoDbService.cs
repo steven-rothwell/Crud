@@ -16,5 +16,6 @@ namespace Crud.Api.Services
         FilterDefinition<BsonDocument> GetConditionsFilter(Type type, Condition? condition, String? rootLogicalOperator = Operator.And);
         IEnumerable<FilterDefinition<BsonDocument>> GetConditionsFilters(Type type, IReadOnlyCollection<GroupedCondition>? groupedConditions);
         FilterDefinition<BsonDocument> GetLogicalOperatorFilter(String logicalOperator, IEnumerable<FilterDefinition<BsonDocument>> filters);
+        FilterDefinition<BsonDocument> GetComparisonOperatorFilter(String field, String comparisonOperator, dynamic value);
     }
 }
