@@ -14,20 +14,15 @@ namespace Crud.Api
 
         public static String? GetTableName<T>(this T t)
         {
-            return t.GetTableAttribute()?.Name;
-        }
-
-        public static TableAttribute? GetTableAttribute(this Type type)
-        {
-            if (type is null)
+            if (t is null)
                 return null;
 
-            return Attribute.GetCustomAttribute(type, typeof(TableAttribute)) as TableAttribute;
-        }
+            var tableAttribute = t.GetTableAttribute();
 
-        public static String? GetTableName(this Type type)
-        {
-            return type.GetTableAttribute()?.Name;
+            if (tableAttribute is not null)
+                return tableAttribute.Name;
+
+            return t.GetType().GetPluralizedName();
         }
     }
 }
