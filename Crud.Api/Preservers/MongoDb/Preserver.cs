@@ -85,7 +85,7 @@ namespace Crud.Api.Preservers.MongoDb
             var tType = typeof(T);
             string tableName = _mongoDbService.GetTableName(tType);
             var collection = database.GetCollection<BsonDocument>(tableName);
-            var filter = _mongoDbService.GetConditionsFilter(tType, query.Where);
+            var filter = _mongoDbService.GetConditionFilter(tType, query.Where);
 
             var models = await collection.FindAsync<T>(filter);
             return await models.ToListAsync();

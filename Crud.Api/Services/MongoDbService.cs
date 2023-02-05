@@ -15,7 +15,7 @@ namespace Crud.Api.Services
         {
             string? tableName = type.GetTableName();
             if (tableName is null)
-                throw new Exception($"No table name found on {type.GetType().Name}.");
+                throw new Exception($"No table name found on type {type?.Name}.");
 
             return tableName;
         }
@@ -96,7 +96,7 @@ namespace Crud.Api.Services
             return updates;
         }
 
-        public FilterDefinition<BsonDocument> GetConditionsFilter(Type type, Condition? condition, String? rootLogicalOperator = Operator.And)
+        public FilterDefinition<BsonDocument> GetConditionFilter(Type type, Condition? condition, String? rootLogicalOperator = Operator.And)
         {
             FilterDefinition<BsonDocument> filter = new BsonDocument();
 
@@ -138,7 +138,7 @@ namespace Crud.Api.Services
                 {
                     if (condition.GroupedConditions is null)
                     {
-                        conditionFilters.Add(GetConditionsFilter(type, condition));
+                        conditionFilters.Add(GetConditionFilter(type, condition));
                     }
                     else
                     {
