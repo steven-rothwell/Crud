@@ -1,47 +1,46 @@
 using System.ComponentModel.DataAnnotations.Schema;
-using Crud.Api.Tests.TestingModels;
 
 namespace Crud.Api.Tests.Extensions
 {
-    public class GenericExtensionsTests
+    public class TypeExtensionsTests
     {
         [Fact]
-        public void GetTableAttribute_TIsNull_ReturnsNull()
+        public void GetTableAttribute_TypeIsNull_ReturnsNull()
         {
-            Model model = null;
+            Type type = null;
 
-            var result = model.GetTableAttribute();
+            var result = type.GetTableAttribute();
 
             Assert.Null(result);
         }
 
         [Fact]
-        public void GetTableAttribute_ModelWithoutTableAttribute_ReturnsNull()
+        public void GetTableAttribute_TypeOfModelWithoutTableAttribute_ReturnsNull()
         {
-            var model = new ModelWithoutTableAttribute { Id = 1 };
+            var type = typeof(ModelWithoutTableAttribute);
 
-            var result = model.GetTableAttribute();
+            var result = type.GetTableAttribute();
 
             Assert.Null(result);
         }
 
         [Fact]
-        public void GetTableAttribute_ModelWithTableAttribute_ReturnsNameInTableAttribute()
+        public void GetTableAttribute_TypeOfModelWithTableAttribute_ReturnsNameInTableAttribute()
         {
-            var model = new ModelWithTableAttribute { Id = 1 };
+            var type = typeof(ModelWithTableAttribute);
 
-            var result = model.GetTableAttribute();
+            var result = type.GetTableAttribute();
 
             Assert.NotNull(result);
             Assert.Equal(nameof(ModelWithTableAttribute), result.Name);
         }
 
         [Fact]
-        public void GetTableName_ModelIsNull_ReturnsNull()
+        public void GetTableName_TypeIsNull_ReturnsNull()
         {
-            Model model = null;
+            Type type = null;
 
-            var result = model.GetTableName();
+            var result = type.GetTableName();
 
             Assert.Null(result);
         }
@@ -49,9 +48,9 @@ namespace Crud.Api.Tests.Extensions
         [Fact]
         public void GetTableName_TableAttributeIsNotNull_ReturnsNameInTableAttribute()
         {
-            var model = new ModelWithTableAttribute { Id = 1 };
+            var type = typeof(ModelWithTableAttribute);
 
-            var result = model.GetTableName();
+            var result = type.GetTableName();
 
             Assert.Equal(nameof(ModelWithTableAttribute), result);
         }
@@ -59,9 +58,9 @@ namespace Crud.Api.Tests.Extensions
         [Fact]
         public void GetTableName_TableAttributeIsNull_ReturnsPluralizedNameOfClass()
         {
-            var model = new ModelWithoutTableAttribute { Id = 1 };
+            var type = typeof(ModelWithoutTableAttribute);
 
-            var result = model.GetTableName();
+            var result = type.GetTableName();
 
             Assert.Equal("ModelWithoutTableAttributes", result);
         }

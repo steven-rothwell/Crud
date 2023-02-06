@@ -38,7 +38,7 @@ namespace Crud.Api.Validators
                 return new ValidationResult(false, $"{nameof(user.Name)} cannot be empty.");
 
             var existingUsers = await _preserver.ReadAsync<User>(new Dictionary<string, string> { { nameof(user.Name), user.Name } });
-            if (existingUsers.Any())
+            if (existingUsers is not null && existingUsers.Any())
                 return new ValidationResult(false, $"A {nameof(User)} with the {nameof(user.Name)}: '{user.Name}' already exists.");
 
             if (user.Age < 0)

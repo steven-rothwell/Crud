@@ -5,6 +5,7 @@ using Crud.Api.Constants;
 using Crud.Api.Helpers;
 using Crud.Api.Options;
 using Crud.Api.Preservers;
+using Crud.Api.QueryModels;
 using Crud.Api.Services;
 using Crud.Api.Validators;
 using Microsoft.AspNetCore.Mvc;
@@ -107,6 +108,41 @@ public class CrudController : BaseApiController
 
             var readAsync = ReflectionHelper.GetGenericMethod(type, typeof(IPreserver), nameof(IPreserver.ReadAsync), new Type[] { typeof(IDictionary<String, String>) });
             var models = await (dynamic)readAsync.Invoke(_preserver, new object[] { queryParams });
+
+            return Ok(models);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error reading with typeName: {typeName}.");
+            return InternalServerError(ex);
+        }
+    }
+
+    [Route("query/{typeName}"), HttpPost]
+    public async Task<IActionResult> QueryReadAsync(String typeName)
+    {
+        try
+        {
+            var type = _typeService.GetModelType(typeName);
+            if (type is null)
+                return BadRequest(ErrorMessage.BadRequestModelType);
+
+            string json = await _streamService.ReadToEndThenDisposeAsync(Request.Body, Encoding.UTF8);
+            if (String.IsNullOrWhiteSpace(json))
+                return BadRequest(ErrorMessage.BadRequestBody);
+
+            Query? query = JsonSerializer.Deserialize(json, typeof(Query), JsonSerializerOption.Default) as Query;
+            if (query is null)
+                return BadRequest(ErrorMessage.BadRequestQuery);
+
+            // dynamic model = Convert.ChangeType(Activator.CreateInstance(type, null), type);
+
+            // var validationResult = (ValidationResult)await _validator.ValidateReadAsync(model!, queryParams);
+            // if (!validationResult.IsValid)
+            //     return BadRequest(validationResult.Message);
+
+            var queryReadAsync = ReflectionHelper.GetGenericMethod(type, typeof(IPreserver), nameof(IPreserver.QueryReadAsync), new Type[] { typeof(Query) });
+            var models = await (dynamic)queryReadAsync.Invoke(_preserver, new object[] { query });
 
             return Ok(models);
         }
