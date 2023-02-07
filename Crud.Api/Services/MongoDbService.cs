@@ -176,5 +176,32 @@ namespace Crud.Api.Services
                 _ => throw new NotImplementedException($"Unable to compare {field} to {value}. {nameof(Condition.ComparisonOperator)} '{comparisonOperator}' is not implemented.")
             };
         }
+
+        public SortDefinition<BsonDocument> GetSort(IReadOnlyCollection<Sort>? orderBy)
+        {
+            var sortBuilder = Builders<BsonDocument>.Sort;
+
+            if (orderBy is null)
+                return sortBuilder.ToBsonDocument();
+
+            var sortDefinitions = new List<SortDefinition<BsonDocument>>();
+            foreach (var sort in orderBy)
+            {
+                var field = sort.Field!.Pascalize(Delimiter.MongoDbChildProperty);
+                SortDefinition<BsonDocument> sortDefinition;
+                if (sort.IsDescending.HasValue && sort.IsDescending.Value)
+                {
+                    sortDefinition = sortBuilder.Descending(field);
+                }
+                else
+                {
+                    sortDefinition = sortBuilder.Ascending(field);
+                }
+
+                sortDefinitions.Add(sortDefinition);
+            }
+
+            return sortBuilder.Combine(sortDefinitions);
+        }
     }
 }

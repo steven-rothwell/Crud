@@ -679,6 +679,53 @@ namespace Crud.Api.Tests.Services
             Assert.Equal(expectedJson, resultJson);
         }
 
+        [Theory]
+        [ClassData(typeof(OrderByIsNullOrEmpty))]
+        public void GetSort_OrderByIsNullOrEmpty_ReturnsEmptySortDefinition(IReadOnlyCollection<Sort>? orderBy)
+        {
+            var result = _mongoDbService.GetSort(orderBy);
+
+            Assert.NotNull(result);
+
+            var expectedSort = Builders<BsonDocument>.Sort.ToBsonDocument();
+            var expectedJson = ConvertSortToJson(expectedSort);
+            var resultJson = ConvertSortToJson(result);
+
+            Assert.Equal(expectedJson, resultJson);
+        }
+
+        [Theory]
+        [ClassData(typeof(IsDescendingHasNoValueOrIsFalse))]
+        public void GetSort_IsDescendingHasNoValueOrIsFalse_ReturnsAscendingSortDefinition(IReadOnlyCollection<Sort>? orderBy)
+        {
+            var result = _mongoDbService.GetSort(orderBy);
+
+            Assert.NotNull(result);
+
+            var expectedSort = Builders<BsonDocument>.Sort.Ascending("Field");
+            var expectedJson = ConvertSortToJson(expectedSort);
+            var resultJson = ConvertSortToJson(result);
+
+            Assert.Equal(expectedJson, resultJson);
+        }
+
+        [Fact]
+        public void GetSort_IsDescendingHasValueAndIsTrue_ReturnsDescendingSortDefinition()
+        {
+            var field = "Field";
+            IReadOnlyCollection<Sort>? orderBy = new List<Sort> { new Sort { Field = field, IsDescending = true } };
+
+            var result = _mongoDbService.GetSort(orderBy);
+
+            Assert.NotNull(result);
+
+            var expectedSort = Builders<BsonDocument>.Sort.Descending(field);
+            var expectedJson = ConvertSortToJson(expectedSort);
+            var resultJson = ConvertSortToJson(result);
+
+            Assert.Equal(expectedJson, resultJson);
+        }
+
         [Table(nameof(ModelWithTableAttribute))]
         private class ModelWithTableAttribute
         {
@@ -742,6 +789,24 @@ namespace Crud.Api.Tests.Services
             }
         }
 
+        private class OrderByIsNullOrEmpty : TheoryData<IReadOnlyCollection<Sort>?>
+        {
+            public OrderByIsNullOrEmpty()
+            {
+                Add(null);
+                Add(new List<Sort>());
+            }
+        }
+
+        private class IsDescendingHasNoValueOrIsFalse : TheoryData<IReadOnlyCollection<Sort>?>
+        {
+            public IsDescendingHasNoValueOrIsFalse()
+            {
+                Add(new List<Sort> { new Sort { Field = "field", IsDescending = null } });
+                Add(new List<Sort> { new Sort { Field = "field", IsDescending = false } });
+            }
+        }
+
         private String ConvertFilterToJson(FilterDefinition<BsonDocument> filter)
         {
             var serializerRegistry = MongoDB.Bson.Serialization.BsonSerializer.SerializerRegistry;
@@ -776,6 +841,13 @@ namespace Crud.Api.Tests.Services
             }
 
             return jsonBuilder.ToString();
+        }
+
+        private String ConvertSortToJson(SortDefinition<BsonDocument> sort)
+        {
+            var serializerRegistry = MongoDB.Bson.Serialization.BsonSerializer.SerializerRegistry;
+            var documentSerializer = serializerRegistry.GetSerializer<BsonDocument>();
+            return sort.Render(documentSerializer, serializerRegistry).ToJson();
         }
     }
 }
