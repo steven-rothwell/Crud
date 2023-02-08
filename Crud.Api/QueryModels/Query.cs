@@ -27,6 +27,9 @@ namespace Crud.Api.QueryModels
         /// Sets the max number of documents/rows that will be returned from the database.
         /// </summary>
         public Int32? Limit { get; set; }
-        // Skip
+        /// <summary>
+        /// Sets how many documents/rows to skip over.
+        /// </summary>
+        public Int32? Skip { get; set; }
     }
 }

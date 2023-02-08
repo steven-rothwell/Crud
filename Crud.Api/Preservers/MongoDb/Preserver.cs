@@ -91,7 +91,8 @@ namespace Crud.Api.Preservers.MongoDb
             var models = await collection.FindAsync<T>(filter, new FindOptions<BsonDocument, T>
             {
                 Sort = sort,
-                Limit = query.Limit
+                Limit = query.Limit,
+                Skip = query.Skip
             });
             return await models.ToListAsync();
         }
