@@ -22,9 +22,11 @@ namespace Crud.Api.QueryModels
         /// <summary>
         /// In what order the documents/rows will be returned from the database.
         /// </summary>
-        /// <value></value>
         public IReadOnlyCollection<Sort>? OrderBy { get; set; }
-        // Take
+        /// <summary>
+        /// Sets the max number of documents/rows that will be returned from the database.
+        /// </summary>
+        public Int32? Limit { get; set; }
         // Skip
     }
 }
