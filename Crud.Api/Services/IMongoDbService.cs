@@ -18,5 +18,6 @@ namespace Crud.Api.Services
         FilterDefinition<BsonDocument> GetLogicalOperatorFilter(String logicalOperator, IEnumerable<FilterDefinition<BsonDocument>> filters);
         FilterDefinition<BsonDocument> GetComparisonOperatorFilter(String field, String comparisonOperator, dynamic value);
         SortDefinition<BsonDocument> GetSort(IReadOnlyCollection<Sort>? orderBy);
+        ProjectionDefinition<BsonDocument> GetProjections(Query? query);
     }
 }

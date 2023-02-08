@@ -726,6 +726,88 @@ namespace Crud.Api.Tests.Services
             Assert.Equal(expectedJson, resultJson);
         }
 
+        [Fact]
+        public void GetProjections_QueryIsNull_ReturnsEmptyProjectionDefinition()
+        {
+            Query? query = null;
+
+            var result = _mongoDbService.GetProjections(query);
+
+            Assert.NotNull(result);
+
+            var expectedProjection = Builders<BsonDocument>.Projection.ToBsonDocument();
+            var expectedJson = ConvertProjectionToJson(expectedProjection);
+            var resultJson = ConvertProjectionToJson(result);
+
+            Assert.Equal(expectedJson, resultJson);
+        }
+
+        [Theory]
+        [ClassData(typeof(IncludesIsNullOrEmpty))]
+        public void GetIncludesProjections_IncludesIsNullOrEmpty_ReturnsEmptyProjectionDefinition(HashSet<String>? includes)
+        {
+            var result = _mongoDbService.GetIncludesProjections(includes);
+
+            Assert.NotNull(result);
+
+            var expectedProjection = Builders<BsonDocument>.Projection.ToBsonDocument();
+            var expectedJson = ConvertProjectionToJson(expectedProjection);
+            var resultJson = ConvertProjectionToJson(result);
+
+            Assert.Equal(expectedJson, resultJson);
+        }
+
+        [Fact]
+        public void GetIncludesProjections_IncludesIsNotNullOrEmpty_ReturnsProjectionDefinition()
+        {
+            var field1 = "Field1";
+            var field2 = "Field2";
+            HashSet<string>? includes = new HashSet<string> { field1, field2 };
+
+            var result = _mongoDbService.GetIncludesProjections(includes);
+
+            Assert.NotNull(result);
+
+            var expectedProjection = Builders<BsonDocument>.Projection.Include(field1).Include(field2);
+            var expectedJson = ConvertProjectionToJson(expectedProjection);
+            var resultJson = ConvertProjectionToJson(result);
+
+            Assert.Equal(expectedJson, resultJson);
+        }
+
+        [Theory]
+        [ClassData(typeof(ExcludesIsNullOrEmpty))]
+        public void GetExcludesProjections_ExcludesIsNullOrEmpty_ReturnsEmptyProjectionDefinition(HashSet<String>? excludes)
+        {
+            var result = _mongoDbService.GetExcludesProjections(excludes);
+
+            Assert.NotNull(result);
+
+            var expectedProjection = Builders<BsonDocument>.Projection.ToBsonDocument();
+            var expectedJson = ConvertProjectionToJson(expectedProjection);
+            var resultJson = ConvertProjectionToJson(result);
+
+            Assert.Equal(expectedJson, resultJson);
+        }
+
+        [Fact]
+        public void GetExcludesProjections_ExcludesIsNotNullOrEmpty_ReturnsProjectionDefinition()
+        {
+            var field1 = "Field1";
+            var field2 = "Field2";
+            HashSet<string>? excludes = new HashSet<string> { field1, field2 };
+
+            var result = _mongoDbService.GetExcludesProjections(excludes);
+
+            Assert.NotNull(result);
+
+            var expectedProjection = Builders<BsonDocument>.Projection.Exclude(field1).Exclude(field2);
+            var expectedJson = ConvertProjectionToJson(expectedProjection);
+            var resultJson = ConvertProjectionToJson(result);
+
+            Assert.Equal(expectedJson, resultJson);
+        }
+
         [Table(nameof(ModelWithTableAttribute))]
         private class ModelWithTableAttribute
         {
@@ -798,6 +880,24 @@ namespace Crud.Api.Tests.Services
             }
         }
 
+        private class IncludesIsNullOrEmpty : TheoryData<HashSet<String>?>
+        {
+            public IncludesIsNullOrEmpty()
+            {
+                Add(null);
+                Add(new HashSet<string>());
+            }
+        }
+
+        private class ExcludesIsNullOrEmpty : TheoryData<HashSet<String>?>
+        {
+            public ExcludesIsNullOrEmpty()
+            {
+                Add(null);
+                Add(new HashSet<string>());
+            }
+        }
+
         private class IsDescendingHasNoValueOrIsFalse : TheoryData<IReadOnlyCollection<Sort>?>
         {
             public IsDescendingHasNoValueOrIsFalse()
@@ -848,6 +948,13 @@ namespace Crud.Api.Tests.Services
             var serializerRegistry = MongoDB.Bson.Serialization.BsonSerializer.SerializerRegistry;
             var documentSerializer = serializerRegistry.GetSerializer<BsonDocument>();
             return sort.Render(documentSerializer, serializerRegistry).ToJson();
+        }
+
+        private String ConvertProjectionToJson(ProjectionDefinition<BsonDocument> projection)
+        {
+            var serializerRegistry = MongoDB.Bson.Serialization.BsonSerializer.SerializerRegistry;
+            var documentSerializer = serializerRegistry.GetSerializer<BsonDocument>();
+            return projection.Render(documentSerializer, serializerRegistry).ToJson();
         }
     }
 }

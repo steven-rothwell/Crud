@@ -1,6 +1,7 @@
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Text.Json.Serialization;
 using Crud.Api.Constants;
 using Crud.Api.Helpers;
 using Crud.Api.Options;
@@ -131,9 +132,15 @@ public class CrudController : BaseApiController
             if (String.IsNullOrWhiteSpace(json))
                 return BadRequest(ErrorMessage.BadRequestBody);
 
-            Query? query = JsonSerializer.Deserialize(json, typeof(Query), JsonSerializerOption.Default) as Query;
+            Query? query = null;
+            string jsonExMessage = "";
+            try { query = JsonSerializer.Deserialize(json, typeof(Query), JsonSerializerOption.Default) as Query; }
+            catch (Exception jsonEx)
+            {
+                jsonExMessage = jsonEx.Message;
+            }
             if (query is null)
-                return BadRequest(ErrorMessage.BadRequestQuery);
+                return BadRequest(String.Format(ErrorMessage.BadRequestQuery, jsonExMessage));
 
             // dynamic model = Convert.ChangeType(Activator.CreateInstance(type, null), type);
 
@@ -143,6 +150,13 @@ public class CrudController : BaseApiController
 
             var queryReadAsync = ReflectionHelper.GetGenericMethod(type, typeof(IPreserver), nameof(IPreserver.QueryReadAsync), new Type[] { typeof(Query) });
             var models = await (dynamic)queryReadAsync.Invoke(_preserver, new object[] { query });
+
+            if ((query.Includes is not null && query.Includes.Count > 0) || (query.Excludes is not null && query.Excludes.Count > 0))
+            {
+                var modelsWithLessProperties = JsonSerializer.Deserialize<object>(JsonSerializer.Serialize(models, new JsonSerializerOptions { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault }));
+
+                return Ok(modelsWithLessProperties);
+            }
 
             return Ok(models);
         }

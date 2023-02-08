@@ -203,5 +203,51 @@ namespace Crud.Api.Services
 
             return sortBuilder.Combine(sortDefinitions);
         }
+
+        public ProjectionDefinition<BsonDocument> GetProjections(Query? query)
+        {
+            var projectionBuilder = Builders<BsonDocument>.Projection;
+
+            if (query is null)
+                return projectionBuilder.ToBsonDocument();
+
+            return projectionBuilder.Combine(GetIncludesProjections(query.Includes), GetExcludesProjections(query.Excludes));
+        }
+
+        public ProjectionDefinition<BsonDocument> GetIncludesProjections(HashSet<String>? includes)
+        {
+            var projectionBuilder = Builders<BsonDocument>.Projection;
+
+            if (includes is null)
+                return projectionBuilder.ToBsonDocument();
+
+            var projectionDefinitions = new List<ProjectionDefinition<BsonDocument>>();
+            foreach (var include in includes)
+            {
+                var field = include.Pascalize(Delimiter.MongoDbChildProperty);
+
+                projectionDefinitions.Add(projectionBuilder.Include(field));
+            }
+
+            return projectionBuilder.Combine(projectionDefinitions);
+        }
+
+        public ProjectionDefinition<BsonDocument> GetExcludesProjections(HashSet<String>? excludes)
+        {
+            var projectionBuilder = Builders<BsonDocument>.Projection;
+
+            if (excludes is null)
+                return projectionBuilder.ToBsonDocument();
+
+            var projectionDefinitions = new List<ProjectionDefinition<BsonDocument>>();
+            foreach (var exclude in excludes)
+            {
+                var field = exclude.Pascalize(Delimiter.MongoDbChildProperty);
+
+                projectionDefinitions.Add(projectionBuilder.Exclude(field));
+            }
+
+            return projectionBuilder.Combine(projectionDefinitions);
+        }
     }
 }
