@@ -86,8 +86,16 @@ namespace Crud.Api.Preservers.MongoDb
             string tableName = _mongoDbService.GetTableName(tType);
             var collection = database.GetCollection<BsonDocument>(tableName);
             var filter = _mongoDbService.GetConditionFilter(tType, query.Where);
+            var sort = _mongoDbService.GetSort(query.OrderBy);
+            var projections = _mongoDbService.GetProjections(query);
 
-            var models = await collection.FindAsync<T>(filter);
+            var models = await collection.FindAsync<T>(filter, new FindOptions<BsonDocument, T>
+            {
+                Sort = sort,
+                Limit = query.Limit,
+                Skip = query.Skip,
+                Projection = projections
+            });
             return await models.ToListAsync();
         }
 

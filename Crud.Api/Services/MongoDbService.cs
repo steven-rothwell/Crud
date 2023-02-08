@@ -176,5 +176,78 @@ namespace Crud.Api.Services
                 _ => throw new NotImplementedException($"Unable to compare {field} to {value}. {nameof(Condition.ComparisonOperator)} '{comparisonOperator}' is not implemented.")
             };
         }
+
+        public SortDefinition<BsonDocument> GetSort(IReadOnlyCollection<Sort>? orderBy)
+        {
+            var sortBuilder = Builders<BsonDocument>.Sort;
+
+            if (orderBy is null)
+                return sortBuilder.ToBsonDocument();
+
+            var sortDefinitions = new List<SortDefinition<BsonDocument>>();
+            foreach (var sort in orderBy)
+            {
+                var field = sort.Field!.Pascalize(Delimiter.MongoDbChildProperty);
+                SortDefinition<BsonDocument> sortDefinition;
+                if (sort.IsDescending.HasValue && sort.IsDescending.Value)
+                {
+                    sortDefinition = sortBuilder.Descending(field);
+                }
+                else
+                {
+                    sortDefinition = sortBuilder.Ascending(field);
+                }
+
+                sortDefinitions.Add(sortDefinition);
+            }
+
+            return sortBuilder.Combine(sortDefinitions);
+        }
+
+        public ProjectionDefinition<BsonDocument> GetProjections(Query? query)
+        {
+            var projectionBuilder = Builders<BsonDocument>.Projection;
+
+            if (query is null)
+                return projectionBuilder.ToBsonDocument();
+
+            return projectionBuilder.Combine(GetIncludesProjections(query.Includes), GetExcludesProjections(query.Excludes));
+        }
+
+        public ProjectionDefinition<BsonDocument> GetIncludesProjections(HashSet<String>? includes)
+        {
+            var projectionBuilder = Builders<BsonDocument>.Projection;
+
+            if (includes is null)
+                return projectionBuilder.ToBsonDocument();
+
+            var projectionDefinitions = new List<ProjectionDefinition<BsonDocument>>();
+            foreach (var include in includes)
+            {
+                var field = include.Pascalize(Delimiter.MongoDbChildProperty);
+
+                projectionDefinitions.Add(projectionBuilder.Include(field));
+            }
+
+            return projectionBuilder.Combine(projectionDefinitions);
+        }
+
+        public ProjectionDefinition<BsonDocument> GetExcludesProjections(HashSet<String>? excludes)
+        {
+            var projectionBuilder = Builders<BsonDocument>.Projection;
+
+            if (excludes is null)
+                return projectionBuilder.ToBsonDocument();
+
+            var projectionDefinitions = new List<ProjectionDefinition<BsonDocument>>();
+            foreach (var exclude in excludes)
+            {
+                var field = exclude.Pascalize(Delimiter.MongoDbChildProperty);
+
+                projectionDefinitions.Add(projectionBuilder.Exclude(field));
+            }
+
+            return projectionBuilder.Combine(projectionDefinitions);
+        }
     }
 }

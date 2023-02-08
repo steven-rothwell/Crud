@@ -679,6 +679,135 @@ namespace Crud.Api.Tests.Services
             Assert.Equal(expectedJson, resultJson);
         }
 
+        [Theory]
+        [ClassData(typeof(OrderByIsNullOrEmpty))]
+        public void GetSort_OrderByIsNullOrEmpty_ReturnsEmptySortDefinition(IReadOnlyCollection<Sort>? orderBy)
+        {
+            var result = _mongoDbService.GetSort(orderBy);
+
+            Assert.NotNull(result);
+
+            var expectedSort = Builders<BsonDocument>.Sort.ToBsonDocument();
+            var expectedJson = ConvertSortToJson(expectedSort);
+            var resultJson = ConvertSortToJson(result);
+
+            Assert.Equal(expectedJson, resultJson);
+        }
+
+        [Theory]
+        [ClassData(typeof(IsDescendingHasNoValueOrIsFalse))]
+        public void GetSort_IsDescendingHasNoValueOrIsFalse_ReturnsAscendingSortDefinition(IReadOnlyCollection<Sort>? orderBy)
+        {
+            var result = _mongoDbService.GetSort(orderBy);
+
+            Assert.NotNull(result);
+
+            var expectedSort = Builders<BsonDocument>.Sort.Ascending("Field");
+            var expectedJson = ConvertSortToJson(expectedSort);
+            var resultJson = ConvertSortToJson(result);
+
+            Assert.Equal(expectedJson, resultJson);
+        }
+
+        [Fact]
+        public void GetSort_IsDescendingHasValueAndIsTrue_ReturnsDescendingSortDefinition()
+        {
+            var field = "Field";
+            IReadOnlyCollection<Sort>? orderBy = new List<Sort> { new Sort { Field = field, IsDescending = true } };
+
+            var result = _mongoDbService.GetSort(orderBy);
+
+            Assert.NotNull(result);
+
+            var expectedSort = Builders<BsonDocument>.Sort.Descending(field);
+            var expectedJson = ConvertSortToJson(expectedSort);
+            var resultJson = ConvertSortToJson(result);
+
+            Assert.Equal(expectedJson, resultJson);
+        }
+
+        [Fact]
+        public void GetProjections_QueryIsNull_ReturnsEmptyProjectionDefinition()
+        {
+            Query? query = null;
+
+            var result = _mongoDbService.GetProjections(query);
+
+            Assert.NotNull(result);
+
+            var expectedProjection = Builders<BsonDocument>.Projection.ToBsonDocument();
+            var expectedJson = ConvertProjectionToJson(expectedProjection);
+            var resultJson = ConvertProjectionToJson(result);
+
+            Assert.Equal(expectedJson, resultJson);
+        }
+
+        [Theory]
+        [ClassData(typeof(IncludesIsNullOrEmpty))]
+        public void GetIncludesProjections_IncludesIsNullOrEmpty_ReturnsEmptyProjectionDefinition(HashSet<String>? includes)
+        {
+            var result = _mongoDbService.GetIncludesProjections(includes);
+
+            Assert.NotNull(result);
+
+            var expectedProjection = Builders<BsonDocument>.Projection.ToBsonDocument();
+            var expectedJson = ConvertProjectionToJson(expectedProjection);
+            var resultJson = ConvertProjectionToJson(result);
+
+            Assert.Equal(expectedJson, resultJson);
+        }
+
+        [Fact]
+        public void GetIncludesProjections_IncludesIsNotNullOrEmpty_ReturnsProjectionDefinition()
+        {
+            var field1 = "Field1";
+            var field2 = "Field2";
+            HashSet<string>? includes = new HashSet<string> { field1, field2 };
+
+            var result = _mongoDbService.GetIncludesProjections(includes);
+
+            Assert.NotNull(result);
+
+            var expectedProjection = Builders<BsonDocument>.Projection.Include(field1).Include(field2);
+            var expectedJson = ConvertProjectionToJson(expectedProjection);
+            var resultJson = ConvertProjectionToJson(result);
+
+            Assert.Equal(expectedJson, resultJson);
+        }
+
+        [Theory]
+        [ClassData(typeof(ExcludesIsNullOrEmpty))]
+        public void GetExcludesProjections_ExcludesIsNullOrEmpty_ReturnsEmptyProjectionDefinition(HashSet<String>? excludes)
+        {
+            var result = _mongoDbService.GetExcludesProjections(excludes);
+
+            Assert.NotNull(result);
+
+            var expectedProjection = Builders<BsonDocument>.Projection.ToBsonDocument();
+            var expectedJson = ConvertProjectionToJson(expectedProjection);
+            var resultJson = ConvertProjectionToJson(result);
+
+            Assert.Equal(expectedJson, resultJson);
+        }
+
+        [Fact]
+        public void GetExcludesProjections_ExcludesIsNotNullOrEmpty_ReturnsProjectionDefinition()
+        {
+            var field1 = "Field1";
+            var field2 = "Field2";
+            HashSet<string>? excludes = new HashSet<string> { field1, field2 };
+
+            var result = _mongoDbService.GetExcludesProjections(excludes);
+
+            Assert.NotNull(result);
+
+            var expectedProjection = Builders<BsonDocument>.Projection.Exclude(field1).Exclude(field2);
+            var expectedJson = ConvertProjectionToJson(expectedProjection);
+            var resultJson = ConvertProjectionToJson(result);
+
+            Assert.Equal(expectedJson, resultJson);
+        }
+
         [Table(nameof(ModelWithTableAttribute))]
         private class ModelWithTableAttribute
         {
@@ -742,6 +871,42 @@ namespace Crud.Api.Tests.Services
             }
         }
 
+        private class OrderByIsNullOrEmpty : TheoryData<IReadOnlyCollection<Sort>?>
+        {
+            public OrderByIsNullOrEmpty()
+            {
+                Add(null);
+                Add(new List<Sort>());
+            }
+        }
+
+        private class IncludesIsNullOrEmpty : TheoryData<HashSet<String>?>
+        {
+            public IncludesIsNullOrEmpty()
+            {
+                Add(null);
+                Add(new HashSet<string>());
+            }
+        }
+
+        private class ExcludesIsNullOrEmpty : TheoryData<HashSet<String>?>
+        {
+            public ExcludesIsNullOrEmpty()
+            {
+                Add(null);
+                Add(new HashSet<string>());
+            }
+        }
+
+        private class IsDescendingHasNoValueOrIsFalse : TheoryData<IReadOnlyCollection<Sort>?>
+        {
+            public IsDescendingHasNoValueOrIsFalse()
+            {
+                Add(new List<Sort> { new Sort { Field = "field", IsDescending = null } });
+                Add(new List<Sort> { new Sort { Field = "field", IsDescending = false } });
+            }
+        }
+
         private String ConvertFilterToJson(FilterDefinition<BsonDocument> filter)
         {
             var serializerRegistry = MongoDB.Bson.Serialization.BsonSerializer.SerializerRegistry;
@@ -776,6 +941,20 @@ namespace Crud.Api.Tests.Services
             }
 
             return jsonBuilder.ToString();
+        }
+
+        private String ConvertSortToJson(SortDefinition<BsonDocument> sort)
+        {
+            var serializerRegistry = MongoDB.Bson.Serialization.BsonSerializer.SerializerRegistry;
+            var documentSerializer = serializerRegistry.GetSerializer<BsonDocument>();
+            return sort.Render(documentSerializer, serializerRegistry).ToJson();
+        }
+
+        private String ConvertProjectionToJson(ProjectionDefinition<BsonDocument> projection)
+        {
+            var serializerRegistry = MongoDB.Bson.Serialization.BsonSerializer.SerializerRegistry;
+            var documentSerializer = serializerRegistry.GetSerializer<BsonDocument>();
+            return projection.Render(documentSerializer, serializerRegistry).ToJson();
         }
     }
 }
