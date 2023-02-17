@@ -7,9 +7,9 @@ namespace Crud.Api.QueryModels
         public const String Equality = "==";
         public const String Inequality = "!=";
         public const String GreaterThan = ">";
-        public const String GreaterThanOrEqual = ">=";
+        public const String GreaterThanOrEquals = ">=";
         public const String LessThan = "<";
-        public const String LessThanOrEqual = "<=";
+        public const String LessThanOrEquals = "<=";
         public const String In = "IN";
         public const String NotIn = "NIN";
 
@@ -32,15 +32,15 @@ namespace Crud.Api.QueryModels
             { GreaterThan, GreaterThan },
             { "GreaterThan", GreaterThan },
             { "GT", GreaterThan },
-            { GreaterThanOrEqual, GreaterThanOrEqual },
-            { "GreaterThanOrEquals", GreaterThanOrEqual },
-            { "GTE", GreaterThanOrEqual },
+            { GreaterThanOrEquals, GreaterThanOrEquals },
+            { "GreaterThanOrEquals", GreaterThanOrEquals },
+            { "GTE", GreaterThanOrEquals },
             { LessThan, LessThan },
             { "LessThan", LessThan },
             { "LT", LessThan },
-            { LessThanOrEqual, LessThanOrEqual },
-            { "LessThanOrEqual", LessThanOrEqual },
-            { "LTE", LessThanOrEqual },
+            { LessThanOrEquals, LessThanOrEquals },
+            { "LessThanOrEquals", LessThanOrEquals },
+            { "LTE", LessThanOrEquals },
             { In, In },
             { NotIn, NotIn },
             { "NotIn", NotIn }

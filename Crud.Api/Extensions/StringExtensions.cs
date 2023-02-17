@@ -5,7 +5,7 @@ namespace Crud.Api
 {
     public static class StringExtensions
     {
-        public static dynamic ChangeType(this String value, Type type)
+        public static dynamic? ChangeType(this String? value, Type? type)
         {
             if (value is null)
                 return null;
@@ -22,7 +22,7 @@ namespace Crud.Api
             else return Convert.ChangeType(value, type!);
         }
 
-        public static String Pascalize(this String value, Char delimiter)
+        public static String Pascalize(this String? value, Char delimiter)
         {
             if (value is null)
                 throw new ArgumentNullException(nameof(value));
@@ -41,7 +41,7 @@ namespace Crud.Api
             return valueBuilder.ToString(1, valueBuilder.Length - 1);
         }
 
-        public static String GetValueAfterFirstDelimiter(this String value, Char delimiter)
+        public static String GetValueAfterFirstDelimiter(this String? value, Char delimiter)
         {
             if (value is null)
                 throw new ArgumentNullException(nameof(value));
@@ -56,7 +56,7 @@ namespace Crud.Api
             return value;
         }
 
-        public static String GetValueAfterLastDelimiter(this String value, Char delimiter)
+        public static String GetValueAfterLastDelimiter(this String? value, Char delimiter)
         {
             if (value is null)
                 throw new ArgumentNullException(nameof(value));

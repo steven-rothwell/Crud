@@ -190,9 +190,9 @@ namespace Crud.Api.Services
                 Operator.Equality => Builders<BsonDocument>.Filter.Eq(field, value),
                 Operator.Inequality => Builders<BsonDocument>.Filter.Ne(field, value),
                 Operator.GreaterThan => Builders<BsonDocument>.Filter.Gt(field, value),
-                Operator.GreaterThanOrEqual => Builders<BsonDocument>.Filter.Gte(field, value),
+                Operator.GreaterThanOrEquals => Builders<BsonDocument>.Filter.Gte(field, value),
                 Operator.LessThan => Builders<BsonDocument>.Filter.Lt(field, value),
-                Operator.LessThanOrEqual => Builders<BsonDocument>.Filter.Lte(field, value),
+                Operator.LessThanOrEquals => Builders<BsonDocument>.Filter.Lte(field, value),
                 _ => throw new NotImplementedException($"Unable to compare {field} to {value}. {nameof(Condition.ComparisonOperator)} '{comparisonOperator}' is not implemented.")
             };
         }
@@ -283,7 +283,7 @@ namespace Crud.Api.Services
             return projectionBuilder.Combine(projectionDefinitions);
         }
 
-        public dynamic ChangeType(String field, Type type, String value)
+        public dynamic ChangeType(String field, Type? type, String? value)
         {
             try
             {
