@@ -20,6 +20,7 @@ namespace Crud.Api.QueryModels
         /// Should be null if <see cref="GroupedConditions"/></param> is populated.
         /// </summary>
         public String? Value { get; set; }
+        public IReadOnlyCollection<String>? Values { get; set; }
         /// <summary>
         /// Groups of conditions used for complex logic to constrain what documents/rows are returned from the database.
         /// </summary>
