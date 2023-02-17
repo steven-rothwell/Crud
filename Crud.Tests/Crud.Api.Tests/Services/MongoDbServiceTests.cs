@@ -180,7 +180,7 @@ namespace Crud.Api.Tests.Services
         }
 
         [Fact]
-        public void GetConditionFilter_SingleCondition_ReturnsSimpleFilterDefinition()
+        public void GetConditionFilter_SingleConditionFieldTypeNotIEnumerableValuesIsNull_ReturnsSimpleFilterDefinition()
         {
             var type = typeof(Model);
             var field = nameof(Model.Id);
@@ -197,6 +197,78 @@ namespace Crud.Api.Tests.Services
             Assert.NotNull(result);
 
             FilterDefinition<BsonDocument> expectedFilter = Builders<BsonDocument>.Filter.Eq(field, value);
+            var expectedJson = ConvertFilterToJson(expectedFilter);
+            var resultJson = ConvertFilterToJson(result);
+
+            Assert.Equal(expectedJson, resultJson);
+        }
+
+        [Fact]
+        public void GetConditionFilter_SingleConditionFieldTypeIsIEnumerableValuesIsNull_ReturnsSimpleFilterDefinition()
+        {
+            var type = typeof(ModelDoesNotImplementIExternalEntity);
+            var field = nameof(ModelDoesNotImplementIExternalEntity.Ints);
+            var value = 1;
+            Condition? condition = new Condition
+            {
+                Field = field,
+                ComparisonOperator = Operator.Equality,
+                Value = value.ToString()
+            };
+
+            var result = _mongoDbService.GetConditionFilter(type, condition);
+
+            Assert.NotNull(result);
+
+            FilterDefinition<BsonDocument> expectedFilter = Builders<BsonDocument>.Filter.Eq(field, value);
+            var expectedJson = ConvertFilterToJson(expectedFilter);
+            var resultJson = ConvertFilterToJson(result);
+
+            Assert.Equal(expectedJson, resultJson);
+        }
+
+        [Fact]
+        public void GetConditionFilter_SingleConditionFieldTypeNotIEnumerableValuesIsNotNull_ReturnsSimpleFilterDefinition()
+        {
+            var type = typeof(Model);
+            var field = nameof(Model.Id);
+            var values = new List<int> { 1, 2, 3 };
+            Condition? condition = new Condition
+            {
+                Field = field,
+                ComparisonOperator = Operator.In,
+                Values = values.Select(value => value.ToString()).ToList()
+            };
+
+            var result = _mongoDbService.GetConditionFilter(type, condition);
+
+            Assert.NotNull(result);
+
+            FilterDefinition<BsonDocument> expectedFilter = Builders<BsonDocument>.Filter.In(field, values);
+            var expectedJson = ConvertFilterToJson(expectedFilter);
+            var resultJson = ConvertFilterToJson(result);
+
+            Assert.Equal(expectedJson, resultJson);
+        }
+
+        [Fact]
+        public void GetConditionFilter_SingleConditionFieldTypeIsIEnumerableValuesIsNotNull_ReturnsSimpleFilterDefinition()
+        {
+            var type = typeof(ModelDoesNotImplementIExternalEntity);
+            var field = nameof(ModelDoesNotImplementIExternalEntity.Ints);
+            var values = new List<int> { 1, 2, 3 };
+            Condition? condition = new Condition
+            {
+                Field = field,
+                ComparisonOperator = Operator.In,
+                Values = values.Select(value => value.ToString()).ToList()
+            };
+
+            var result = _mongoDbService.GetConditionFilter(type, condition);
+
+            Assert.NotNull(result);
+
+            FilterDefinition<BsonDocument> expectedFilter = Builders<BsonDocument>.Filter.In(field, values);
             var expectedJson = ConvertFilterToJson(expectedFilter);
             var resultJson = ConvertFilterToJson(result);
 
@@ -649,7 +721,7 @@ namespace Crud.Api.Tests.Services
         }
 
         [Fact]
-        public void GetComparisonOperatorFilter_ComparisonAliasLookupDoesNotContainComparisonOperator_ThrowsKeyNotFoundException()
+        public void GetComparisonOperatorFilter_WithStringStringDynamic_ComparisonAliasLookupDoesNotContainComparisonOperator_ThrowsKeyNotFoundException()
         {
             var field = "Field";
             var comparisonOperator = "NotInAliasLookup";
@@ -663,7 +735,7 @@ namespace Crud.Api.Tests.Services
 
         [Theory]
         [ClassData(typeof(EqualityAliasFound))]
-        public void GetComparisonOperatorFilter_EqualityOperatorFound_ThrowsKeyNotFoundException(String comparisonOperator)
+        public void GetComparisonOperatorFilter_WithStringStringDynamic_EqualityOperatorFound_ThrowsKeyNotFoundException(String comparisonOperator)
         {
             var field = "Field";
             var value = "Value";
@@ -673,6 +745,145 @@ namespace Crud.Api.Tests.Services
             Assert.NotNull(result);
 
             var expectedFilter = Builders<BsonDocument>.Filter.Eq(field, value);
+            var expectedJson = ConvertFilterToJson(expectedFilter);
+            var resultJson = ConvertFilterToJson(result);
+
+            Assert.Equal(expectedJson, resultJson);
+        }
+
+        [Theory]
+        [ClassData(typeof(InequalityAliasFound))]
+        public void GetComparisonOperatorFilter_WithStringStringDynamic_InequalityOperatorFound_ThrowsKeyNotFoundException(String comparisonOperator)
+        {
+            var field = "Field";
+            var value = "Value";
+
+            var result = _mongoDbService.GetComparisonOperatorFilter(field, comparisonOperator, value);
+
+            Assert.NotNull(result);
+
+            var expectedFilter = Builders<BsonDocument>.Filter.Ne(field, value);
+            var expectedJson = ConvertFilterToJson(expectedFilter);
+            var resultJson = ConvertFilterToJson(result);
+
+            Assert.Equal(expectedJson, resultJson);
+        }
+
+        [Theory]
+        [ClassData(typeof(GreaterThanAliasFound))]
+        public void GetComparisonOperatorFilter_WithStringStringDynamic_GreaterThanOperatorFound_ThrowsKeyNotFoundException(String comparisonOperator)
+        {
+            var field = "Field";
+            var value = "Value";
+
+            var result = _mongoDbService.GetComparisonOperatorFilter(field, comparisonOperator, value);
+
+            Assert.NotNull(result);
+
+            var expectedFilter = Builders<BsonDocument>.Filter.Gt(field, value);
+            var expectedJson = ConvertFilterToJson(expectedFilter);
+            var resultJson = ConvertFilterToJson(result);
+
+            Assert.Equal(expectedJson, resultJson);
+        }
+
+        [Theory]
+        [ClassData(typeof(GreaterThanOrEqualsAliasFound))]
+        public void GetComparisonOperatorFilter_WithStringStringDynamic_GreaterThanOrEqualsOperatorFound_ThrowsKeyNotFoundException(String comparisonOperator)
+        {
+            var field = "Field";
+            var value = "Value";
+
+            var result = _mongoDbService.GetComparisonOperatorFilter(field, comparisonOperator, value);
+
+            Assert.NotNull(result);
+
+            var expectedFilter = Builders<BsonDocument>.Filter.Gte(field, value);
+            var expectedJson = ConvertFilterToJson(expectedFilter);
+            var resultJson = ConvertFilterToJson(result);
+
+            Assert.Equal(expectedJson, resultJson);
+        }
+
+        [Theory]
+        [ClassData(typeof(LessThanAliasFound))]
+        public void GetComparisonOperatorFilter_WithStringStringDynamic_LessThanOperatorFound_ThrowsKeyNotFoundException(String comparisonOperator)
+        {
+            var field = "Field";
+            var value = "Value";
+
+            var result = _mongoDbService.GetComparisonOperatorFilter(field, comparisonOperator, value);
+
+            Assert.NotNull(result);
+
+            var expectedFilter = Builders<BsonDocument>.Filter.Lt(field, value);
+            var expectedJson = ConvertFilterToJson(expectedFilter);
+            var resultJson = ConvertFilterToJson(result);
+
+            Assert.Equal(expectedJson, resultJson);
+        }
+
+        [Theory]
+        [ClassData(typeof(LessThanOrEqualsAliasFound))]
+        public void GetComparisonOperatorFilter_WithStringStringDynamic_LessThanOrEqualsOperatorFound_ThrowsKeyNotFoundException(String comparisonOperator)
+        {
+            var field = "Field";
+            var value = "Value";
+
+            var result = _mongoDbService.GetComparisonOperatorFilter(field, comparisonOperator, value);
+
+            Assert.NotNull(result);
+
+            var expectedFilter = Builders<BsonDocument>.Filter.Lte(field, value);
+            var expectedJson = ConvertFilterToJson(expectedFilter);
+            var resultJson = ConvertFilterToJson(result);
+
+            Assert.Equal(expectedJson, resultJson);
+        }
+
+        [Fact]
+        public void GetComparisonOperatorFilter_WithStringStringIEnumerableOfObject_ComparisonAliasLookupDoesNotContainComparisonOperator_ThrowsKeyNotFoundException()
+        {
+            var field = "Field";
+            var comparisonOperator = "NotInAliasLookup";
+            var values = new List<string> { "Value1", "Value2" };
+
+            var action = () => _mongoDbService.GetComparisonOperatorFilter(field, comparisonOperator, values);
+
+            var exception = Assert.Throws<KeyNotFoundException>(action);
+            Assert.Equal($"{nameof(Condition.ComparisonOperator)} '{comparisonOperator}' was not found in {Operator.ComparisonAliasLookup}.", exception.Message);
+        }
+
+        [Theory]
+        [ClassData(typeof(InAliasFound))]
+        public void GetComparisonOperatorFilter_WithStringStringIEnumerableOfObject_InOperatorFound_ThrowsKeyNotFoundException(String comparisonOperator)
+        {
+            var field = "Field";
+            var values = new List<string> { "Value1", "Value2" };
+
+            var result = _mongoDbService.GetComparisonOperatorFilter(field, comparisonOperator, values);
+
+            Assert.NotNull(result);
+
+            var expectedFilter = Builders<BsonDocument>.Filter.In(field, values);
+            var expectedJson = ConvertFilterToJson(expectedFilter);
+            var resultJson = ConvertFilterToJson(result);
+
+            Assert.Equal(expectedJson, resultJson);
+        }
+
+        [Theory]
+        [ClassData(typeof(NotInAliasFound))]
+        public void GetComparisonOperatorFilter_WithStringStringIEnumerableOfObject_NotInOperatorFound_ThrowsKeyNotFoundException(String comparisonOperator)
+        {
+            var field = "Field";
+            var values = new List<string> { "Value1", "Value2" };
+
+            var result = _mongoDbService.GetComparisonOperatorFilter(field, comparisonOperator, values);
+
+            Assert.NotNull(result);
+
+            var expectedFilter = Builders<BsonDocument>.Filter.Nin(field, values);
             var expectedJson = ConvertFilterToJson(expectedFilter);
             var resultJson = ConvertFilterToJson(result);
 
@@ -808,6 +1019,33 @@ namespace Crud.Api.Tests.Services
             Assert.Equal(expectedJson, resultJson);
         }
 
+        [Fact]
+        public void ChangeType_ChangeTypeThrowsException_ThrowsInvalidCastException()
+        {
+            string field = nameof(Model.Id);
+            Type? type = null;
+            string? value = "1";
+
+            var action = () => _mongoDbService.ChangeType(field, type, value);
+
+            var exception = Assert.Throws<InvalidCastException>(action);
+            Assert.Equal($"Unable to convert value: {value} to field: {field}'s type: {type}.", exception.Message);
+        }
+
+        [Fact]
+        public void ChangeType_ChangeTypeThrowsNoException_ReturnsValueAsType()
+        {
+            string field = nameof(Model.Id);
+            Type? type = typeof(int);
+            string? value = "1";
+
+            var result = _mongoDbService.ChangeType(field, type, value);
+
+            Assert.NotNull(result);
+            Assert.IsType(typeof(int), result);
+            Assert.Equal(1, result);
+        }
+
         [Table(nameof(ModelWithTableAttribute))]
         private class ModelWithTableAttribute
         {
@@ -825,6 +1063,7 @@ namespace Crud.Api.Tests.Services
             public String? Name { get; set; }
             public Int32 Total { get; set; }
             public ChildModel? ChildModel { get; set; }
+            public List<Int32>? Ints { get; set; }
         }
 
         private class ChildModel
@@ -868,6 +1107,73 @@ namespace Crud.Api.Tests.Services
                 Add(Operator.Equality);
                 Add("EQUALS");
                 Add("equals");
+            }
+        }
+
+        private class InequalityAliasFound : TheoryData<String>
+        {
+            public InequalityAliasFound()
+            {
+                Add(Operator.Inequality);
+                Add("NotEquals");
+                Add("NE");
+            }
+        }
+
+        private class GreaterThanAliasFound : TheoryData<String>
+        {
+            public GreaterThanAliasFound()
+            {
+                Add(Operator.GreaterThan);
+                Add("GreaterThan");
+                Add("GT");
+            }
+        }
+
+        private class GreaterThanOrEqualsAliasFound : TheoryData<String>
+        {
+            public GreaterThanOrEqualsAliasFound()
+            {
+                Add(Operator.GreaterThanOrEquals);
+                Add("GreaterThanOrEquals");
+                Add("GTE");
+            }
+        }
+
+        private class LessThanAliasFound : TheoryData<String>
+        {
+            public LessThanAliasFound()
+            {
+                Add(Operator.LessThan);
+                Add("LessThan");
+                Add("LT");
+            }
+        }
+
+        private class LessThanOrEqualsAliasFound : TheoryData<String>
+        {
+            public LessThanOrEqualsAliasFound()
+            {
+                Add(Operator.LessThanOrEquals);
+                Add("LessThanOrEquals");
+                Add("LTE");
+            }
+        }
+
+        private class InAliasFound : TheoryData<String>
+        {
+            public InAliasFound()
+            {
+                Add(Operator.In);
+            }
+        }
+
+        private class NotInAliasFound : TheoryData<String>
+        {
+            public NotInAliasFound()
+            {
+                Add(Operator.NotIn);
+                Add("NotIn");
             }
         }
 

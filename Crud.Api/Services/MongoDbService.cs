@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Crud.Api.Constants;
@@ -109,9 +110,23 @@ namespace Crud.Api.Services
                     return filter;
 
                 string field = condition.Field!.Pascalize(Delimiter.MongoDbChildProperty);
-                dynamic value = condition.Value!.ChangeType(type.GetProperties().GetProperty(condition.Field, Delimiter.MongoDbChildProperty)!.PropertyType);
+                Type fieldType = type.GetProperties().GetProperty(condition.Field, Delimiter.MongoDbChildProperty)!.PropertyType;
 
-                filter = GetComparisonOperatorFilter(field, condition.ComparisonOperator, value);
+                if (typeof(IEnumerable).IsAssignableFrom(fieldType) && fieldType.IsGenericType)
+                {
+                    fieldType = fieldType.GenericTypeArguments.First();
+                }
+
+                if (condition.Values is not null)
+                {
+                    var values = condition.Values!.Select(value => ChangeType(field, fieldType, value));
+                    filter = GetComparisonOperatorFilter(field, condition.ComparisonOperator, values);
+                }
+                else
+                {
+                    dynamic value = ChangeType(field, fieldType, condition.Value!);
+                    filter = GetComparisonOperatorFilter(field, condition.ComparisonOperator, value);
+                }
             }
             else
             {
@@ -173,7 +188,25 @@ namespace Crud.Api.Services
             return Operator.ComparisonAliasLookup[comparisonOperator] switch
             {
                 Operator.Equality => Builders<BsonDocument>.Filter.Eq(field, value),
+                Operator.Inequality => Builders<BsonDocument>.Filter.Ne(field, value),
+                Operator.GreaterThan => Builders<BsonDocument>.Filter.Gt(field, value),
+                Operator.GreaterThanOrEquals => Builders<BsonDocument>.Filter.Gte(field, value),
+                Operator.LessThan => Builders<BsonDocument>.Filter.Lt(field, value),
+                Operator.LessThanOrEquals => Builders<BsonDocument>.Filter.Lte(field, value),
                 _ => throw new NotImplementedException($"Unable to compare {field} to {value}. {nameof(Condition.ComparisonOperator)} '{comparisonOperator}' is not implemented.")
+            };
+        }
+
+        public FilterDefinition<BsonDocument> GetComparisonOperatorFilter(String field, String comparisonOperator, IEnumerable<object> values)
+        {
+            if (!Operator.ComparisonAliasLookup.ContainsKey(comparisonOperator))
+                throw new KeyNotFoundException($"{nameof(Condition.ComparisonOperator)} '{comparisonOperator}' was not found in {Operator.ComparisonAliasLookup}.");
+
+            return Operator.ComparisonAliasLookup[comparisonOperator] switch
+            {
+                Operator.In => Builders<BsonDocument>.Filter.In(field, values),
+                Operator.NotIn => Builders<BsonDocument>.Filter.Nin(field, values),
+                _ => throw new NotImplementedException($"Unable to compare {field} to {values}. {nameof(Condition.ComparisonOperator)} '{comparisonOperator}' is not implemented.")
             };
         }
 
@@ -248,6 +281,18 @@ namespace Crud.Api.Services
             }
 
             return projectionBuilder.Combine(projectionDefinitions);
+        }
+
+        public dynamic ChangeType(String field, Type? type, String? value)
+        {
+            try
+            {
+                return value.ChangeType(type);
+            }
+            catch (Exception)
+            {
+                throw new InvalidCastException($"Unable to convert value: {value} to field: {field}'s type: {type}.");
+            }
         }
     }
 }
