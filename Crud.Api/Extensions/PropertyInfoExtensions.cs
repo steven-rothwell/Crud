@@ -46,5 +46,10 @@ namespace Crud.Api
         {
             return propertyNames.All(propertyName => properties.GetProperty(propertyName, childPropertyDelimiter) is not null);
         }
+
+        public static Boolean HasPropertyName(this PropertyInfo[] properties, String propertyName, Char childPropertyDelimiter = default)
+        {
+            return properties.GetProperty(propertyName, childPropertyDelimiter) is not null;
+        }
     }
 }

@@ -142,11 +142,14 @@ public class CrudController : BaseApiController
             if (query is null)
                 return BadRequest(String.Format(ErrorMessage.BadRequestQuery, jsonExMessage));
 
-            // dynamic model = Convert.ChangeType(Activator.CreateInstance(type, null), type);
+            if (_applicationOptions.ValidateQueryRead)
+            {
+                dynamic model = Convert.ChangeType(Activator.CreateInstance(type, null), type);
 
-            // var validationResult = (ValidationResult)await _validator.ValidateReadAsync(model!, queryParams);
-            // if (!validationResult.IsValid)
-            //     return BadRequest(validationResult.Message);
+                var validationResult = (ValidationResult)await _validator.ValidateQueryReadAsync(model!, query);
+                if (!validationResult.IsValid)
+                    return BadRequest(validationResult.Message);
+            }
 
             var queryReadAsync = ReflectionHelper.GetGenericMethod(type, typeof(IPreserver), nameof(IPreserver.QueryReadAsync), new Type[] { typeof(Query) });
             var models = await (dynamic)queryReadAsync.Invoke(_preserver, new object[] { query });

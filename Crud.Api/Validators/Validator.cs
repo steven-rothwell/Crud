@@ -1,6 +1,8 @@
+using System.Reflection;
 using Crud.Api.Constants;
 using Crud.Api.Models;
 using Crud.Api.Preservers;
+using Crud.Api.QueryModels;
 
 namespace Crud.Api.Validators
 {
@@ -63,6 +65,15 @@ namespace Crud.Api.Validators
             // The user version of this method and call to object version is not necessary.
             // This is only here to show how to override in case more user validation was necessary.
             return ValidateReadAsync((object)user, queryParams);
+        }
+
+        public Task<ValidationResult> ValidateQueryReadAsync(Object model, Query query)
+        {
+            var validationResult = ValidateQuery(model, query);
+            if (!validationResult.IsValid)
+                return Task.FromResult(validationResult);
+
+            return Task.FromResult(new ValidationResult(true));
         }
 
         public Task<ValidationResult> ValidateUpdateAsync(Guid id, Object model)
@@ -189,6 +200,103 @@ namespace Crud.Api.Validators
             // The user version of this method and call to object version is not necessary.
             // This is only here to show how to override in case more user validation was necessary.
             return ValidateDeleteAsync((object)user, queryParams);
+        }
+
+        public ValidationResult ValidateQuery(Object model, Query query)
+        {
+            var includesIsPopulated = (query.Includes is not null && query.Includes.Count > 0);
+            var excludesIsPopulated = (query.Excludes is not null && query.Excludes.Count > 0);
+            var modelProperties = model.GetType().GetProperties();
+
+            if (includesIsPopulated && excludesIsPopulated)
+                return new ValidationResult(false, $"{nameof(Query)} {nameof(Query.Includes)} and {nameof(Query.Excludes)} cannot both be populated.");
+
+            if (includesIsPopulated && !modelProperties.HasAllPropertyNames(query.Includes!, Delimiter.MongoDbChildProperty))
+                return new ValidationResult(false, $"{nameof(Query)} {nameof(Query.Includes)} cannot contain properties that the model does not have.");
+
+            if (excludesIsPopulated && !modelProperties.HasAllPropertyNames(query.Excludes!, Delimiter.MongoDbChildProperty))
+                return new ValidationResult(false, $"{nameof(Query)} {nameof(Query.Excludes)} cannot contain properties that the model does not have.");
+
+            if (query.Where is not null)
+            {
+                var conditionValidationResult = ValidateCondition(modelProperties, query.Where);
+                if (!conditionValidationResult.IsValid)
+                    return conditionValidationResult;
+            }
+
+            if (query.OrderBy is not null)
+            {
+                var orderByValidationResult = ValidateSorts(modelProperties, query.OrderBy);
+                if (!orderByValidationResult.IsValid)
+                    return orderByValidationResult;
+            }
+
+            if (query.Limit < 0)
+                return new ValidationResult(false, $"{nameof(Query)} {nameof(Query.Limit)} cannot be less than zero.");
+
+            if (query.Skip < 0)
+                return new ValidationResult(false, $"{nameof(Query)} {nameof(Query.Skip)} cannot be less than zero.");
+
+            return new ValidationResult(true);
+        }
+
+        public ValidationResult ValidateCondition(PropertyInfo[] modelProperties, Condition condition)
+        {
+            if (condition.Field is not null)
+            {
+                if (!modelProperties.HasPropertyName(condition.Field))
+                    return new ValidationResult(false, $"A {nameof(Condition)} {nameof(Condition.Field)} contains a property {condition.Field} that the model does not have.");
+
+                if (condition.ComparisonOperator is null)
+                    return new ValidationResult(false, $"A {nameof(Condition)} cannot have a populated {nameof(Condition.Field)} and a null {nameof(Condition.ComparisonOperator)}.");
+
+                if (!Operator.ComparisonAliasLookup.ContainsKey(condition.ComparisonOperator))
+                    return new ValidationResult(false, $"{nameof(Condition.ComparisonOperator)} '{condition.ComparisonOperator}' must be found in {Operator.ComparisonAliasLookup}.");
+            }
+
+            if (condition.GroupedConditions is not null)
+            {
+                foreach (var groupedCondition in condition.GroupedConditions)
+                {
+                    var validationResult = ValidateGroupedCondition(modelProperties, groupedCondition);
+                    if (!validationResult.IsValid)
+                        return validationResult;
+                }
+            }
+
+            return new ValidationResult(true);
+        }
+
+        public ValidationResult ValidateGroupedCondition(PropertyInfo[] modelProperties, GroupedCondition groupedCondition)
+        {
+            if (groupedCondition.LogicalOperator is not null && !Operator.LogicalAliasLookup.ContainsKey(groupedCondition.LogicalOperator))
+                return new ValidationResult(false, $"{nameof(GroupedCondition.LogicalOperator)} '{groupedCondition.LogicalOperator}' must be found in {Operator.LogicalAliasLookup}.");
+
+            if (groupedCondition.Conditions is null || groupedCondition.Conditions.Count == 0)
+                return new ValidationResult(false, $"{nameof(GroupedCondition.Conditions)} cannot be empty.");
+
+            foreach (var condition in groupedCondition.Conditions)
+            {
+                var validationResult = ValidateCondition(modelProperties, condition);
+                if (!validationResult.IsValid)
+                    return validationResult;
+            }
+
+            return new ValidationResult(true);
+        }
+
+        public ValidationResult ValidateSorts(PropertyInfo[] modelProperties, IReadOnlyCollection<Sort> sorts)
+        {
+            foreach (var sort in sorts)
+            {
+                if (sort.Field is null)
+                    return new ValidationResult(false, $"{nameof(Query.OrderBy)} cannot contain a {nameof(Sort)} with a null {nameof(Sort.Field)}.");
+
+                if (!modelProperties.HasPropertyName(sort.Field))
+                    return new ValidationResult(false, $"A {nameof(Sort)} {nameof(Sort.Field)} contains a property {sort.Field} that the model does not have.");
+            }
+
+            return new ValidationResult(true);
         }
 
         private Boolean WillBeUpdated(String propertyName, IEnumerable<String>? propertiesToBeUpdated)
