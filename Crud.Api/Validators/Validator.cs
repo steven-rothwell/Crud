@@ -67,15 +67,6 @@ namespace Crud.Api.Validators
             return ValidateReadAsync((object)user, queryParams);
         }
 
-        public Task<ValidationResult> ValidateQueryReadAsync(Object model, Query query)
-        {
-            var validationResult = ValidateQuery(model, query);
-            if (!validationResult.IsValid)
-                return Task.FromResult(validationResult);
-
-            return Task.FromResult(new ValidationResult(true));
-        }
-
         public Task<ValidationResult> ValidateUpdateAsync(Guid id, Object model)
         {
             var validationResult = model.ValidateDataAnnotations();

@@ -142,11 +142,11 @@ public class CrudController : BaseApiController
             if (query is null)
                 return BadRequest(String.Format(ErrorMessage.BadRequestQuery, jsonExMessage));
 
-            if (_applicationOptions.ValidateQueryRead)
+            if (_applicationOptions.ValidateQuery)
             {
                 dynamic model = Convert.ChangeType(Activator.CreateInstance(type, null), type);
 
-                var validationResult = (ValidationResult)await _validator.ValidateQueryReadAsync(model!, query);
+                var validationResult = (ValidationResult)await _validator.ValidateQuery(model!, query);
                 if (!validationResult.IsValid)
                     return BadRequest(validationResult.Message);
             }
