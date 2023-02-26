@@ -5,6 +5,7 @@ using Crud.Api.Constants;
 using Crud.Api.Controllers;
 using Crud.Api.Options;
 using Crud.Api.Preservers;
+using Crud.Api.QueryModels;
 using Crud.Api.Services;
 using Crud.Api.Tests.TestingModels;
 using Crud.Api.Validators;
@@ -281,6 +282,209 @@ namespace Crud.Api.Tests.Controllers
             Assert.NotNull(result);
             Assert.Equal(StatusCodes.Status500InternalServerError, result.StatusCode);
         }
+        #endregion
+
+        #region QueryReadAsync
+
+        [Fact]
+        public async Task QueryReadAsync_TypeIsNull_ReturnsBadRequest()
+        {
+            var typeName = "some-type-name";
+            Type? type = null;
+
+            _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(type);
+
+            var result = await _controller.QueryReadAsync(typeName) as BadRequestObjectResult;
+
+            Assert.NotNull(result);
+            Assert.Equal(ErrorMessage.BadRequestModelType, result.Value);
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        public async Task QueryReadAsync_JsonIsNullOrEmpty_ReturnsBadRequest(String json)
+        {
+            var typeName = "some-type-name";
+            Type? type = typeof(Model);
+
+            _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(type);
+            _streamService.Setup(m => m.ReadToEndThenDisposeAsync(It.IsAny<Stream>(), It.IsAny<Encoding>())).ReturnsAsync(json);
+
+            var result = await _controller.QueryReadAsync(typeName) as BadRequestObjectResult;
+
+            Assert.NotNull(result);
+            Assert.Equal(ErrorMessage.BadRequestBody, result.Value);
+        }
+
+        [Fact]
+        public async Task QueryReadAsync_QueryIsNull_ReturnsBadRequest()
+        {
+            var typeName = "some-type-name";
+            Type? type = typeof(Model);
+            Query? query = null;
+            var json = JsonSerializer.Serialize(query);
+
+            _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(type);
+            _streamService.Setup(m => m.ReadToEndThenDisposeAsync(It.IsAny<Stream>(), It.IsAny<Encoding>())).ReturnsAsync(json);
+
+            var result = await _controller.QueryReadAsync(typeName) as BadRequestObjectResult;
+
+            Assert.NotNull(result);
+            Assert.Equal(String.Format(ErrorMessage.BadRequestQuery, $"{nameof(Query)} is null."), result.Value);
+        }
+
+        [Fact]
+        public async Task QueryReadAsync_DeserializeThrowsExceptionQueryIsNull_ReturnsBadRequest()
+        {
+            var typeName = "some-type-name";
+            Type? type = typeof(Model);
+            var json = @"{ ""OrderBy"": ""1""}";
+
+            _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(type);
+            _streamService.Setup(m => m.ReadToEndThenDisposeAsync(It.IsAny<Stream>(), It.IsAny<Encoding>())).ReturnsAsync(json);
+
+            var result = await _controller.QueryReadAsync(typeName) as BadRequestObjectResult;
+
+            Assert.NotNull(result);
+            Assert.NotNull(result.Value);
+            Assert.Contains(String.Format(ErrorMessage.BadRequestQuery, String.Empty), result.Value.ToString());
+            Assert.Contains("OrderBy", result.Value.ToString());
+        }
+
+        [Fact]
+        public async Task QueryReadAsync_ValidateQueryIsTrueQueryIsInvalid_ReturnsBadRequest()
+        {
+            var typeName = "some-type-name";
+            Type? type = typeof(Model);
+            Query? query = new Query { Limit = -1 };
+            var json = JsonSerializer.Serialize(query);
+            var validationResult = new ValidationResult(false, $"{nameof(Query)} {nameof(Query.Limit)} cannot be less than zero.");
+
+            _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(type);
+            _streamService.Setup(m => m.ReadToEndThenDisposeAsync(It.IsAny<Stream>(), It.IsAny<Encoding>())).ReturnsAsync(json);
+            _applicationOptions.Value.ValidateQuery = true;
+            _validator.Setup(m => m.ValidateQuery(It.IsAny<Model>(), It.IsAny<Query>())).Returns(validationResult);
+
+            var result = await _controller.QueryReadAsync(typeName) as BadRequestObjectResult;
+
+            Assert.NotNull(result);
+            Assert.Equal($"{nameof(Query)} {nameof(Query.Limit)} cannot be less than zero.", result.Value);
+        }
+
+        [Fact]
+        public async Task QueryReadAsync_ValidateQueryIsFalseQueryIsInvalid_ValidateQueryNotCalled()
+        {
+            var typeName = "some-type-name";
+            Type? type = typeof(Model);
+            Query? query = new Query { Limit = -1 };
+            var json = JsonSerializer.Serialize(query);
+            var validationResult = new ValidationResult(false, $"{nameof(Query)} {nameof(Query.Limit)} cannot be less than zero.");
+
+            _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(type);
+            _streamService.Setup(m => m.ReadToEndThenDisposeAsync(It.IsAny<Stream>(), It.IsAny<Encoding>())).ReturnsAsync(json);
+            _applicationOptions.Value.ValidateQuery = false;
+            _validator.Setup(m => m.ValidateQuery(It.IsAny<Model>(), It.IsAny<Query>())).Returns(validationResult);
+
+            var result = await _controller.QueryReadAsync(typeName);
+
+            _validator.Verify(m => m.ValidateQuery(It.IsAny<Model>(), It.IsAny<Query>()), Times.Never);
+            _preserver.Verify(m => m.QueryReadAsync<Model>(It.Is<Query>(thisQuery => thisQuery.Limit == query.Limit)), Times.Once);
+        }
+
+        [Fact]
+        public async Task QueryReadAsync_QueryHasIncludes_ReturnObjectWithOnlyPropertiesRequestedInIncludes()
+        {
+            var typeName = "some-type-name";
+            Type? type = typeof(Model);
+            Query? query = new Query { Includes = new HashSet<string> { nameof(Model.Id) } };
+            var json = JsonSerializer.Serialize(query);
+            var model = new Model { Id = 1 };
+            var models = new List<Model> { model };
+
+            _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(type);
+            _streamService.Setup(m => m.ReadToEndThenDisposeAsync(It.IsAny<Stream>(), It.IsAny<Encoding>())).ReturnsAsync(json);
+            _applicationOptions.Value.ValidateQuery = false;
+            _preserver.Setup(m => m.QueryReadAsync<Model>(It.IsAny<Query>())).ReturnsAsync(models);
+
+            var result = await _controller.QueryReadAsync(typeName) as OkObjectResult;
+
+            Assert.NotNull(result);
+            Assert.NotNull(result.Value);
+
+            var typedResult = JsonSerializer.Deserialize(result.Value!.ToString(), typeof(IList<object>)) as IList<object>;
+
+            Assert.NotNull(typedResult);
+            Assert.Equal(1, typedResult.Count);
+
+            var firstResult = typedResult[0].ToString();
+
+            Assert.Contains(nameof(Model.Id), firstResult);
+            Assert.DoesNotContain(nameof(Model.Name), firstResult);
+            Assert.DoesNotContain(nameof(Model.Description), firstResult);
+        }
+
+        [Fact]
+        public async Task QueryReadAsync_QueryHasExcludes_ReturnObjectWithOnlyPropertiesNotRequestedInExcludes()
+        {
+            var typeName = "some-type-name";
+            Type? type = typeof(Model);
+            Query? query = new Query { Excludes = new HashSet<string> { nameof(Model.Name), nameof(Model.Description) } };
+            var json = JsonSerializer.Serialize(query);
+            var model = new Model { Id = 1 };
+            var models = new List<Model> { model };
+
+            _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(type);
+            _streamService.Setup(m => m.ReadToEndThenDisposeAsync(It.IsAny<Stream>(), It.IsAny<Encoding>())).ReturnsAsync(json);
+            _applicationOptions.Value.ValidateQuery = false;
+            _preserver.Setup(m => m.QueryReadAsync<Model>(It.IsAny<Query>())).ReturnsAsync(models);
+
+            var result = await _controller.QueryReadAsync(typeName) as OkObjectResult;
+
+            Assert.NotNull(result);
+            Assert.NotNull(result.Value);
+
+            var typedResult = JsonSerializer.Deserialize(result.Value!.ToString(), typeof(IList<object>)) as IList<object>;
+
+            Assert.NotNull(typedResult);
+            Assert.Equal(1, typedResult.Count);
+
+            var firstResult = typedResult[0].ToString();
+
+            Assert.Contains(nameof(Model.Id), firstResult);
+            Assert.DoesNotContain(nameof(Model.Name), firstResult);
+            Assert.DoesNotContain(nameof(Model.Description), firstResult);
+        }
+
+        [Fact]
+        public async Task QueryReadAsync_QueryHasNoIncludesOrExcludes_ReturnFoundModels()
+        {
+            var typeName = "some-type-name";
+            Type? type = typeof(Model);
+            Query? query = new Query { Includes = null, Excludes = null };
+            var json = JsonSerializer.Serialize(query);
+            var model = new Model { Id = 1 };
+            var models = new List<Model> { model };
+
+            _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(type);
+            _streamService.Setup(m => m.ReadToEndThenDisposeAsync(It.IsAny<Stream>(), It.IsAny<Encoding>())).ReturnsAsync(json);
+            _applicationOptions.Value.ValidateQuery = false;
+            _preserver.Setup(m => m.QueryReadAsync<Model>(It.IsAny<Query>())).ReturnsAsync(models);
+
+            var result = await _controller.QueryReadAsync(typeName) as OkObjectResult;
+
+            Assert.NotNull(result);
+
+            var typedResult = result.Value as IList<Model>;
+
+            Assert.NotNull(typedResult);
+            Assert.Equal(1, typedResult.Count);
+
+            var firstModel = typedResult[0];
+
+            Assert.Equal(model.Id, firstModel.Id);
+        }
+
         #endregion
 
         #region UpdateAsync

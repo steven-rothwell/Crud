@@ -133,7 +133,7 @@ public class CrudController : BaseApiController
                 return BadRequest(ErrorMessage.BadRequestBody);
 
             Query? query = null;
-            string jsonExMessage = "";
+            string jsonExMessage = $"{nameof(Query)} is null.";
             try { query = JsonSerializer.Deserialize(json, typeof(Query), JsonSerializerOption.Default) as Query; }
             catch (Exception jsonEx)
             {
@@ -146,7 +146,7 @@ public class CrudController : BaseApiController
             {
                 dynamic model = Convert.ChangeType(Activator.CreateInstance(type, null), type);
 
-                var validationResult = (ValidationResult)await _validator.ValidateQuery(model!, query);
+                var validationResult = (ValidationResult)_validator.ValidateQuery(model!, query);
                 if (!validationResult.IsValid)
                     return BadRequest(validationResult.Message);
             }
