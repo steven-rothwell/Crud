@@ -152,6 +152,30 @@ namespace Crud.Api.Tests.Extensions
             Assert.False(result);
         }
 
+        [Fact]
+        public void HasPropertyName_GetPropertyReturnsNull_ReturnsFalse()
+        {
+            var properties = typeof(Parent).GetProperties();
+            var childPropertyDelimiter = Delimiter.QueryParamChildProperty;
+            var propertyName = "ParentPropertyDoesNotExist";
+
+            var result = properties.HasPropertyName(propertyName, childPropertyDelimiter);
+
+            Assert.False(result);
+        }
+
+        [Fact]
+        public void HasPropertyName_GetPropertyReturnsNotNull_ReturnsTrue()
+        {
+            var properties = typeof(Parent).GetProperties();
+            var childPropertyDelimiter = Delimiter.QueryParamChildProperty;
+            var propertyName = nameof(Parent.Id);
+
+            var result = properties.HasPropertyName(propertyName, childPropertyDelimiter);
+
+            Assert.True(result);
+        }
+
         private class Parent
         {
             public Int32 Id { get; set; }
