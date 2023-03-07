@@ -673,6 +673,54 @@ namespace Crud.Api.Tests.Validators
             Assert.True(result.IsValid);
         }
 
+        [Fact]
+        public void ValidateSorts_FieldIsNull_ReturnsFalseValidationResult()
+        {
+            object model = new ModelForValidation();
+            var sorts = new List<Sort>
+            {
+                new Sort { Field = null }
+            };
+
+            var result = _validator.ValidateSorts(model.GetType().GetProperties(), sorts);
+
+            Assert.NotNull(result);
+            Assert.False(result.IsValid);
+            Assert.Equal($"{nameof(Query.OrderBy)} cannot contain a {nameof(Sort)} with a null {nameof(Sort.Field)}.", result.Message);
+        }
+
+        [Fact]
+        public void ValidateSorts_ModelDoesNotHaveFieldPropertyName_ReturnsFalseValidationResult()
+        {
+            object model = new ModelForValidation();
+            var field = "DoesNotExist";
+            var sorts = new List<Sort>
+            {
+                new Sort { Field = field }
+            };
+
+            var result = _validator.ValidateSorts(model.GetType().GetProperties(), sorts);
+
+            Assert.NotNull(result);
+            Assert.False(result.IsValid);
+            Assert.Equal($"A {nameof(Sort)} {nameof(Sort.Field)} contains a property {field} that the model does not have.", result.Message);
+        }
+
+        [Fact]
+        public void ValidateSorts_SortsIsValid_ReturnsTrueValidationResult()
+        {
+            object model = new ModelForValidation();
+            var sorts = new List<Sort>
+            {
+                new Sort { Field = nameof(ModelForValidation.Id) }
+            };
+
+            var result = _validator.ValidateSorts(model.GetType().GetProperties(), sorts);
+
+            Assert.NotNull(result);
+            Assert.True(result.IsValid);
+        }
+
         private class ModelForValidation
         {
             public Int32 Id { get; set; }
