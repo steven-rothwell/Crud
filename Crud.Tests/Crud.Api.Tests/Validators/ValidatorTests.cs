@@ -1,4 +1,5 @@
 using Crud.Api.Preservers;
+using Crud.Api.QueryModels;
 using Crud.Api.Validators;
 using Moq;
 using DataAnnotations = System.ComponentModel.DataAnnotations;
@@ -358,6 +359,141 @@ namespace Crud.Api.Tests.Validators
             };
 
             var result = await _validator.ValidateDeleteAsync(model, queryParams);
+
+            Assert.NotNull(result);
+            Assert.True(result.IsValid);
+        }
+
+        [Fact]
+        public void ValidateQuery_IncludesIsPopulatedAndExcludesIsPopulated_ReturnsFalseValidationResult()
+        {
+            object model = new ModelForValidation { Id = 1 };
+            var query = new Query
+            {
+                Includes = new HashSet<string> { "IncludedFieldName" },
+                Excludes = new HashSet<string> { "ExcludedFieldName" }
+            };
+
+            var result = _validator.ValidateQuery(model, query);
+
+            Assert.NotNull(result);
+            Assert.False(result.IsValid);
+            Assert.Equal($"{nameof(Query)} {nameof(Query.Includes)} and {nameof(Query.Excludes)} cannot both be populated.", result.Message);
+        }
+
+        [Fact]
+        public void ValidateQuery_IncludesIsPopulatedAndModelDoesNotHaveAllPropertiesInIncludes_ReturnsFalseValidationResult()
+        {
+            object model = new ModelForValidation { Id = 1 };
+            var query = new Query
+            {
+                Includes = new HashSet<string> { nameof(ModelForValidation.Id), "PropertyDoesNotExist" }
+            };
+
+            var result = _validator.ValidateQuery(model, query);
+
+            Assert.NotNull(result);
+            Assert.False(result.IsValid);
+            Assert.Equal($"{nameof(Query)} {nameof(Query.Includes)} cannot contain properties that the model does not have.", result.Message);
+        }
+
+        [Fact]
+        public void ValidateQuery_ExcludesIsPopulatedAndModelDoesNotHaveAllPropertiesInExcludes_ReturnsFalseValidationResult()
+        {
+            object model = new ModelForValidation { Id = 1 };
+            var query = new Query
+            {
+                Excludes = new HashSet<string> { nameof(ModelForValidation.Id), "PropertyDoesNotExist" }
+            };
+
+            var result = _validator.ValidateQuery(model, query);
+
+            Assert.NotNull(result);
+            Assert.False(result.IsValid);
+            Assert.Equal($"{nameof(Query)} {nameof(Query.Excludes)} cannot contain properties that the model does not have.", result.Message);
+        }
+
+        [Fact]
+        public void ValidateQuery_WhereIsNotNullAndConditionValidationResultIsInvalid_ReturnsFalseValidationResult()
+        {
+            object model = new ModelForValidation { Id = 1 };
+            var field = "PropertyDoesNotExist";
+            var query = new Query
+            {
+                Where = new Condition
+                {
+                    Field = field
+                }
+            };
+
+            var result = _validator.ValidateQuery(model, query);
+
+            Assert.NotNull(result);
+            Assert.False(result.IsValid);
+            Assert.Equal($"A {nameof(Condition)} {nameof(Condition.Field)} contains a property {field} that the model does not have.", result.Message);
+        }
+
+        [Fact]
+        public void ValidateQuery_OrderByIsNotNullAndOrderByValidationResultIsInvalid_ReturnsFalseValidationResult()
+        {
+            object model = new ModelForValidation { Id = 1 };
+            var query = new Query
+            {
+                OrderBy = new List<Sort>
+                {
+                    new Sort { Field = null }
+                }
+            };
+
+            var result = _validator.ValidateQuery(model, query);
+
+            Assert.NotNull(result);
+            Assert.False(result.IsValid);
+            Assert.Equal($"{nameof(Query.OrderBy)} cannot contain a {nameof(Sort)} with a null {nameof(Sort.Field)}.", result.Message);
+        }
+
+        [Fact]
+        public void ValidateQuery_LimitIsLessThanZero_ReturnsFalseValidationResult()
+        {
+            object model = new ModelForValidation { Id = 1 };
+            var query = new Query
+            {
+                Limit = -1
+            };
+
+            var result = _validator.ValidateQuery(model, query);
+
+            Assert.NotNull(result);
+            Assert.False(result.IsValid);
+            Assert.Equal($"{nameof(Query)} {nameof(Query.Limit)} cannot be less than zero.", result.Message);
+        }
+
+        [Fact]
+        public void ValidateQuery_SkipIsLessThanZero_ReturnsFalseValidationResult()
+        {
+            object model = new ModelForValidation { Id = 1 };
+            var query = new Query
+            {
+                Skip = -1
+            };
+
+            var result = _validator.ValidateQuery(model, query);
+
+            Assert.NotNull(result);
+            Assert.False(result.IsValid);
+            Assert.Equal($"{nameof(Query)} {nameof(Query.Skip)} cannot be less than zero.", result.Message);
+        }
+
+        [Fact]
+        public void ValidateQuery_QueryIsValid_ReturnsTrueValidationResult()
+        {
+            object model = new ModelForValidation { Id = 1 };
+            var query = new Query
+            {
+                Skip = 1
+            };
+
+            var result = _validator.ValidateQuery(model, query);
 
             Assert.NotNull(result);
             Assert.True(result.IsValid);
