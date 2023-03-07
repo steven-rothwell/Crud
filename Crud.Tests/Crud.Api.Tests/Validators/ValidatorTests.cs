@@ -367,7 +367,7 @@ namespace Crud.Api.Tests.Validators
         [Fact]
         public void ValidateQuery_IncludesIsPopulatedAndExcludesIsPopulated_ReturnsFalseValidationResult()
         {
-            object model = new ModelForValidation { Id = 1 };
+            object model = new ModelForValidation();
             var query = new Query
             {
                 Includes = new HashSet<string> { "IncludedFieldName" },
@@ -384,7 +384,7 @@ namespace Crud.Api.Tests.Validators
         [Fact]
         public void ValidateQuery_IncludesIsPopulatedAndModelDoesNotHaveAllPropertiesInIncludes_ReturnsFalseValidationResult()
         {
-            object model = new ModelForValidation { Id = 1 };
+            object model = new ModelForValidation();
             var query = new Query
             {
                 Includes = new HashSet<string> { nameof(ModelForValidation.Id), "PropertyDoesNotExist" }
@@ -400,7 +400,7 @@ namespace Crud.Api.Tests.Validators
         [Fact]
         public void ValidateQuery_ExcludesIsPopulatedAndModelDoesNotHaveAllPropertiesInExcludes_ReturnsFalseValidationResult()
         {
-            object model = new ModelForValidation { Id = 1 };
+            object model = new ModelForValidation();
             var query = new Query
             {
                 Excludes = new HashSet<string> { nameof(ModelForValidation.Id), "PropertyDoesNotExist" }
@@ -416,7 +416,7 @@ namespace Crud.Api.Tests.Validators
         [Fact]
         public void ValidateQuery_WhereIsNotNullAndConditionValidationResultIsInvalid_ReturnsFalseValidationResult()
         {
-            object model = new ModelForValidation { Id = 1 };
+            object model = new ModelForValidation();
             var field = "PropertyDoesNotExist";
             var query = new Query
             {
@@ -436,7 +436,7 @@ namespace Crud.Api.Tests.Validators
         [Fact]
         public void ValidateQuery_OrderByIsNotNullAndOrderByValidationResultIsInvalid_ReturnsFalseValidationResult()
         {
-            object model = new ModelForValidation { Id = 1 };
+            object model = new ModelForValidation();
             var query = new Query
             {
                 OrderBy = new List<Sort>
@@ -455,7 +455,7 @@ namespace Crud.Api.Tests.Validators
         [Fact]
         public void ValidateQuery_LimitIsLessThanZero_ReturnsFalseValidationResult()
         {
-            object model = new ModelForValidation { Id = 1 };
+            object model = new ModelForValidation();
             var query = new Query
             {
                 Limit = -1
@@ -471,7 +471,7 @@ namespace Crud.Api.Tests.Validators
         [Fact]
         public void ValidateQuery_SkipIsLessThanZero_ReturnsFalseValidationResult()
         {
-            object model = new ModelForValidation { Id = 1 };
+            object model = new ModelForValidation();
             var query = new Query
             {
                 Skip = -1
@@ -487,13 +487,117 @@ namespace Crud.Api.Tests.Validators
         [Fact]
         public void ValidateQuery_QueryIsValid_ReturnsTrueValidationResult()
         {
-            object model = new ModelForValidation { Id = 1 };
+            object model = new ModelForValidation();
             var query = new Query
             {
                 Skip = 1
             };
 
             var result = _validator.ValidateQuery(model, query);
+
+            Assert.NotNull(result);
+            Assert.True(result.IsValid);
+        }
+
+        [Fact]
+        public void ValidateCondition_FieldIsNullAndGroupedConditionsIsNull_ReturnsFalseValidationResult()
+        {
+            object model = new ModelForValidation();
+            var condition = new Condition
+            {
+                Field = null,
+                GroupedConditions = null
+            };
+
+            var result = _validator.ValidateCondition(model.GetType().GetProperties(), condition);
+
+            Assert.NotNull(result);
+            Assert.False(result.IsValid);
+            Assert.Equal($"A {nameof(Condition)} must contain either a {nameof(Condition.Field)} or {nameof(Condition.GroupedConditions)}.", result.Message);
+        }
+
+        [Fact]
+        public void ValidateCondition_ModelDoesNotHaveFieldPropertyName_ReturnsFalseValidationResult()
+        {
+            object model = new ModelForValidation();
+            var condition = new Condition
+            {
+                Field = "PropertyDoesNotExist"
+            };
+
+            var result = _validator.ValidateCondition(model.GetType().GetProperties(), condition);
+
+            Assert.NotNull(result);
+            Assert.False(result.IsValid);
+            Assert.Equal($"A {nameof(Condition)} {nameof(Condition.Field)} contains a property {condition.Field} that the model does not have.", result.Message);
+        }
+
+        [Fact]
+        public void ValidateCondition_ComparisonOperatorIsNull_ReturnsFalseValidationResult()
+        {
+            object model = new ModelForValidation();
+            var condition = new Condition
+            {
+                Field = nameof(ModelForValidation.Id),
+                ComparisonOperator = null
+            };
+
+            var result = _validator.ValidateCondition(model.GetType().GetProperties(), condition);
+
+            Assert.NotNull(result);
+            Assert.False(result.IsValid);
+            Assert.Equal($"A {nameof(Condition)} cannot have a populated {nameof(Condition.Field)} and a null {nameof(Condition.ComparisonOperator)}.", result.Message);
+        }
+
+        [Fact]
+        public void ValidateCondition_ComparisonOperatorNotInComparisonAliasLookup_ReturnsFalseValidationResult()
+        {
+            object model = new ModelForValidation();
+            var condition = new Condition
+            {
+                Field = nameof(ModelForValidation.Id),
+                ComparisonOperator = "DoesNotExist"
+            };
+
+            var result = _validator.ValidateCondition(model.GetType().GetProperties(), condition);
+
+            Assert.NotNull(result);
+            Assert.False(result.IsValid);
+            Assert.Equal($"{nameof(Condition.ComparisonOperator)} '{condition.ComparisonOperator}' must be found in {Operator.ComparisonAliasLookup}.", result.Message);
+        }
+
+        [Fact]
+        public void ValidateCondition_GroupedConditionsContainsAtLeastOneInvalidGroupedCondition_ReturnsFalseValidationResult()
+        {
+            object model = new ModelForValidation();
+            var logicalOperator = "DoesNotExist";
+            var condition = new Condition
+            {
+                GroupedConditions = new List<GroupedCondition>
+                {
+                    new GroupedCondition { LogicalOperator = logicalOperator }
+                }
+            };
+
+            var result = _validator.ValidateCondition(model.GetType().GetProperties(), condition);
+
+            Assert.NotNull(result);
+            Assert.False(result.IsValid);
+            Assert.Equal($"{nameof(GroupedCondition.LogicalOperator)} '{logicalOperator}' must be found in {Operator.LogicalAliasLookup}.", result.Message);
+        }
+
+        [Fact]
+        public void ValidateCondition_ConditionIsValid_ReturnsTrueValidationResult()
+        {
+            object model = new ModelForValidation();
+            var condition = new Condition
+            {
+                Field = nameof(ModelForValidation.Id),
+                ComparisonOperator = Operator.Equality,
+                Value = "1"
+            };
+
+            var result = _validator.ValidateCondition(model.GetType().GetProperties(), condition);
 
             Assert.NotNull(result);
             Assert.True(result.IsValid);

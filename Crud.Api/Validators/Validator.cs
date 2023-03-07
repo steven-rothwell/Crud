@@ -233,6 +233,9 @@ namespace Crud.Api.Validators
 
         public ValidationResult ValidateCondition(PropertyInfo[] modelProperties, Condition condition)
         {
+            if (condition.Field is null && condition.GroupedConditions is null)
+                return new ValidationResult(false, $"A {nameof(Condition)} must contain either a {nameof(Condition.Field)} or {nameof(Condition.GroupedConditions)}.");
+
             if (condition.Field is not null)
             {
                 if (!modelProperties.HasPropertyName(condition.Field))
