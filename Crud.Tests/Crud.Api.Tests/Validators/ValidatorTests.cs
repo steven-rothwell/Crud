@@ -603,6 +603,76 @@ namespace Crud.Api.Tests.Validators
             Assert.True(result.IsValid);
         }
 
+        [Fact]
+        public void ValidateGroupedCondition_LogicalOperatorIsNotNullAndNotInLogicalAliasLookup_ReturnsFalseValidationResult()
+        {
+            object model = new ModelForValidation();
+            var logicalOperator = "DoesNotExist";
+            var groupedCondition = new GroupedCondition { LogicalOperator = logicalOperator };
+
+            var result = _validator.ValidateGroupedCondition(model.GetType().GetProperties(), groupedCondition);
+
+            Assert.NotNull(result);
+            Assert.False(result.IsValid);
+            Assert.Equal($"{nameof(GroupedCondition.LogicalOperator)} '{groupedCondition.LogicalOperator}' must be found in {Operator.LogicalAliasLookup}.", result.Message);
+        }
+
+        [Theory]
+        [ClassData(typeof(ConditionsIsNullOrEmpty))]
+        public void ValidateGroupedCondition_ConditionsIsNullOrEmpty_ReturnsFalseValidationResult(IReadOnlyCollection<Condition> conditions)
+        {
+            object model = new ModelForValidation();
+            var groupedCondition = new GroupedCondition { Conditions = conditions };
+
+            var result = _validator.ValidateGroupedCondition(model.GetType().GetProperties(), groupedCondition);
+
+            Assert.NotNull(result);
+            Assert.False(result.IsValid);
+            Assert.Equal($"{nameof(GroupedCondition.Conditions)} cannot be empty.", result.Message);
+        }
+
+        [Fact]
+        public void ValidateGroupedCondition_ConditionsContainsAtLeastOneInvalidCondition_ReturnsFalseValidationResult()
+        {
+            object model = new ModelForValidation();
+            var groupedCondition = new GroupedCondition
+            {
+                Conditions = new List<Condition>
+                {
+                    new Condition()
+                }
+            };
+
+            var result = _validator.ValidateGroupedCondition(model.GetType().GetProperties(), groupedCondition);
+
+            Assert.NotNull(result);
+            Assert.False(result.IsValid);
+            Assert.Equal($"A {nameof(Condition)} must contain either a {nameof(Condition.Field)} or {nameof(Condition.GroupedConditions)}.", result.Message);
+        }
+
+        [Fact]
+        public void ValidateGroupedCondition_GroupedConditionIsValid_ReturnsTrueValidationResult()
+        {
+            object model = new ModelForValidation();
+            var groupedCondition = new GroupedCondition
+            {
+                Conditions = new List<Condition>
+                {
+                    new Condition
+                    {
+                        Field = nameof(ModelForValidation.Id),
+                        ComparisonOperator = Operator.Equality,
+                        Value = "1"
+                    }
+                }
+            };
+
+            var result = _validator.ValidateGroupedCondition(model.GetType().GetProperties(), groupedCondition);
+
+            Assert.NotNull(result);
+            Assert.True(result.IsValid);
+        }
+
         private class ModelForValidation
         {
             public Int32 Id { get; set; }
@@ -625,6 +695,15 @@ namespace Crud.Api.Tests.Validators
             {
                 Add(null);
                 Add(new List<string>());
+            }
+        }
+
+        private class ConditionsIsNullOrEmpty : TheoryData<IReadOnlyCollection<Condition>?>
+        {
+            public ConditionsIsNullOrEmpty()
+            {
+                Add(null);
+                Add(new List<Condition>());
             }
         }
     }
