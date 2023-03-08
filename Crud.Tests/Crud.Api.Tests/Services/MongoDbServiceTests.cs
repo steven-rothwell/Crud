@@ -122,14 +122,41 @@ namespace Crud.Api.Tests.Services
         }
 
         [Fact]
-        public void GetAllPropertiesToUpdate_JsonNodeIsNotJsonObject_ReturnsUpdateDefinitionsWithOneUpdateOfPropertyNameAndValue()
+        public void GetShallowUpdates_JsonElementIsNull_ReturnsUpdateDefinitionsWithOneUpdateOfPropertyToNull()
         {
             var propertyName = nameof(ModelDoesNotImplementIExternalEntity.ExternalId);
+            JsonElement jsonElement = JsonSerializer.SerializeToElement(null, typeof(Guid?))!;
+            IDictionary<string, JsonElement> propertyValues = new Dictionary<string, JsonElement>
+            {
+                { propertyName, jsonElement }
+            };
             Type type = typeof(ModelDoesNotImplementIExternalEntity);
-            var value = Guid.Empty;
-            JsonElement jsonNode = JsonSerializer.SerializeToElement(value, typeof(Guid))!;
 
-            var result = _mongoDbService.GetAllPropertiesToUpdate(propertyName, type, jsonNode);
+            var result = _mongoDbService.GetShallowUpdates(propertyValues, type);
+
+            Assert.NotNull(result);
+
+            var expectedUpdates = new List<UpdateDefinition<BsonDocument>>();
+            expectedUpdates.Add(Builders<BsonDocument>.Update.Set(propertyName, BsonNull.Value));
+            var expectedJson = ConvertUpdatesToJson(expectedUpdates);
+            var resultJson = ConvertUpdatesToJson(result);
+
+            Assert.Equal(expectedJson, resultJson);
+        }
+
+        [Fact]
+        public void GetShallowUpdates_JsonElementIsNotNull_ReturnsUpdateDefinitionsWithOneUpdateOfPropertyToValue()
+        {
+            var propertyName = nameof(ModelDoesNotImplementIExternalEntity.ExternalId);
+            var value = Guid.Empty;
+            JsonElement jsonElement = JsonSerializer.SerializeToElement(value, typeof(Guid?))!;
+            IDictionary<string, JsonElement> propertyValues = new Dictionary<string, JsonElement>
+            {
+                { propertyName, jsonElement }
+            };
+            Type type = typeof(ModelDoesNotImplementIExternalEntity);
+
+            var result = _mongoDbService.GetShallowUpdates(propertyValues, type);
 
             Assert.NotNull(result);
 
@@ -142,15 +169,54 @@ namespace Crud.Api.Tests.Services
         }
 
         [Fact]
-        public void GetAllPropertiesToUpdate_JsonNodeIsJsonObject_ReturnsUpdateDefinitionsWithOneUpdateOfPropertyNameAndValue()
+        public void GetAllPropertiesToUpdate_JsonElementIsNotJsonObjectAndIsNull_ReturnsUpdateDefinitionsWithOneUpdateOfPropertyNameAndValue()
+        {
+            var propertyName = nameof(ModelDoesNotImplementIExternalEntity.ExternalId);
+            Type type = typeof(ModelDoesNotImplementIExternalEntity);
+            JsonElement jsonElement = JsonSerializer.SerializeToElement(null, typeof(Guid?))!;
+
+            var result = _mongoDbService.GetAllPropertiesToUpdate(propertyName, type, jsonElement);
+
+            Assert.NotNull(result);
+
+            var expectedUpdates = new List<UpdateDefinition<BsonDocument>>();
+            expectedUpdates.Add(Builders<BsonDocument>.Update.Set(propertyName, BsonNull.Value));
+            var expectedJson = ConvertUpdatesToJson(expectedUpdates);
+            var resultJson = ConvertUpdatesToJson(result);
+
+            Assert.Equal(expectedJson, resultJson);
+        }
+
+        [Fact]
+        public void GetAllPropertiesToUpdate_JsonElementIsNotJsonObjectAndIsNotNull_ReturnsUpdateDefinitionsWithOneUpdateOfPropertyNameAndValue()
+        {
+            var propertyName = nameof(ModelDoesNotImplementIExternalEntity.ExternalId);
+            Type type = typeof(ModelDoesNotImplementIExternalEntity);
+            var value = Guid.Empty;
+            JsonElement jsonElement = JsonSerializer.SerializeToElement(value, typeof(Guid?))!;
+
+            var result = _mongoDbService.GetAllPropertiesToUpdate(propertyName, type, jsonElement);
+
+            Assert.NotNull(result);
+
+            var expectedUpdates = new List<UpdateDefinition<BsonDocument>>();
+            expectedUpdates.Add(Builders<BsonDocument>.Update.Set(propertyName, value));
+            var expectedJson = ConvertUpdatesToJson(expectedUpdates);
+            var resultJson = ConvertUpdatesToJson(result);
+
+            Assert.Equal(expectedJson, resultJson);
+        }
+
+        [Fact]
+        public void GetAllPropertiesToUpdate_JsonElementIsJsonObject_ReturnsUpdateDefinitionsWithOneUpdateOfPropertyNameAndValue()
         {
             var propertyName = nameof(ModelDoesNotImplementIExternalEntity.ChildModel);
             Type type = typeof(ModelDoesNotImplementIExternalEntity);
             var name = "ChildName";
             var value = new ChildModel { Name = name };
-            JsonElement jsonNode = JsonSerializer.SerializeToElement(value, typeof(ChildModel))!;
+            JsonElement jsonElement = JsonSerializer.SerializeToElement(value, typeof(ChildModel))!;
 
-            var result = _mongoDbService.GetAllPropertiesToUpdate(propertyName, type, jsonNode);
+            var result = _mongoDbService.GetAllPropertiesToUpdate(propertyName, type, jsonElement);
 
             Assert.NotNull(result);
 
