@@ -7,5 +7,7 @@ namespace Crud.Api.Tests.TestingModels
     public class Model
     {
         public Int32 Id { get; set; }
+        public String? Name { get; set; }
+        public String? Description { get; set; }
     }
 }

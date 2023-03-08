@@ -133,7 +133,7 @@ public class CrudController : BaseApiController
                 return BadRequest(ErrorMessage.BadRequestBody);
 
             Query? query = null;
-            string jsonExMessage = "";
+            string jsonExMessage = $"{nameof(Query)} is null.";
             try { query = JsonSerializer.Deserialize(json, typeof(Query), JsonSerializerOption.Default) as Query; }
             catch (Exception jsonEx)
             {
@@ -142,11 +142,14 @@ public class CrudController : BaseApiController
             if (query is null)
                 return BadRequest(String.Format(ErrorMessage.BadRequestQuery, jsonExMessage));
 
-            // dynamic model = Convert.ChangeType(Activator.CreateInstance(type, null), type);
+            if (_applicationOptions.ValidateQuery)
+            {
+                dynamic model = Convert.ChangeType(Activator.CreateInstance(type, null), type);
 
-            // var validationResult = (ValidationResult)await _validator.ValidateReadAsync(model!, queryParams);
-            // if (!validationResult.IsValid)
-            //     return BadRequest(validationResult.Message);
+                var validationResult = (ValidationResult)_validator.ValidateQuery(model!, query);
+                if (!validationResult.IsValid)
+                    return BadRequest(validationResult.Message);
+            }
 
             var queryReadAsync = ReflectionHelper.GetGenericMethod(type, typeof(IPreserver), nameof(IPreserver.QueryReadAsync), new Type[] { typeof(Query) });
             var models = await (dynamic)queryReadAsync.Invoke(_preserver, new object[] { query });
@@ -214,13 +217,13 @@ public class CrudController : BaseApiController
                 return BadRequest(ErrorMessage.BadRequestBody);
 
             dynamic? model = JsonSerializer.Deserialize(json, type, JsonSerializerOption.Default);
-            var propertyValues = JsonSerializer.Deserialize<Dictionary<string, JsonNode>>(json, JsonSerializerOption.Default);
+            var propertyValues = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(json, JsonSerializerOption.Default);
 
             var validationResult = (ValidationResult)await _validator.ValidatePartialUpdateAsync(id, model, propertyValues?.Keys);
             if (!validationResult.IsValid)
                 return BadRequest(validationResult.Message);
 
-            var partialUpdateAsync = ReflectionHelper.GetGenericMethod(type, typeof(IPreserver), nameof(IPreserver.PartialUpdateAsync), new Type[] { typeof(Guid), typeof(IDictionary<String, JsonNode>) });
+            var partialUpdateAsync = ReflectionHelper.GetGenericMethod(type, typeof(IPreserver), nameof(IPreserver.PartialUpdateAsync), new Type[] { typeof(Guid), typeof(IDictionary<String, JsonElement>) });
             var updatedModel = await (dynamic)partialUpdateAsync.Invoke(_preserver, new object[] { id, propertyValues });
 
             if (updatedModel is null)
@@ -251,13 +254,13 @@ public class CrudController : BaseApiController
             var queryParams = _queryCollectionService.ConvertToDictionary(Request.Query);
 
             dynamic? model = JsonSerializer.Deserialize(json, type, JsonSerializerOption.Default);
-            var propertyValues = JsonSerializer.Deserialize<Dictionary<string, JsonNode>>(json, JsonSerializerOption.Default);
+            var propertyValues = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(json, JsonSerializerOption.Default);
 
             var validationResult = (ValidationResult)await _validator.ValidatePartialUpdateAsync(model, queryParams, propertyValues?.Keys);
             if (!validationResult.IsValid)
                 return BadRequest(validationResult.Message);
 
-            var partialUpdateAsync = ReflectionHelper.GetGenericMethod(type, typeof(IPreserver), nameof(IPreserver.PartialUpdateAsync), new Type[] { typeof(IDictionary<String, String>), typeof(IDictionary<String, JsonNode>) });
+            var partialUpdateAsync = ReflectionHelper.GetGenericMethod(type, typeof(IPreserver), nameof(IPreserver.PartialUpdateAsync), new Type[] { typeof(IDictionary<String, String>), typeof(IDictionary<String, JsonElement>) });
             var updatedCount = await (dynamic)partialUpdateAsync.Invoke(_preserver, new object[] { queryParams, propertyValues });
 
             return Ok(updatedCount);

@@ -1,4 +1,5 @@
 using Crud.Api.Models;
+using Crud.Api.QueryModels;
 
 namespace Crud.Api.Validators
 {
@@ -16,5 +17,6 @@ namespace Crud.Api.Validators
         Task<ValidationResult> ValidatePartialUpdateAsync(User user, IDictionary<String, String>? queryParams, IReadOnlyCollection<String>? propertiesToBeUpdated);
         Task<ValidationResult> ValidateDeleteAsync(Object model, IDictionary<String, String>? queryParams);
         Task<ValidationResult> ValidateDeleteAsync(User user, IDictionary<String, String>? queryParams);
+        ValidationResult ValidateQuery(Object model, Query query);
     }
 }
