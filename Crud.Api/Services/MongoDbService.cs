@@ -48,21 +48,29 @@ namespace Crud.Api.Services
             return filter;
         }
 
-        public IEnumerable<UpdateDefinition<BsonDocument>> GetShallowUpdates(IDictionary<String, JsonNode> propertyValues, Type type)
+        public IEnumerable<UpdateDefinition<BsonDocument>> GetShallowUpdates(IDictionary<String, JsonElement> propertyValues, Type type)
         {
             var updates = new List<UpdateDefinition<BsonDocument>>();
 
             foreach (var propertyValue in propertyValues)
             {
                 string key = propertyValue.Key.Pascalize();
-                dynamic value = JsonSerializer.Deserialize(propertyValue.Value, type.GetProperty(key)!.PropertyType, JsonSerializerOption.Default);
-                updates.Add(Builders<BsonDocument>.Update.Set(key, value));
+                dynamic? value = JsonSerializer.Deserialize(propertyValue.Value, type.GetProperty(key)!.PropertyType, JsonSerializerOption.Default);
+
+                if (value is null)
+                {
+                    updates.Add(Builders<BsonDocument>.Update.Set(key, BsonNull.Value));
+                }
+                else
+                {
+                    updates.Add(Builders<BsonDocument>.Update.Set(key, value));
+                }
             }
 
             return updates;
         }
 
-        public IEnumerable<UpdateDefinition<BsonDocument>> GetDeepUpdates(IDictionary<String, JsonNode> propertyValues, Type type)
+        public IEnumerable<UpdateDefinition<BsonDocument>> GetDeepUpdates(IDictionary<String, JsonElement> propertyValues, Type type)
         {
             var updates = new List<UpdateDefinition<BsonDocument>>();
 
@@ -75,14 +83,14 @@ namespace Crud.Api.Services
             return updates;
         }
 
-        public IEnumerable<UpdateDefinition<BsonDocument>> GetAllPropertiesToUpdate(String propertyName, Type type, JsonNode jsonNode)
+        public IEnumerable<UpdateDefinition<BsonDocument>> GetAllPropertiesToUpdate(String propertyName, Type type, JsonElement jsonElement)
         {
             var updates = new List<UpdateDefinition<BsonDocument>>();
             string currentPropertyName = propertyName.GetValueAfterLastDelimiter(Delimiter.MongoDbChildProperty);
 
-            if (jsonNode is JsonObject)
+            if (jsonElement.ValueKind == JsonValueKind.Object)
             {
-                var propertyValues = jsonNode.Deserialize<Dictionary<string, JsonNode>>();
+                var propertyValues = jsonElement.Deserialize<Dictionary<string, JsonElement>>();
                 foreach (var propertyValue in propertyValues!)
                 {
                     updates.AddRange(GetAllPropertiesToUpdate($"{propertyName}{Delimiter.MongoDbChildProperty}{propertyValue.Key.Pascalize()}", type.GetProperty(currentPropertyName)!.PropertyType, propertyValue.Value));
@@ -90,8 +98,16 @@ namespace Crud.Api.Services
             }
             else
             {
-                dynamic? value = jsonNode.Deserialize(type.GetProperty(currentPropertyName)!.PropertyType, JsonSerializerOption.Default);
-                updates.Add(Builders<BsonDocument>.Update.Set(propertyName, value));
+                dynamic? value = jsonElement.Deserialize(type.GetProperty(currentPropertyName)!.PropertyType, JsonSerializerOption.Default);
+
+                if (value is null)
+                {
+                    updates.Add(Builders<BsonDocument>.Update.Set(propertyName, BsonNull.Value));
+                }
+                else
+                {
+                    updates.Add(Builders<BsonDocument>.Update.Set(propertyName, value));
+                }
             }
 
             return updates;

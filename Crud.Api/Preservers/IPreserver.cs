@@ -1,4 +1,4 @@
-using System.Text.Json.Nodes;
+using System.Text.Json;
 using Crud.Api.QueryModels;
 
 namespace Crud.Api.Preservers
@@ -10,8 +10,8 @@ namespace Crud.Api.Preservers
         Task<IEnumerable<T>> ReadAsync<T>(IDictionary<String, String>? queryParams);
         Task<IEnumerable<T>> QueryReadAsync<T>(Query query);
         Task<T> UpdateAsync<T>(Guid id, T model);
-        Task<T> PartialUpdateAsync<T>(Guid id, IDictionary<String, JsonNode> propertyValues);
-        Task<Int64> PartialUpdateAsync<T>(IDictionary<String, String>? queryParams, IDictionary<String, JsonNode> propertyValues);
+        Task<T> PartialUpdateAsync<T>(Guid id, IDictionary<String, JsonElement> propertyValues);
+        Task<Int64> PartialUpdateAsync<T>(IDictionary<String, String>? queryParams, IDictionary<String, JsonElement> propertyValues);
         Task<Int64> DeleteAsync<T>(Guid id);
         Task<Int64> DeleteAsync<T>(IDictionary<String, String>? queryParams);
     }

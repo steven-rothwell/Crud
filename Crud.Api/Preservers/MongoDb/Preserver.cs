@@ -1,4 +1,4 @@
-using System.Text.Json.Nodes;
+using System.Text.Json;
 using Crud.Api.Models;
 using Crud.Api.Options;
 using Crud.Api.QueryModels;
@@ -116,7 +116,7 @@ namespace Crud.Api.Preservers.MongoDb
             });
         }
 
-        public async Task<T> PartialUpdateAsync<T>(Guid id, IDictionary<String, JsonNode> propertyValues)
+        public async Task<T> PartialUpdateAsync<T>(Guid id, IDictionary<String, JsonElement> propertyValues)
         {
             if (propertyValues is null)
                 throw new ArgumentNullException(nameof(propertyValues));
@@ -137,7 +137,7 @@ namespace Crud.Api.Preservers.MongoDb
             });
         }
 
-        public async Task<Int64> PartialUpdateAsync<T>(IDictionary<String, String>? queryParams, IDictionary<String, JsonNode> propertyValues)
+        public async Task<Int64> PartialUpdateAsync<T>(IDictionary<String, String>? queryParams, IDictionary<String, JsonElement> propertyValues)
         {
             if (propertyValues is null)
                 throw new ArgumentNullException(nameof(propertyValues));

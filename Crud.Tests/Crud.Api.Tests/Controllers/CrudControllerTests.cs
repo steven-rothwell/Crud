@@ -31,7 +31,7 @@ namespace Crud.Api.Tests.Controllers
 
         public CrudControllerTests()
         {
-            _applicationOptions = Microsoft.Extensions.Options.Options.Create(new ApplicationOptions { ShowExceptions = false });
+            _applicationOptions = Microsoft.Extensions.Options.Options.Create(new ApplicationOptions { ShowExceptions = false, ValidateQuery = false });
             _logger = new Mock<ILogger<CrudController>>();
             _validator = new Mock<IValidator>();
             _preserver = new Mock<IPreserver>();
@@ -681,7 +681,7 @@ namespace Crud.Api.Tests.Controllers
             _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(type);
             _streamService.Setup(m => m.ReadToEndThenDisposeAsync(It.IsAny<Stream>(), It.IsAny<Encoding>())).ReturnsAsync(json);
             _validator.Setup(m => m.ValidatePartialUpdateAsync(It.IsAny<Guid>(), It.IsAny<Model>(), It.IsAny<IReadOnlyCollection<string>>())).ReturnsAsync(validationResult);
-            _preserver.Setup(m => m.PartialUpdateAsync<Model>(It.IsAny<Guid>(), It.IsAny<IDictionary<string, JsonNode>>())).ReturnsAsync(updatedModel);
+            _preserver.Setup(m => m.PartialUpdateAsync<Model>(It.IsAny<Guid>(), It.IsAny<IDictionary<string, JsonElement>>())).ReturnsAsync(updatedModel);
 
             var result = await _controller.PartialUpdateAsync(typeName, id) as NotFoundObjectResult;
 
@@ -703,7 +703,7 @@ namespace Crud.Api.Tests.Controllers
             _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(type);
             _streamService.Setup(m => m.ReadToEndThenDisposeAsync(It.IsAny<Stream>(), It.IsAny<Encoding>())).ReturnsAsync(json);
             _validator.Setup(m => m.ValidatePartialUpdateAsync(It.IsAny<Guid>(), It.IsAny<Model>(), It.IsAny<IReadOnlyCollection<string>>())).ReturnsAsync(validationResult);
-            _preserver.Setup(m => m.PartialUpdateAsync<Model>(It.IsAny<Guid>(), It.IsAny<IDictionary<string, JsonNode>>())).ReturnsAsync(updatedModel);
+            _preserver.Setup(m => m.PartialUpdateAsync<Model>(It.IsAny<Guid>(), It.IsAny<IDictionary<string, JsonElement>>())).ReturnsAsync(updatedModel);
 
             var result = await _controller.PartialUpdateAsync(typeName, id) as OkObjectResult;
 
@@ -799,7 +799,7 @@ namespace Crud.Api.Tests.Controllers
             _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(type);
             _streamService.Setup(m => m.ReadToEndThenDisposeAsync(It.IsAny<Stream>(), It.IsAny<Encoding>())).ReturnsAsync(json);
             _validator.Setup(m => m.ValidatePartialUpdateAsync(It.IsAny<Model>(), It.IsAny<IDictionary<string, string>?>(), It.IsAny<IReadOnlyCollection<string>>())).ReturnsAsync(validationResult);
-            _preserver.Setup(m => m.PartialUpdateAsync<Model>(It.IsAny<IDictionary<string, string>>(), It.IsAny<IDictionary<string, JsonNode>>())).ReturnsAsync(updatedCount);
+            _preserver.Setup(m => m.PartialUpdateAsync<Model>(It.IsAny<IDictionary<string, string>>(), It.IsAny<IDictionary<string, JsonElement>>())).ReturnsAsync(updatedCount);
 
             var result = await _controller.PartialUpdateAsync(typeName) as OkObjectResult;
 

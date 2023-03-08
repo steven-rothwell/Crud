@@ -127,7 +127,7 @@ namespace Crud.Api.Tests.Services
             var propertyName = nameof(ModelDoesNotImplementIExternalEntity.ExternalId);
             Type type = typeof(ModelDoesNotImplementIExternalEntity);
             var value = Guid.Empty;
-            JsonNode jsonNode = JsonSerializer.SerializeToNode(value, typeof(Guid))!;
+            JsonElement jsonNode = JsonSerializer.SerializeToElement(value, typeof(Guid))!;
 
             var result = _mongoDbService.GetAllPropertiesToUpdate(propertyName, type, jsonNode);
 
@@ -148,7 +148,7 @@ namespace Crud.Api.Tests.Services
             Type type = typeof(ModelDoesNotImplementIExternalEntity);
             var name = "ChildName";
             var value = new ChildModel { Name = name };
-            JsonNode jsonNode = JsonSerializer.SerializeToNode(value, typeof(ChildModel))!;
+            JsonElement jsonNode = JsonSerializer.SerializeToElement(value, typeof(ChildModel))!;
 
             var result = _mongoDbService.GetAllPropertiesToUpdate(propertyName, type, jsonNode);
 
