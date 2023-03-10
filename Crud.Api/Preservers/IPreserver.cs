@@ -9,6 +9,7 @@ namespace Crud.Api.Preservers
         Task<T?> ReadAsync<T>(Guid id);
         Task<IEnumerable<T>> ReadAsync<T>(IDictionary<String, String>? queryParams);
         Task<IEnumerable<T>> QueryReadAsync<T>(Query query);
+        Task<Int64> QueryReadCountAsync(Type type, Query query);
         Task<T> UpdateAsync<T>(Guid id, T model);
         Task<T> PartialUpdateAsync<T>(Guid id, IDictionary<String, JsonElement> propertyValues);
         Task<Int64> PartialUpdateAsync<T>(IDictionary<String, String>? queryParams, IDictionary<String, JsonElement> propertyValues);
