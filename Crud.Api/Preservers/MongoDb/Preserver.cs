@@ -99,6 +99,24 @@ namespace Crud.Api.Preservers.MongoDb
             return await models.ToListAsync();
         }
 
+        public async Task<Int64> QueryReadCountAsync(Type type, Query query)
+        {
+            var dbClient = new MongoClient(_mongoDbOptions.ConnectionString);
+            var database = dbClient.GetDatabase(_mongoDbOptions.DatabaseName);
+
+            string tableName = _mongoDbService.GetTableName(type);
+            var collection = database.GetCollection<BsonDocument>(tableName);
+            var filter = _mongoDbService.GetConditionFilter(type, query.Where);
+            var sort = _mongoDbService.GetSort(query.OrderBy);
+            var projections = _mongoDbService.GetProjections(query);
+
+            return await collection.CountDocumentsAsync(filter, new CountOptions
+            {
+                Limit = query.Limit,
+                Skip = query.Skip
+            });
+        }
+
         public async Task<T> UpdateAsync<T>(Guid id, T model)
         {
             var dbClient = new MongoClient(_mongoDbOptions.ConnectionString);
