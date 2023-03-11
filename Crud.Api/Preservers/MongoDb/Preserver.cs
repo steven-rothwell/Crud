@@ -201,5 +201,18 @@ namespace Crud.Api.Preservers.MongoDb
             var deleteResult = await collection.DeleteManyAsync(filter);
             return deleteResult.DeletedCount;
         }
+
+        public async Task<Int64> QueryDeleteAsync(Type type, Query query)
+        {
+            var dbClient = new MongoClient(_mongoDbOptions.ConnectionString);
+            var database = dbClient.GetDatabase(_mongoDbOptions.DatabaseName);
+
+            string tableName = _mongoDbService.GetTableName(type);
+            var collection = database.GetCollection<BsonDocument>(tableName);
+            var filter = _mongoDbService.GetConditionFilter(type, query.Where);
+
+            var deleteResult = await collection.DeleteManyAsync(filter);
+            return deleteResult.DeletedCount;
+        }
     }
 }

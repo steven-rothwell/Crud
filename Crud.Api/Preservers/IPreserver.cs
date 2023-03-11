@@ -15,5 +15,6 @@ namespace Crud.Api.Preservers
         Task<Int64> PartialUpdateAsync<T>(IDictionary<String, String>? queryParams, IDictionary<String, JsonElement> propertyValues);
         Task<Int64> DeleteAsync<T>(Guid id);
         Task<Int64> DeleteAsync<T>(IDictionary<String, String>? queryParams);
+        Task<Int64> QueryDeleteAsync(Type type, Query query);
     }
 }
