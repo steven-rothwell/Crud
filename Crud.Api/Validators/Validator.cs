@@ -238,7 +238,7 @@ namespace Crud.Api.Validators
 
             if (condition.Field is not null)
             {
-                if (!modelProperties.HasPropertyName(condition.Field))
+                if (!modelProperties.HasPropertyName(condition.Field, Delimiter.MongoDbChildProperty))
                     return new ValidationResult(false, $"A {nameof(Condition)} {nameof(Condition.Field)} contains a property {condition.Field} that the model does not have.");
 
                 if (condition.ComparisonOperator is null)
@@ -286,7 +286,7 @@ namespace Crud.Api.Validators
                 if (sort.Field is null)
                     return new ValidationResult(false, $"{nameof(Query.OrderBy)} cannot contain a {nameof(Sort)} with a null {nameof(Sort.Field)}.");
 
-                if (!modelProperties.HasPropertyName(sort.Field))
+                if (!modelProperties.HasPropertyName(sort.Field, Delimiter.MongoDbChildProperty))
                     return new ValidationResult(false, $"A {nameof(Sort)} {nameof(Sort.Field)} contains a property {sort.Field} that the model does not have.");
             }
 

@@ -367,4 +367,47 @@ public class CrudController : BaseApiController
             return InternalServerError(ex);
         }
     }
+
+    [Route("query/{typeName}"), HttpDelete]
+    public async Task<IActionResult> QueryDeleteAsync(String typeName)
+    {
+        try
+        {
+            var type = _typeService.GetModelType(typeName);
+            if (type is null)
+                return BadRequest(ErrorMessage.BadRequestModelType);
+
+            string json = await _streamService.ReadToEndThenDisposeAsync(Request.Body, Encoding.UTF8);
+            if (String.IsNullOrWhiteSpace(json))
+                return BadRequest(ErrorMessage.BadRequestBody);
+
+            Query? query = null;
+            string jsonExMessage = $"{nameof(Query)} is null.";
+            try { query = JsonSerializer.Deserialize(json, typeof(Query), JsonSerializerOption.Default) as Query; }
+            catch (Exception jsonEx)
+            {
+                jsonExMessage = jsonEx.Message;
+            }
+            if (query is null)
+                return BadRequest(String.Format(ErrorMessage.BadRequestQuery, jsonExMessage));
+
+            if (_applicationOptions.ValidateQuery)
+            {
+                dynamic model = Convert.ChangeType(Activator.CreateInstance(type, null), type);
+
+                var validationResult = (ValidationResult)_validator.ValidateQuery(model!, query);
+                if (!validationResult.IsValid)
+                    return BadRequest(validationResult.Message);
+            }
+
+            var deletedCount = await _preserver.QueryDeleteAsync(type, query);
+
+            return Ok(deletedCount);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error deleting with typeName: {typeName}.");
+            return InternalServerError(ex);
+        }
+    }
 }

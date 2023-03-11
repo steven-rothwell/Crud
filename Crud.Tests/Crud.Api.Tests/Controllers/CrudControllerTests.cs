@@ -1128,5 +1128,154 @@ namespace Crud.Api.Tests.Controllers
             Assert.Equal(StatusCodes.Status500InternalServerError, result.StatusCode);
         }
         #endregion
+
+        #region QueryDeleteAsync
+
+        [Fact]
+        public async Task QueryDeleteAsync_TypeIsNull_ReturnsBadRequest()
+        {
+            var typeName = "some-type-name";
+            Type? type = null;
+
+            _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(type);
+
+            var result = await _controller.QueryDeleteAsync(typeName) as BadRequestObjectResult;
+
+            Assert.NotNull(result);
+            Assert.Equal(ErrorMessage.BadRequestModelType, result.Value);
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        public async Task QueryDeleteAsync_JsonIsNullOrEmpty_ReturnsBadRequest(String json)
+        {
+            var typeName = "some-type-name";
+            Type? type = typeof(Model);
+
+            _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(type);
+            _streamService.Setup(m => m.ReadToEndThenDisposeAsync(It.IsAny<Stream>(), It.IsAny<Encoding>())).ReturnsAsync(json);
+
+            var result = await _controller.QueryDeleteAsync(typeName) as BadRequestObjectResult;
+
+            Assert.NotNull(result);
+            Assert.Equal(ErrorMessage.BadRequestBody, result.Value);
+        }
+
+        [Fact]
+        public async Task QueryDeleteAsync_QueryIsNull_ReturnsBadRequest()
+        {
+            var typeName = "some-type-name";
+            Type? type = typeof(Model);
+            Query? query = null;
+            var json = JsonSerializer.Serialize(query);
+
+            _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(type);
+            _streamService.Setup(m => m.ReadToEndThenDisposeAsync(It.IsAny<Stream>(), It.IsAny<Encoding>())).ReturnsAsync(json);
+
+            var result = await _controller.QueryDeleteAsync(typeName) as BadRequestObjectResult;
+
+            Assert.NotNull(result);
+            Assert.Equal(String.Format(ErrorMessage.BadRequestQuery, $"{nameof(Query)} is null."), result.Value);
+        }
+
+        [Fact]
+        public async Task QueryDeleteAsync_DeserializeThrowsExceptionQueryIsNull_ReturnsBadRequest()
+        {
+            var typeName = "some-type-name";
+            Type? type = typeof(Model);
+            var json = @"{ ""OrderBy"": ""1""}";
+
+            _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(type);
+            _streamService.Setup(m => m.ReadToEndThenDisposeAsync(It.IsAny<Stream>(), It.IsAny<Encoding>())).ReturnsAsync(json);
+
+            var result = await _controller.QueryDeleteAsync(typeName) as BadRequestObjectResult;
+
+            Assert.NotNull(result);
+            Assert.NotNull(result.Value);
+            Assert.Contains(String.Format(ErrorMessage.BadRequestQuery, String.Empty), result.Value.ToString());
+            Assert.Contains("OrderBy", result.Value.ToString());
+        }
+
+        [Fact]
+        public async Task QueryDeleteAsync_ValidateQueryIsTrueQueryIsInvalid_ReturnsBadRequest()
+        {
+            var typeName = "some-type-name";
+            Type? type = typeof(Model);
+            Query? query = new Query { Limit = -1 };
+            var json = JsonSerializer.Serialize(query);
+            var validationResult = new ValidationResult(false, $"{nameof(Query)} {nameof(Query.Limit)} cannot be less than zero.");
+
+            _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(type);
+            _streamService.Setup(m => m.ReadToEndThenDisposeAsync(It.IsAny<Stream>(), It.IsAny<Encoding>())).ReturnsAsync(json);
+            _applicationOptions.Value.ValidateQuery = true;
+            _validator.Setup(m => m.ValidateQuery(It.IsAny<Model>(), It.IsAny<Query>())).Returns(validationResult);
+
+            var result = await _controller.QueryDeleteAsync(typeName) as BadRequestObjectResult;
+
+            Assert.NotNull(result);
+            Assert.Equal($"{nameof(Query)} {nameof(Query.Limit)} cannot be less than zero.", result.Value);
+        }
+
+        [Fact]
+        public async Task QueryDeleteAsync_ValidateQueryIsFalseQueryIsInvalid_ValidateQueryNotCalled()
+        {
+            var typeName = "some-type-name";
+            Type? type = typeof(Model);
+            Query? query = new Query { Limit = -1 };
+            var json = JsonSerializer.Serialize(query);
+            var validationResult = new ValidationResult(false, $"{nameof(Query)} {nameof(Query.Limit)} cannot be less than zero.");
+
+            _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(type);
+            _streamService.Setup(m => m.ReadToEndThenDisposeAsync(It.IsAny<Stream>(), It.IsAny<Encoding>())).ReturnsAsync(json);
+            _applicationOptions.Value.ValidateQuery = false;
+            _validator.Setup(m => m.ValidateQuery(It.IsAny<Model>(), It.IsAny<Query>())).Returns(validationResult);
+
+            var result = await _controller.QueryDeleteAsync(typeName);
+
+            _validator.Verify(m => m.ValidateQuery(It.IsAny<Model>(), It.IsAny<Query>()), Times.Never);
+            _preserver.Verify(m => m.QueryDeleteAsync(type, It.Is<Query>(thisQuery => thisQuery.Limit == query.Limit)), Times.Once);
+        }
+
+        [Fact]
+        public async Task QueryDeleteAsync_ModelsAreDeleted_ReturnsDeletedCount()
+        {
+            var typeName = "some-type-name";
+            Type? type = typeof(Model);
+            Query? query = new Query { Includes = null, Excludes = null };
+            var json = JsonSerializer.Serialize(query);
+            var model = new Model { Id = 1 };
+            var models = new List<Model> { model };
+
+            _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(type);
+            _streamService.Setup(m => m.ReadToEndThenDisposeAsync(It.IsAny<Stream>(), It.IsAny<Encoding>())).ReturnsAsync(json);
+            _applicationOptions.Value.ValidateQuery = false;
+            _preserver.Setup(m => m.QueryDeleteAsync(It.IsAny<Type>(), It.IsAny<Query>())).ReturnsAsync(models.Count);
+
+            var result = await _controller.QueryDeleteAsync(typeName) as OkObjectResult;
+
+            Assert.NotNull(result);
+            Assert.NotNull(result.Value);
+
+            var typedResult = (long)result.Value;
+
+            Assert.Equal(models.Count, typedResult);
+        }
+
+        [Fact]
+        public async Task QueryDeleteAsync_ExceptionThrown_ReturnsInternalServerError()
+        {
+            var typeName = "some-type-name";
+            var exception = new Exception("an-error-occurred");
+
+            _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Throws(exception);
+
+            var result = await _controller.QueryDeleteAsync(typeName) as StatusCodeResult;
+
+            Assert.NotNull(result);
+            Assert.Equal(StatusCodes.Status500InternalServerError, result.StatusCode);
+        }
+
+        #endregion
     }
 }
