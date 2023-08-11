@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Crud.Api.Options;
 using Crud.Api.Preservers;
 using Crud.Api.Services;
@@ -20,7 +21,7 @@ builder.Services.AddScoped<ITypeService, TypeService>();
 
 var conventionPack = new ConventionPack
 {
-    //new CamelCaseElementNameConvention(),  // Uncommenting this will cause reads not to work. Would need to change nameof(IExternalEntity.ExternalId) to camelCase.
+    new CamelCaseElementNameConvention(),
     new IgnoreExtraElementsConvention(true)
 };
 ConventionRegistry.Register("conventionPack", conventionPack, t => true);
@@ -32,7 +33,12 @@ BsonSerializer.RegisterSerializer(new GuidSerializer(GuidRepresentation.Standard
 builder.Services.Configure<MongoDbOptions>(builder.Configuration.GetSection(nameof(MongoDbOptions)));
 builder.Services.Configure<ApplicationOptions>(builder.Configuration.GetSection(nameof(ApplicationOptions)));
 
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
+    options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+});
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

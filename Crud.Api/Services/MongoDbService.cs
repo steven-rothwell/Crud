@@ -12,7 +12,7 @@ namespace Crud.Api.Services
 {
     public class MongoDbService : IMongoDbService
     {
-        public String GetTableName(Type type)
+        public String GetTableName(Type? type)
         {
             string? tableName = type.GetTableName();
             if (tableName is null)
@@ -25,9 +25,9 @@ namespace Crud.Api.Services
         {
             FilterDefinition<BsonDocument> filter;
             if (typeof(IExternalEntity).IsAssignableFrom(type))
-                filter = Builders<BsonDocument>.Filter.Eq(nameof(IExternalEntity.ExternalId), id);
+                filter = Builders<BsonDocument>.Filter.Eq(nameof(IExternalEntity.ExternalId).Camelize(), id);
             else
-                filter = Builders<BsonDocument>.Filter.Eq("Id", id);
+                filter = Builders<BsonDocument>.Filter.Eq("id", id);
 
             return filter;
         }
@@ -40,8 +40,8 @@ namespace Crud.Api.Services
                 foreach (var queryParam in queryParams)
                 {
                     string key = queryParam.Key.Replace(Delimiter.QueryParamChildProperty, Delimiter.MongoDbChildProperty);
-                    dynamic value = queryParam.Value.ChangeType(type.GetProperties().GetProperty(key, Delimiter.MongoDbChildProperty)!.PropertyType);
-                    filter &= Builders<BsonDocument>.Filter.Eq(key.Pascalize(Delimiter.MongoDbChildProperty), value);
+                    dynamic? value = queryParam.Value.ChangeType(type.GetProperties().GetProperty(key, Delimiter.MongoDbChildProperty)!.PropertyType);
+                    filter &= Builders<BsonDocument>.Filter.Eq(key.Camelize(Delimiter.MongoDbChildProperty), value);
                 }
             }
 
@@ -54,8 +54,8 @@ namespace Crud.Api.Services
 
             foreach (var propertyValue in propertyValues)
             {
-                string key = propertyValue.Key.Pascalize();
-                dynamic? value = JsonSerializer.Deserialize(propertyValue.Value, type.GetProperty(key)!.PropertyType, JsonSerializerOption.Default);
+                string key = propertyValue.Key.Camelize();
+                dynamic? value = JsonSerializer.Deserialize(propertyValue.Value, type.GetProperty(key.Pascalize())!.PropertyType, JsonSerializerOption.Default);
 
                 if (value is null)
                 {
@@ -76,7 +76,7 @@ namespace Crud.Api.Services
 
             foreach (var propertyValue in propertyValues)
             {
-                string key = propertyValue.Key.Pascalize();
+                string key = propertyValue.Key.Camelize();
                 updates.AddRange(GetAllPropertiesToUpdate(key, type, propertyValue.Value));
             }
 
@@ -86,14 +86,14 @@ namespace Crud.Api.Services
         public IEnumerable<UpdateDefinition<BsonDocument>> GetAllPropertiesToUpdate(String propertyName, Type type, JsonElement jsonElement)
         {
             var updates = new List<UpdateDefinition<BsonDocument>>();
-            string currentPropertyName = propertyName.GetValueAfterLastDelimiter(Delimiter.MongoDbChildProperty);
+            string currentPropertyName = propertyName.GetValueAfterLastDelimiter(Delimiter.MongoDbChildProperty).Pascalize();
 
             if (jsonElement.ValueKind == JsonValueKind.Object)
             {
                 var propertyValues = jsonElement.Deserialize<Dictionary<string, JsonElement>>();
                 foreach (var propertyValue in propertyValues!)
                 {
-                    updates.AddRange(GetAllPropertiesToUpdate($"{propertyName}{Delimiter.MongoDbChildProperty}{propertyValue.Key.Pascalize()}", type.GetProperty(currentPropertyName)!.PropertyType, propertyValue.Value));
+                    updates.AddRange(GetAllPropertiesToUpdate($"{propertyName}{Delimiter.MongoDbChildProperty}{propertyValue.Key.Camelize()}", type.GetProperty(currentPropertyName)!.PropertyType, propertyValue.Value));
                 }
             }
             else
@@ -125,7 +125,7 @@ namespace Crud.Api.Services
                 if (condition.Field is null || condition.ComparisonOperator is null)
                     return filter;
 
-                string field = condition.Field!.Pascalize(Delimiter.MongoDbChildProperty);
+                string field = condition.Field!.Camelize(Delimiter.MongoDbChildProperty);
                 Type fieldType = type.GetProperties().GetProperty(condition.Field, Delimiter.MongoDbChildProperty)!.PropertyType;
 
                 if (typeof(IEnumerable).IsAssignableFrom(fieldType) && fieldType.IsGenericType)
@@ -236,7 +236,7 @@ namespace Crud.Api.Services
             var sortDefinitions = new List<SortDefinition<BsonDocument>>();
             foreach (var sort in orderBy)
             {
-                var field = sort.Field!.Pascalize(Delimiter.MongoDbChildProperty);
+                var field = sort.Field!.Camelize(Delimiter.MongoDbChildProperty);
                 SortDefinition<BsonDocument> sortDefinition;
                 if (sort.IsDescending.HasValue && sort.IsDescending.Value)
                 {
@@ -273,7 +273,7 @@ namespace Crud.Api.Services
             var projectionDefinitions = new List<ProjectionDefinition<BsonDocument>>();
             foreach (var include in includes)
             {
-                var field = include.Pascalize(Delimiter.MongoDbChildProperty);
+                var field = include.Camelize(Delimiter.MongoDbChildProperty);
 
                 projectionDefinitions.Add(projectionBuilder.Include(field));
             }
@@ -291,7 +291,7 @@ namespace Crud.Api.Services
             var projectionDefinitions = new List<ProjectionDefinition<BsonDocument>>();
             foreach (var exclude in excludes)
             {
-                var field = exclude.Pascalize(Delimiter.MongoDbChildProperty);
+                var field = exclude.Camelize(Delimiter.MongoDbChildProperty);
 
                 projectionDefinitions.Add(projectionBuilder.Exclude(field));
             }
@@ -299,7 +299,7 @@ namespace Crud.Api.Services
             return projectionBuilder.Combine(projectionDefinitions);
         }
 
-        public dynamic ChangeType(String field, Type? type, String? value)
+        public dynamic ChangeType(String field, Type type, String value)
         {
             try
             {

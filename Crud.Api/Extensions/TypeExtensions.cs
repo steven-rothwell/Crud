@@ -5,7 +5,7 @@ namespace Crud.Api
 {
     public static class TypeExtensions
     {
-        public static TableAttribute? GetTableAttribute(this Type type)
+        public static TableAttribute? GetTableAttribute(this Type? type)
         {
             if (type is null)
                 return null;
@@ -13,7 +13,7 @@ namespace Crud.Api
             return Attribute.GetCustomAttribute(type, typeof(TableAttribute)) as TableAttribute;
         }
 
-        public static String? GetTableName(this Type type)
+        public static String? GetTableName(this Type? type)
         {
             if (type is null)
                 return null;
@@ -26,7 +26,7 @@ namespace Crud.Api
             return type.GetPluralizedName();
         }
 
-        public static String? GetPluralizedName(this Type type)
+        public static String? GetPluralizedName(this Type? type)
         {
             if (type is null)
                 return null;

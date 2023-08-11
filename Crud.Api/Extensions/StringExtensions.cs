@@ -41,6 +41,25 @@ namespace Crud.Api
             return valueBuilder.ToString(1, valueBuilder.Length - 1);
         }
 
+        public static String Camelize(this String? value, Char delimiter)
+        {
+            if (value is null)
+                throw new ArgumentNullException(nameof(value));
+
+            var subValues = value.Split(delimiter);
+
+            if (subValues.Length == 1)
+                return value.Camelize();
+
+            var valueBuilder = new StringBuilder();
+            foreach (var subValue in subValues)
+            {
+                valueBuilder.Append(String.Concat(delimiter, subValue.Camelize()));
+            }
+
+            return valueBuilder.ToString(1, valueBuilder.Length - 1);
+        }
+
         public static String GetValueAfterFirstDelimiter(this String? value, Char delimiter)
         {
             if (value is null)
