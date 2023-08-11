@@ -101,7 +101,7 @@ public class CrudController : BaseApiController
 
             var queryParams = _queryCollectionService.ConvertToDictionary(Request.Query);
 
-            dynamic model = Convert.ChangeType(Activator.CreateInstance(type, null), type);
+            dynamic model = Convert.ChangeType(Activator.CreateInstance(type, null), type)!;
 
             var validationResult = (ValidationResult)await _validator.ValidateReadAsync(model!, queryParams);
             if (!validationResult.IsValid)
@@ -144,7 +144,7 @@ public class CrudController : BaseApiController
 
             if (_applicationOptions.ValidateQuery)
             {
-                dynamic model = Convert.ChangeType(Activator.CreateInstance(type, null), type);
+                dynamic model = Convert.ChangeType(Activator.CreateInstance(type, null), type)!;
 
                 var validationResult = (ValidationResult)_validator.ValidateQuery(model!, query);
                 if (!validationResult.IsValid)
@@ -156,7 +156,7 @@ public class CrudController : BaseApiController
 
             if ((query.Includes is not null && query.Includes.Count > 0) || (query.Excludes is not null && query.Excludes.Count > 0))
             {
-                var modelsWithLessProperties = JsonSerializer.Deserialize<object>(JsonSerializer.Serialize(models, new JsonSerializerOptions { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault }));
+                var modelsWithLessProperties = JsonSerializer.Deserialize<object>(JsonSerializer.Serialize(models, new JsonSerializerOptions { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault, PropertyNamingPolicy = JsonNamingPolicy.CamelCase }));
 
                 return Ok(modelsWithLessProperties);
             }
@@ -195,7 +195,7 @@ public class CrudController : BaseApiController
 
             if (_applicationOptions.ValidateQuery)
             {
-                dynamic model = Convert.ChangeType(Activator.CreateInstance(type, null), type);
+                dynamic model = Convert.ChangeType(Activator.CreateInstance(type, null), type)!;
 
                 var validationResult = (ValidationResult)_validator.ValidateQuery(model!, query);
                 if (!validationResult.IsValid)
@@ -350,7 +350,7 @@ public class CrudController : BaseApiController
 
             var queryParams = _queryCollectionService.ConvertToDictionary(Request.Query);
 
-            dynamic model = Convert.ChangeType(Activator.CreateInstance(type, null), type);
+            dynamic model = Convert.ChangeType(Activator.CreateInstance(type, null), type)!;
 
             var validationResult = (ValidationResult)await _validator.ValidateDeleteAsync(model!, queryParams);
             if (!validationResult.IsValid)
@@ -393,7 +393,7 @@ public class CrudController : BaseApiController
 
             if (_applicationOptions.ValidateQuery)
             {
-                dynamic model = Convert.ChangeType(Activator.CreateInstance(type, null), type);
+                dynamic model = Convert.ChangeType(Activator.CreateInstance(type, null), type)!;
 
                 var validationResult = (ValidationResult)_validator.ValidateQuery(model!, query);
                 if (!validationResult.IsValid)

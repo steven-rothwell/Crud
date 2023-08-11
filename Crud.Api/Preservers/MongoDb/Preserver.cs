@@ -46,7 +46,7 @@ namespace Crud.Api.Preservers.MongoDb
 
             var bsonDocument = model.ToBsonDocument();
             await collection.InsertOneAsync(bsonDocument);
-            return bsonDocument.FromBsonDocument<T>();
+            return bsonDocument.FromBsonDocument<T>()!;
         }
 
         public async Task<T?> ReadAsync<T>(Guid id)
@@ -117,7 +117,7 @@ namespace Crud.Api.Preservers.MongoDb
             });
         }
 
-        public async Task<T> UpdateAsync<T>(Guid id, T model)
+        public async Task<T?> UpdateAsync<T>(Guid id, T model)
         {
             var dbClient = new MongoClient(_mongoDbOptions.ConnectionString);
             var database = dbClient.GetDatabase(_mongoDbOptions.DatabaseName);
@@ -134,7 +134,7 @@ namespace Crud.Api.Preservers.MongoDb
             });
         }
 
-        public async Task<T> PartialUpdateAsync<T>(Guid id, IDictionary<String, JsonElement> propertyValues)
+        public async Task<T?> PartialUpdateAsync<T>(Guid id, IDictionary<String, JsonElement> propertyValues)
         {
             if (propertyValues is null)
                 throw new ArgumentNullException(nameof(propertyValues));

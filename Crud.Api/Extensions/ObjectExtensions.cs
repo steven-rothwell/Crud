@@ -5,7 +5,7 @@ namespace Crud.Api
 {
     public static class ObjectExtensions
     {
-        public static ValidationResult ValidateDataAnnotations(this Object model, Boolean validateChildModels = true, IReadOnlyCollection<String>? propertiesToValidate = null, Char childPropertyNameDelimiter = default)
+        public static ValidationResult ValidateDataAnnotations(this Object? model, Boolean validateChildModels = true, IReadOnlyCollection<String>? propertiesToValidate = null, Char childPropertyNameDelimiter = default)
         {
             if (model is null)
                 throw new ArgumentNullException(nameof(model));

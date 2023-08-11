@@ -9,6 +9,7 @@ using Crud.Api.QueryModels;
 using Crud.Api.Services;
 using Crud.Api.Tests.TestingModels;
 using Crud.Api.Validators;
+using Humanizer;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -164,7 +165,7 @@ namespace Crud.Api.Tests.Controllers
             var typeName = "some-type-name";
             Type? type = typeof(Model);
             Guid id = Guid.Empty;
-            Model model = null;
+            Model? model = null;
 
             _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(type);
             _preserver.Setup(m => m.ReadAsync<Model>(It.IsAny<Guid>())).ReturnsAsync(model);
@@ -412,16 +413,16 @@ namespace Crud.Api.Tests.Controllers
             Assert.NotNull(result);
             Assert.NotNull(result.Value);
 
-            var typedResult = JsonSerializer.Deserialize(result.Value!.ToString(), typeof(IList<object>)) as IList<object>;
+            var typedResult = JsonSerializer.Deserialize(result.Value!.ToString()!, typeof(IList<object>)) as IList<object>;
 
             Assert.NotNull(typedResult);
-            Assert.Equal(1, typedResult.Count);
+            Assert.Single(typedResult);
 
             var firstResult = typedResult[0].ToString();
 
-            Assert.Contains(nameof(Model.Id), firstResult);
-            Assert.DoesNotContain(nameof(Model.Name), firstResult);
-            Assert.DoesNotContain(nameof(Model.Description), firstResult);
+            Assert.Contains(nameof(Model.Id).Camelize(), firstResult);
+            Assert.DoesNotContain(nameof(Model.Name).Camelize(), firstResult);
+            Assert.DoesNotContain(nameof(Model.Description).Camelize(), firstResult);
         }
 
         [Fact]
@@ -444,16 +445,16 @@ namespace Crud.Api.Tests.Controllers
             Assert.NotNull(result);
             Assert.NotNull(result.Value);
 
-            var typedResult = JsonSerializer.Deserialize(result.Value!.ToString(), typeof(IList<object>)) as IList<object>;
+            var typedResult = JsonSerializer.Deserialize(result.Value!.ToString()!, typeof(IList<object>)) as IList<object>;
 
             Assert.NotNull(typedResult);
-            Assert.Equal(1, typedResult.Count);
+            Assert.Single(typedResult);
 
             var firstResult = typedResult[0].ToString();
 
-            Assert.Contains(nameof(Model.Id), firstResult);
-            Assert.DoesNotContain(nameof(Model.Name), firstResult);
-            Assert.DoesNotContain(nameof(Model.Description), firstResult);
+            Assert.Contains(nameof(Model.Id).Camelize(), firstResult);
+            Assert.DoesNotContain(nameof(Model.Name).Camelize(), firstResult);
+            Assert.DoesNotContain(nameof(Model.Description).Camelize(), firstResult);
         }
 
         [Fact]
@@ -478,7 +479,7 @@ namespace Crud.Api.Tests.Controllers
             var typedResult = result.Value as IList<Model>;
 
             Assert.NotNull(typedResult);
-            Assert.Equal(1, typedResult.Count);
+            Assert.Single(typedResult);
 
             var firstModel = typedResult[0];
 
@@ -717,7 +718,7 @@ namespace Crud.Api.Tests.Controllers
             var model = new Model { Id = 1 };
             var json = JsonSerializer.Serialize(model);
             var validationResult = new ValidationResult { IsValid = true };
-            Model updatedModel = null;
+            Model? updatedModel = null;
 
             _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(type);
             _streamService.Setup(m => m.ReadToEndThenDisposeAsync(It.IsAny<Stream>(), It.IsAny<Encoding>())).ReturnsAsync(json);
@@ -839,7 +840,7 @@ namespace Crud.Api.Tests.Controllers
             var model = new Model { Id = 1 };
             var json = JsonSerializer.Serialize(model);
             var validationResult = new ValidationResult { IsValid = true };
-            Model updatedModel = null;
+            Model? updatedModel = null;
 
             _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(type);
             _streamService.Setup(m => m.ReadToEndThenDisposeAsync(It.IsAny<Stream>(), It.IsAny<Encoding>())).ReturnsAsync(json);

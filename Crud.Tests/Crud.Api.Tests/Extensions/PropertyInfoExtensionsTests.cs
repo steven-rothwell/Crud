@@ -8,7 +8,7 @@ namespace Crud.Api.Tests.Extensions
         [Fact]
         public void GetProperty_PropertiesAreNull_ReturnsNull()
         {
-            PropertyInfo[] properties = null;
+            PropertyInfo[]? properties = null;
             var propertyName = "propertyName";
 
             var result = properties.GetProperty(propertyName);
@@ -179,8 +179,8 @@ namespace Crud.Api.Tests.Extensions
         private class Parent
         {
             public Int32 Id { get; set; }
-            public String Name { get; set; }
-            public Child Child { get; set; }
+            public String? Name { get; set; }
+            public Child? Child { get; set; }
         }
 
         private class Child

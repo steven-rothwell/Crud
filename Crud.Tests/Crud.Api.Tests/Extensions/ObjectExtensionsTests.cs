@@ -10,7 +10,7 @@ namespace Crud.Api.Tests.Extensions
         [Fact]
         public void ValidateDataAnnotations_ModelIsNull_ThrowsArgumentNullException()
         {
-            ModelWithNoDataAnnotations model = null;
+            ModelWithNoDataAnnotations? model = null;
 
             var action = () => model.ValidateDataAnnotations();
 
@@ -185,7 +185,7 @@ namespace Crud.Api.Tests.Extensions
             public String? FirstName { get; set; }
             [Required]
             public String? LastName { get; set; }
-            public ChildModelWithDataAnnotations Child { get; set; }
+            public ChildModelWithDataAnnotations? Child { get; set; }
         }
 
         private class ChildModelWithDataAnnotations

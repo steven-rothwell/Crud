@@ -8,7 +8,7 @@ namespace Crud.Api.Tests.Extensions
         [Fact]
         public void GetTableAttribute_TIsNull_ReturnsNull()
         {
-            Model model = null;
+            Model? model = null;
 
             var result = model.GetTableAttribute();
 
@@ -39,7 +39,7 @@ namespace Crud.Api.Tests.Extensions
         [Fact]
         public void GetTableName_ModelIsNull_ReturnsNull()
         {
-            Model model = null;
+            Model? model = null;
 
             var result = model.GetTableName();
 

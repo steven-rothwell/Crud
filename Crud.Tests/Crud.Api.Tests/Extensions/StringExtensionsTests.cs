@@ -7,7 +7,7 @@ namespace Crud.Api.Tests.Extensions
         [Fact]
         public void ChangeType_ValueIsNull_ReturnsNull()
         {
-            string value = null;
+            string? value = null;
             Type type = typeof(Nullable<int>);
 
             var result = value.ChangeType(type);
@@ -19,7 +19,7 @@ namespace Crud.Api.Tests.Extensions
         public void ChangeType_TypeIsNull_ThrowsArgumentNullException()
         {
             string value = "1";
-            Type type = null;
+            Type? type = null;
 
             var action = () => value.ChangeType(type);
 
@@ -66,7 +66,7 @@ namespace Crud.Api.Tests.Extensions
         [Fact]
         public void Pascalize_ValueIsNull_ThrowsArgumentNullException()
         {
-            string value = null;
+            string? value = null;
             char delimiter = Delimiter.MongoDbChildProperty;
 
             var action = () => value.Pascalize(delimiter);
@@ -98,9 +98,43 @@ namespace Crud.Api.Tests.Extensions
         }
 
         [Fact]
+        public void Camelize_ValueIsNull_ThrowsArgumentNullException()
+        {
+            string? value = null;
+            char delimiter = Delimiter.MongoDbChildProperty;
+
+            var action = () => value.Camelize(delimiter);
+
+            var exception = Assert.Throws<ArgumentNullException>(action);
+            Assert.Equal("value", exception.ParamName);
+        }
+
+        [Fact]
+        public void Camelize_NoDelimiterInValue_ReturnsCamelizedValue()
+        {
+            char delimiter = Delimiter.MongoDbChildProperty;
+            string value = "ThisDoesNotContainADelimiter";
+
+            var result = value.Camelize(delimiter);
+
+            Assert.Equal("thisDoesNotContainADelimiter", result);
+        }
+
+        [Fact]
+        public void Camelize_DelimiterInValue_ReturnsCamelizedValue()
+        {
+            char delimiter = Delimiter.MongoDbChildProperty;
+            string value = $"This{delimiter}Does{delimiter}Contain{delimiter}A{delimiter}Delimiter";
+
+            var result = value.Camelize(delimiter);
+
+            Assert.Equal($"this{delimiter}does{delimiter}contain{delimiter}a{delimiter}delimiter", result);
+        }
+
+        [Fact]
         public void GetValueAfterFirstDelimiter_ValueIsNull_ThrowsArgumentNullException()
         {
-            string value = null;
+            string? value = null;
             char delimiter = Delimiter.MongoDbChildProperty;
 
             var action = () => value.GetValueAfterFirstDelimiter(delimiter);
@@ -134,7 +168,7 @@ namespace Crud.Api.Tests.Extensions
         [Fact]
         public void GetValueAfterLastDelimiter_ValueIsNull_ThrowsArgumentNullException()
         {
-            string value = null;
+            string? value = null;
             char delimiter = Delimiter.MongoDbChildProperty;
 
             var action = () => value.GetValueAfterLastDelimiter(delimiter);

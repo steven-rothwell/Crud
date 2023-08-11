@@ -7,7 +7,7 @@ namespace Crud.Api.Tests.Extensions
         [Fact]
         public void GetTableAttribute_TypeIsNull_ReturnsNull()
         {
-            Type type = null;
+            Type? type = null;
 
             var result = type.GetTableAttribute();
 
@@ -38,7 +38,7 @@ namespace Crud.Api.Tests.Extensions
         [Fact]
         public void GetTableName_TypeIsNull_ReturnsNull()
         {
-            Type type = null;
+            Type? type = null;
 
             var result = type.GetTableName();
 
@@ -61,6 +61,26 @@ namespace Crud.Api.Tests.Extensions
             var type = typeof(ModelWithoutTableAttribute);
 
             var result = type.GetTableName();
+
+            Assert.Equal("ModelWithoutTableAttributes", result);
+        }
+
+        [Fact]
+        public void GetPluralizedName_TypeIsNull_ReturnsNull()
+        {
+            Type? type = null;
+
+            var result = type.GetPluralizedName();
+
+            Assert.Null(result);
+        }
+
+        [Fact]
+        public void GetPluralizedName_TypeIsNotNull_ReturnsPluralizedNameOfClass()
+        {
+            Type? type = typeof(ModelWithoutTableAttribute);
+
+            var result = type.GetPluralizedName();
 
             Assert.Equal("ModelWithoutTableAttributes", result);
         }

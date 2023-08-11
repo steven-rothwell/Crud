@@ -4,9 +4,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Crud.Api.Models
 {
     [Table("users")]
-    public class User : IExternalEntity
+    public class User : ExternalEntity
     {
-        public Guid? ExternalId { get; set; }
         [Required]
         public String? Name { get; set; }
         public Address? Address { get; set; }

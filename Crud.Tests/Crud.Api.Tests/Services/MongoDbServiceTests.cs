@@ -7,6 +7,7 @@ using Crud.Api.Models;
 using Crud.Api.QueryModels;
 using Crud.Api.Services;
 using Crud.Api.Tests.TestingModels;
+using Humanizer;
 using MongoDB.Bson;
 using MongoDB.Driver;
 
@@ -24,7 +25,7 @@ namespace Crud.Api.Tests.Services
         [Fact]
         public void GetTableName_TableNameIsNull_ThrowsException()
         {
-            Type type = null;
+            Type? type = null;
 
             var action = () => _mongoDbService.GetTableName(type);
 
@@ -52,7 +53,7 @@ namespace Crud.Api.Tests.Services
 
             Assert.NotNull(result);
 
-            var expectedFilter = Builders<BsonDocument>.Filter.Eq(nameof(IExternalEntity.ExternalId), id);
+            var expectedFilter = Builders<BsonDocument>.Filter.Eq(nameof(IExternalEntity.ExternalId).Camelize(), id);
             var expectedJson = ConvertFilterToJson(expectedFilter);
             var resultJson = ConvertFilterToJson(result);
 
@@ -69,7 +70,7 @@ namespace Crud.Api.Tests.Services
 
             Assert.NotNull(result);
 
-            var expectedFilter = Builders<BsonDocument>.Filter.Eq("Id", id);
+            var expectedFilter = Builders<BsonDocument>.Filter.Eq("id", id);
             var expectedJson = ConvertFilterToJson(expectedFilter);
             var resultJson = ConvertFilterToJson(result);
 
@@ -112,9 +113,9 @@ namespace Crud.Api.Tests.Services
             Assert.NotNull(result);
 
             FilterDefinition<BsonDocument> expectedFilter = new BsonDocument();
-            expectedFilter &= Builders<BsonDocument>.Filter.Eq(nameof(ModelDoesNotImplementIExternalEntity.ExternalId), externalId);
-            expectedFilter &= Builders<BsonDocument>.Filter.Eq(nameof(ModelDoesNotImplementIExternalEntity.Name), name);
-            expectedFilter &= Builders<BsonDocument>.Filter.Eq(nameof(ModelDoesNotImplementIExternalEntity.Total), total);
+            expectedFilter &= Builders<BsonDocument>.Filter.Eq(nameof(ModelDoesNotImplementIExternalEntity.ExternalId).Camelize(), externalId);
+            expectedFilter &= Builders<BsonDocument>.Filter.Eq(nameof(ModelDoesNotImplementIExternalEntity.Name).Camelize(), name);
+            expectedFilter &= Builders<BsonDocument>.Filter.Eq(nameof(ModelDoesNotImplementIExternalEntity.Total).Camelize(), total);
             var expectedJson = ConvertFilterToJson(expectedFilter);
             var resultJson = ConvertFilterToJson(result);
 
@@ -124,7 +125,7 @@ namespace Crud.Api.Tests.Services
         [Fact]
         public void GetShallowUpdates_JsonElementIsNull_ReturnsUpdateDefinitionsWithOneUpdateOfPropertyToNull()
         {
-            var propertyName = nameof(ModelDoesNotImplementIExternalEntity.ExternalId);
+            var propertyName = nameof(ModelDoesNotImplementIExternalEntity.ExternalId).Camelize();
             JsonElement jsonElement = JsonSerializer.SerializeToElement(null, typeof(Guid?))!;
             IDictionary<string, JsonElement> propertyValues = new Dictionary<string, JsonElement>
             {
@@ -147,7 +148,7 @@ namespace Crud.Api.Tests.Services
         [Fact]
         public void GetShallowUpdates_JsonElementIsNotNull_ReturnsUpdateDefinitionsWithOneUpdateOfPropertyToValue()
         {
-            var propertyName = nameof(ModelDoesNotImplementIExternalEntity.ExternalId);
+            var propertyName = nameof(ModelDoesNotImplementIExternalEntity.ExternalId).Camelize();
             var value = Guid.Empty;
             JsonElement jsonElement = JsonSerializer.SerializeToElement(value, typeof(Guid?))!;
             IDictionary<string, JsonElement> propertyValues = new Dictionary<string, JsonElement>
@@ -210,7 +211,7 @@ namespace Crud.Api.Tests.Services
         [Fact]
         public void GetAllPropertiesToUpdate_JsonElementIsJsonObject_ReturnsUpdateDefinitionsWithOneUpdateOfPropertyNameAndValue()
         {
-            var propertyName = nameof(ModelDoesNotImplementIExternalEntity.ChildModel);
+            var propertyName = nameof(ModelDoesNotImplementIExternalEntity.ChildModel).Camelize();
             Type type = typeof(ModelDoesNotImplementIExternalEntity);
             var name = "ChildName";
             var value = new ChildModel { Name = name };
@@ -221,7 +222,7 @@ namespace Crud.Api.Tests.Services
             Assert.NotNull(result);
 
             var expectedUpdates = new List<UpdateDefinition<BsonDocument>>();
-            expectedUpdates.Add(Builders<BsonDocument>.Update.Set($"{nameof(ModelDoesNotImplementIExternalEntity.ChildModel)}{Delimiter.MongoDbChildProperty}{nameof(ChildModel.Name)}", name));
+            expectedUpdates.Add(Builders<BsonDocument>.Update.Set($"{nameof(ModelDoesNotImplementIExternalEntity.ChildModel).Camelize()}{Delimiter.MongoDbChildProperty}{nameof(ChildModel.Name).Camelize()}", name));
             var expectedJson = ConvertUpdatesToJson(expectedUpdates);
             var resultJson = ConvertUpdatesToJson(result);
 
@@ -249,7 +250,7 @@ namespace Crud.Api.Tests.Services
         public void GetConditionFilter_SingleConditionFieldTypeNotIEnumerableValuesIsNull_ReturnsSimpleFilterDefinition()
         {
             var type = typeof(Model);
-            var field = nameof(Model.Id);
+            var field = nameof(Model.Id).Camelize();
             var value = 1;
             Condition? condition = new Condition
             {
@@ -273,7 +274,7 @@ namespace Crud.Api.Tests.Services
         public void GetConditionFilter_SingleConditionFieldTypeIsIEnumerableValuesIsNull_ReturnsSimpleFilterDefinition()
         {
             var type = typeof(ModelDoesNotImplementIExternalEntity);
-            var field = nameof(ModelDoesNotImplementIExternalEntity.Ints);
+            var field = nameof(ModelDoesNotImplementIExternalEntity.Ints).Camelize();
             var value = 1;
             Condition? condition = new Condition
             {
@@ -297,7 +298,7 @@ namespace Crud.Api.Tests.Services
         public void GetConditionFilter_SingleConditionFieldTypeNotIEnumerableValuesIsNotNull_ReturnsSimpleFilterDefinition()
         {
             var type = typeof(Model);
-            var field = nameof(Model.Id);
+            var field = nameof(Model.Id).Camelize();
             var values = new List<int> { 1, 2, 3 };
             Condition? condition = new Condition
             {
@@ -321,7 +322,7 @@ namespace Crud.Api.Tests.Services
         public void GetConditionFilter_SingleConditionFieldTypeIsIEnumerableValuesIsNotNull_ReturnsSimpleFilterDefinition()
         {
             var type = typeof(ModelDoesNotImplementIExternalEntity);
-            var field = nameof(ModelDoesNotImplementIExternalEntity.Ints);
+            var field = nameof(ModelDoesNotImplementIExternalEntity.Ints).Camelize();
             var values = new List<int> { 1, 2, 3 };
             Condition? condition = new Condition
             {
@@ -345,11 +346,11 @@ namespace Crud.Api.Tests.Services
         public void GetConditionFilter_GroupedConditionsRootLogicalOperatorIsNull_ReturnsAndOfGroupedConditionsFilterDefinition()
         {
             var type = typeof(Model);
-            var field1 = nameof(Model.Id);
+            var field1 = nameof(Model.Id).Camelize();
             var value1 = 1;
-            var field2 = nameof(Model.Id);
+            var field2 = nameof(Model.Id).Camelize();
             var value2 = 2;
-            var field3 = nameof(Model.Id);
+            var field3 = nameof(Model.Id).Camelize();
             var value3 = 3;
             Condition? condition = new Condition
             {
@@ -405,11 +406,11 @@ namespace Crud.Api.Tests.Services
         public void GetConditionFilter_GroupedConditionsRootLogicalOperatorIsNotNull_ReturnsRootLogicalOperatorOfGroupedConditionsFilterDefinition()
         {
             var type = typeof(Model);
-            var field1 = nameof(Model.Id);
+            var field1 = nameof(Model.Id).Camelize();
             var value1 = 1;
-            var field2 = nameof(Model.Id);
+            var field2 = nameof(Model.Id).Camelize();
             var value2 = 2;
-            var field3 = nameof(Model.Id);
+            var field3 = nameof(Model.Id).Camelize();
             var value3 = 3;
             var rootLogicalOperator = Operator.Or;
             Condition? condition = new Condition
@@ -483,11 +484,11 @@ namespace Crud.Api.Tests.Services
         public void GetConditionsFilters_GroupedConditionIsNull_ReturnsListOfOtherFilterDefinitions()
         {
             var type = typeof(Model);
-            var field1 = nameof(Model.Id);
+            var field1 = nameof(Model.Id).Camelize();
             var value1 = 1;
-            var field2 = nameof(Model.Id);
+            var field2 = nameof(Model.Id).Camelize();
             var value2 = 2;
-            var field3 = nameof(Model.Id);
+            var field3 = nameof(Model.Id).Camelize();
             var value3 = 3;
             IReadOnlyCollection<GroupedCondition>? groupedConditions = new List<GroupedCondition>
             {
@@ -541,11 +542,11 @@ namespace Crud.Api.Tests.Services
         public void GetConditionsFilters_GroupedConditionLogicalOperatorIsNull_ReturnsListOfOtherFilterDefinitions()
         {
             var type = typeof(Model);
-            var field1 = nameof(Model.Id);
+            var field1 = nameof(Model.Id).Camelize();
             var value1 = 1;
-            var field2 = nameof(Model.Id);
+            var field2 = nameof(Model.Id).Camelize();
             var value2 = 2;
-            var field3 = nameof(Model.Id);
+            var field3 = nameof(Model.Id).Camelize();
             var value3 = 3;
             IReadOnlyCollection<GroupedCondition>? groupedConditions = new List<GroupedCondition>
             {
@@ -599,11 +600,11 @@ namespace Crud.Api.Tests.Services
         public void GetConditionsFilters_GroupedConditionConditionsIsNull_ReturnsListOfOtherFilterDefinitions()
         {
             var type = typeof(Model);
-            var field1 = nameof(Model.Id);
+            var field1 = nameof(Model.Id).Camelize();
             var value1 = 1;
-            var field2 = nameof(Model.Id);
+            var field2 = nameof(Model.Id).Camelize();
             var value2 = 2;
-            var field3 = nameof(Model.Id);
+            var field3 = nameof(Model.Id).Camelize();
             var value3 = 3;
             IReadOnlyCollection<GroupedCondition>? groupedConditions = new List<GroupedCondition>
             {
@@ -661,11 +662,11 @@ namespace Crud.Api.Tests.Services
         public void GetConditionsFilters_NoGroupedConditionsSkipped_ReturnsListOfFilterDefinitions()
         {
             var type = typeof(Model);
-            var field1 = nameof(Model.Id);
+            var field1 = nameof(Model.Id).Camelize();
             var value1 = 1;
-            var field2 = nameof(Model.Id);
+            var field2 = nameof(Model.Id).Camelize();
             var value2 = 2;
-            var field3 = nameof(Model.Id);
+            var field3 = nameof(Model.Id).Camelize();
             var value3 = 3;
             IReadOnlyCollection<GroupedCondition>? groupedConditions = new List<GroupedCondition>
             {
@@ -979,7 +980,7 @@ namespace Crud.Api.Tests.Services
 
             Assert.NotNull(result);
 
-            var expectedSort = Builders<BsonDocument>.Sort.Ascending("Field");
+            var expectedSort = Builders<BsonDocument>.Sort.Ascending("field");
             var expectedJson = ConvertSortToJson(expectedSort);
             var resultJson = ConvertSortToJson(result);
 
@@ -989,7 +990,7 @@ namespace Crud.Api.Tests.Services
         [Fact]
         public void GetSort_IsDescendingHasValueAndIsTrue_ReturnsDescendingSortDefinition()
         {
-            var field = "Field";
+            var field = "field";
             IReadOnlyCollection<Sort>? orderBy = new List<Sort> { new Sort { Field = field, IsDescending = true } };
 
             var result = _mongoDbService.GetSort(orderBy);
@@ -1037,8 +1038,8 @@ namespace Crud.Api.Tests.Services
         [Fact]
         public void GetIncludesProjections_IncludesIsNotNullOrEmpty_ReturnsProjectionDefinition()
         {
-            var field1 = "Field1";
-            var field2 = "Field2";
+            var field1 = "field1";
+            var field2 = "field2";
             HashSet<string>? includes = new HashSet<string> { field1, field2 };
 
             var result = _mongoDbService.GetIncludesProjections(includes);
@@ -1070,8 +1071,8 @@ namespace Crud.Api.Tests.Services
         [Fact]
         public void GetExcludesProjections_ExcludesIsNotNullOrEmpty_ReturnsProjectionDefinition()
         {
-            var field1 = "Field1";
-            var field2 = "Field2";
+            var field1 = "field1";
+            var field2 = "field2";
             HashSet<string>? excludes = new HashSet<string> { field1, field2 };
 
             var result = _mongoDbService.GetExcludesProjections(excludes);

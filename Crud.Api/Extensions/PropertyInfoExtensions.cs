@@ -4,7 +4,7 @@ namespace Crud.Api
 {
     public static class PropertyInfoExtensions
     {
-        public static PropertyInfo? GetProperty(this PropertyInfo[] properties, String propertyName, Char childPropertyDelimiter = default, StringComparison stringComparison = StringComparison.OrdinalIgnoreCase)
+        public static PropertyInfo? GetProperty(this PropertyInfo[]? properties, String propertyName, Char childPropertyDelimiter = default, StringComparison stringComparison = StringComparison.OrdinalIgnoreCase)
         {
             if (properties is null)
                 return null;
