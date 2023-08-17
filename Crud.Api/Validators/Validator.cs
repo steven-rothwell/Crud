@@ -1,18 +1,23 @@
 using System.Reflection;
 using Crud.Api.Constants;
 using Crud.Api.Models;
+using Crud.Api.Options;
 using Crud.Api.Preservers;
 using Crud.Api.QueryModels;
+using Crud.Api.Validators.Attributes;
+using Microsoft.Extensions.Options;
 
 namespace Crud.Api.Validators
 {
     public class Validator : IValidator
     {
         private readonly IPreserver _preserver;
+        private readonly ApplicationOptions _applicationOptions;
 
-        public Validator(IPreserver preserver)
+        public Validator(IPreserver preserver, IOptions<ApplicationOptions> applicationOptions)
         {
             _preserver = preserver;
+            _applicationOptions = applicationOptions.Value;
         }
 
         public Task<ValidationResult> ValidateCreateAsync(Object model)
@@ -238,7 +243,8 @@ namespace Crud.Api.Validators
 
             if (condition.Field is not null)
             {
-                if (!modelProperties.HasPropertyName(condition.Field, Delimiter.MongoDbChildProperty))
+                var propertyInfo = modelProperties.GetProperty(condition.Field, Delimiter.MongoDbChildProperty);
+                if (propertyInfo is null)
                     return new ValidationResult(false, $"A {nameof(Condition)} {nameof(Condition.Field)} contains a property {condition.Field} that the model does not have.");
 
                 if (condition.ComparisonOperator is null)
@@ -246,6 +252,26 @@ namespace Crud.Api.Validators
 
                 if (!Operator.ComparisonAliasLookup.ContainsKey(condition.ComparisonOperator))
                     return new ValidationResult(false, $"{nameof(Condition.ComparisonOperator)} '{condition.ComparisonOperator}' must be found in {Operator.ComparisonAliasLookup}.");
+
+                var comparisonOperator = Operator.ComparisonAliasLookup[condition.ComparisonOperator];
+
+                var validationResult = ValidateQueryApplicationOptions(comparisonOperator);
+                if (!validationResult.IsValid)
+                    return validationResult;
+
+                validationResult = ValidatePropertyQueryAttributes(propertyInfo, comparisonOperator);
+                if (!validationResult.IsValid)
+                    return validationResult;
+
+                if (condition.Value is not null)
+                {
+                    if ((comparisonOperator == Operator.Contains
+                    || comparisonOperator == Operator.StartsWith
+                    || comparisonOperator == Operator.EndsWith)
+                    && (condition.Value.Length == 0
+                    || !condition.Value.All(Char.IsLetterOrDigit)))
+                        return new ValidationResult(false, $"{nameof(Condition.ComparisonOperator)} '{condition.ComparisonOperator}' can only contain letters and numbers.");
+                }
             }
 
             if (condition.GroupedConditions is not null)
@@ -256,6 +282,32 @@ namespace Crud.Api.Validators
                     if (!validationResult.IsValid)
                         return validationResult;
                 }
+            }
+
+            return new ValidationResult(true);
+        }
+
+        public ValidationResult ValidateQueryApplicationOptions(String? comparisonOperator)
+        {
+            if (comparisonOperator is not null)
+            {
+                if ((comparisonOperator == Operator.Contains && _applicationOptions.PreventAllQueryContains)
+                || (comparisonOperator == Operator.StartsWith && _applicationOptions.PreventAllQueryStartsWith)
+                || (comparisonOperator == Operator.EndsWith && _applicationOptions.PreventAllQueryEndsWith))
+                    return new ValidationResult(false, $"{nameof(Condition.ComparisonOperator)} '{comparisonOperator}' may not be used.");
+            }
+
+            return new ValidationResult(true);
+        }
+
+        public ValidationResult ValidatePropertyQueryAttributes(PropertyInfo propertyInfo, String? comparisonOperator)
+        {
+            if (comparisonOperator is not null)
+            {
+                if ((comparisonOperator == Operator.Contains && Attribute.IsDefined(propertyInfo, typeof(PreventQueryContainsAttribute)))
+                || (comparisonOperator == Operator.StartsWith && Attribute.IsDefined(propertyInfo, typeof(PreventQueryStartsWithAttribute)))
+                || (comparisonOperator == Operator.EndsWith && Attribute.IsDefined(propertyInfo, typeof(PreventQueryEndsWithAttribute))))
+                    return new ValidationResult(false, $"{nameof(Condition.ComparisonOperator)} '{comparisonOperator}' may not be used on the {propertyInfo.Name} property.");
             }
 
             return new ValidationResult(true);

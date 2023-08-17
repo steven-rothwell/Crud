@@ -209,6 +209,9 @@ namespace Crud.Api.Services
                 Operator.GreaterThanOrEquals => Builders<BsonDocument>.Filter.Gte(field, value),
                 Operator.LessThan => Builders<BsonDocument>.Filter.Lt(field, value),
                 Operator.LessThanOrEquals => Builders<BsonDocument>.Filter.Lte(field, value),
+                Operator.Contains => Builders<BsonDocument>.Filter.Regex(field, new BsonRegularExpression(value, "i")),
+                Operator.StartsWith => Builders<BsonDocument>.Filter.Regex(field, new BsonRegularExpression($"^{value}", "i")),
+                Operator.EndsWith => Builders<BsonDocument>.Filter.Regex(field, new BsonRegularExpression($"{value}$", "i")),
                 _ => throw new NotImplementedException($"Unable to compare {field} to {value}. {nameof(Condition.ComparisonOperator)} '{comparisonOperator}' is not implemented.")
             };
         }
