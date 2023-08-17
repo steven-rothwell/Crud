@@ -1,1729 +1,2486 @@
 {
-  "info": {
-    "_postman_id": "66397f53-ed09-4e30-acb9-4a9383a26372",
-    "name": "Crud",
-    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "_exporter_id": "1338704"
-  },
-  "item": [
-    {
-      "name": "BadRequests",
-      "item": [
-        {
-          "name": "Create_Name_AlreadyExists",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "/*function standardDeviation(values, avg) {\r",
-                  "    var squareDiffs = values.map(value => Math.pow(value - avg, 2));\r",
-                  "    return Math.sqrt(average(squareDiffs));\r",
-                  "}\r",
-                  "\r",
-                  "function average(data) {\r",
-                  "    return data.reduce((sum, value)=>sum + value) / data.length;\r",
-                  "}\r",
-                  "\r",
-                  "if (responseCode.code === 200 || responseCode.code === 201) {\r",
-                  "    response_array = globals['response_times'] ? JSON.parse(globals['response_times']) : []\r",
-                  "    response_array.push(responseTime)\r",
-                  "    postman.setGlobalVariable(\"response_times\", JSON.stringify(response_array))\r",
-                  "\r",
-                  "    response_average = average(response_array);\r",
-                  "    postman.setGlobalVariable('response_average', response_average)\r",
-                  "\r",
-                  "    response_std = standardDeviation(response_array, response_average)\r",
-                  "    postman.setGlobalVariable('response_std', response_std)\r",
-                  "}*/"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "protocolProfileBehavior": {
-            "strictSSL": false
-          },
-          "request": {
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"name\": \"NewUser_0\",\r\n    \"address\": {\r\n        \"street\": \"44 Maple Street\",\r\n        \"city\": \"Pittsburgh\",\r\n        \"state\": \"PA\"\r\n    },\r\n    \"age\": 25,\r\n    \"hairColor\": \"brown\",\r\n    \"favoriteThings\": [\"Steelers\", \"Pirates\", \"Penguins\"]\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{base_url}}/api/users",
-              "host": ["{{base_url}}"],
-              "path": ["api", "users"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Read_Params_Filter_IsEmpty",
-          "protocolProfileBehavior": {
-            "strictSSL": false
-          },
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/api/users",
-              "host": ["{{base_url}}"],
-              "path": ["api", "users"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Update_Id_IsEmpty",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "/*function standardDeviation(values, avg) {\r",
-                  "    var squareDiffs = values.map(value => Math.pow(value - avg, 2));\r",
-                  "    return Math.sqrt(average(squareDiffs));\r",
-                  "}\r",
-                  "\r",
-                  "function average(data) {\r",
-                  "    return data.reduce((sum, value)=>sum + value) / data.length;\r",
-                  "}\r",
-                  "\r",
-                  "if (responseCode.code === 200 || responseCode.code === 201) {\r",
-                  "    response_array = globals['response_times'] ? JSON.parse(globals['response_times']) : []\r",
-                  "    response_array.push(responseTime)\r",
-                  "    postman.setGlobalVariable(\"response_times\", JSON.stringify(response_array))\r",
-                  "\r",
-                  "    response_average = average(response_array);\r",
-                  "    postman.setGlobalVariable('response_average', response_average)\r",
-                  "\r",
-                  "    response_std = standardDeviation(response_array, response_average)\r",
-                  "    postman.setGlobalVariable('response_std', response_std)\r",
-                  "}*/"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "protocolProfileBehavior": {
-            "strictSSL": false
-          },
-          "request": {
-            "method": "PUT",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"externalId\": \"aabf9d27-c180-46c4-a7a5-46bd7ddb7c9e\",\r\n    \"name\": \"NewUser_0\",\r\n    \"address\": {\r\n        \"street\": \"45 Maple Street\",\r\n        \"city\": \"Pittsburgh\",\r\n        \"state\": \"PA\"\r\n    },\r\n    \"age\": 3,\r\n    \"hairColor\": \"brown\"\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{base_url}}/api/users/00000000-0000-0000-0000-000000000000",
-              "host": ["{{base_url}}"],
-              "path": ["api", "users", "00000000-0000-0000-0000-000000000000"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "PartialUpdate_Id_ExternalId_DoNotMatch",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "/*function standardDeviation(values, avg) {\r",
-                  "    var squareDiffs = values.map(value => Math.pow(value - avg, 2));\r",
-                  "    return Math.sqrt(average(squareDiffs));\r",
-                  "}\r",
-                  "\r",
-                  "function average(data) {\r",
-                  "    return data.reduce((sum, value)=>sum + value) / data.length;\r",
-                  "}\r",
-                  "\r",
-                  "if (responseCode.code === 200 || responseCode.code === 201) {\r",
-                  "    response_array = globals['response_times'] ? JSON.parse(globals['response_times']) : []\r",
-                  "    response_array.push(responseTime)\r",
-                  "    postman.setGlobalVariable(\"response_times\", JSON.stringify(response_array))\r",
-                  "\r",
-                  "    response_average = average(response_array);\r",
-                  "    postman.setGlobalVariable('response_average', response_average)\r",
-                  "\r",
-                  "    response_std = standardDeviation(response_array, response_average)\r",
-                  "    postman.setGlobalVariable('response_std', response_std)\r",
-                  "}*/"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "protocolProfileBehavior": {
-            "strictSSL": false
-          },
-          "request": {
-            "method": "PATCH",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"externalId\": \"8dc544bd-ce6c-44e5-9f8c-6ad32bb581ab\",\r\n    \"age\": 27,\r\n    \"hairColor\": \"blonde\"\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{base_url}}/api/users/b5a4cb77-a153-41f3-bb9c-821255ca7e1f",
-              "host": ["{{base_url}}"],
-              "path": ["api", "users", "b5a4cb77-a153-41f3-bb9c-821255ca7e1f"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "PartialUpdate_Params_ExternalId_IsNotNull",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [""],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "protocolProfileBehavior": {
-            "strictSSL": false
-          },
-          "request": {
-            "method": "PATCH",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"externalId\": \"8dc544bd-ce6c-44e5-9f8c-6ad32bb581ab\",\r\n    \"age\": 27,\r\n    \"hairColor\": \"blonde\"\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{base_url}}/api/users?name=NewUser_0&hairColor=brown",
-              "host": ["{{base_url}}"],
-              "path": ["api", "users"],
-              "query": [
-                {
-                  "key": "name",
-                  "value": "NewUser_0"
-                },
-                {
-                  "key": "hairColor",
-                  "value": "brown"
-                }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Delete_Params_Filter_ContainsPropertiesNotInModel",
-          "protocolProfileBehavior": {
-            "strictSSL": false
-          },
-          "request": {
-            "method": "DELETE",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/api/users?height=8&address_city=Pittsburgh",
-              "host": ["{{base_url}}"],
-              "path": ["api", "users"],
-              "query": [
-                {
-                  "key": "height",
-                  "value": "8"
-                },
-                {
-                  "key": "address_city",
-                  "value": "Pittsburgh"
-                }
-              ]
-            }
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "Create",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "pm.test(\"Test ExternalId\", function () {\r",
-              "    var jsonData = pm.response.json();\r",
-              "    console.log(\"Testing ExternalId: \" + jsonData.externalId);\r",
-              "    pm.expect(jsonData.externalId).not.null;\r",
-              "\r",
-              "    let externalIds = JSON.parse(pm.environment.get(\"external_ids\"));\r",
-              "    externalIds.push(jsonData.externalId);\r",
-              "    pm.environment.set(\"external_ids\", JSON.stringify(externalIds));\r",
-              "});"
-            ],
-            "type": "text/javascript"
-          }
-        },
-        {
-          "listen": "prerequest",
-          "script": {
-            "exec": [
-              "let iterations = JSON.parse(pm.environment.get(\"iterations\"));\r",
-              "let totalIterations = iterations.length;\r",
-              "pm.environment.set(\"current_iteration\", totalIterations);\r",
-              "iterations.push(totalIterations);\r",
-              "pm.environment.set(\"iterations\", JSON.stringify(iterations));"
-            ],
-            "type": "text/javascript"
-          }
-        }
-      ],
-      "protocolProfileBehavior": {
-        "strictSSL": false
-      },
-      "request": {
-        "method": "POST",
-        "header": [],
-        "body": {
-          "mode": "raw",
-          "raw": "{\r\n    \"externalId\": null,\r\n    \"name\": \"NewUser_{{current_iteration}}\",\r\n    \"address\": {\r\n        \"street\": \"44 Maple Street\",\r\n        \"city\": \"Pittsburgh\",\r\n        \"state\": \"PA\"\r\n    },\r\n    \"age\": 25,\r\n    \"hairColor\": \"brown\",\r\n    \"favoriteThings\": [\"Steelers\", \"Pirates\", \"Penguins\"]\r\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        },
-        "url": {
-          "raw": "{{base_url}}/api/users",
-          "host": ["{{base_url}}"],
-          "path": ["api", "users"]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "QueryRead_Sort",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "/*function standardDeviation(values, avg) {\r",
-              "    var squareDiffs = values.map(value => Math.pow(value - avg, 2));\r",
-              "    return Math.sqrt(average(squareDiffs));\r",
-              "}\r",
-              "\r",
-              "function average(data) {\r",
-              "    return data.reduce((sum, value)=>sum + value) / data.length;\r",
-              "}\r",
-              "\r",
-              "if (responseCode.code === 200 || responseCode.code === 201) {\r",
-              "    response_array = globals['response_times'] ? JSON.parse(globals['response_times']) : []\r",
-              "    response_array.push(responseTime)\r",
-              "    postman.setGlobalVariable(\"response_times\", JSON.stringify(response_array))\r",
-              "\r",
-              "    response_average = average(response_array);\r",
-              "    postman.setGlobalVariable('response_average', response_average)\r",
-              "\r",
-              "    response_std = standardDeviation(response_array, response_average)\r",
-              "    postman.setGlobalVariable('response_std', response_std)\r",
-              "}*/"
-            ],
-            "type": "text/javascript"
-          }
-        }
-      ],
-      "protocolProfileBehavior": {
-        "strictSSL": false
-      },
-      "request": {
-        "method": "POST",
-        "header": [],
-        "body": {
-          "mode": "raw",
-          "raw": "{\r\n    \"orderby\": [{\r\n        \"field\": \"address.city\"\r\n    },\r\n    {\r\n        \"field\": \"age\",\r\n        \"isDescending\": true\r\n    },\r\n    {\r\n        \"field\": \"name\"\r\n    }]\r\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        },
-        "url": {
-          "raw": "{{base_url}}/api/query/users",
-          "host": ["{{base_url}}"],
-          "path": ["api", "query", "users"]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "QueryRead_Sort_Null",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "/*function standardDeviation(values, avg) {\r",
-              "    var squareDiffs = values.map(value => Math.pow(value - avg, 2));\r",
-              "    return Math.sqrt(average(squareDiffs));\r",
-              "}\r",
-              "\r",
-              "function average(data) {\r",
-              "    return data.reduce((sum, value)=>sum + value) / data.length;\r",
-              "}\r",
-              "\r",
-              "if (responseCode.code === 200 || responseCode.code === 201) {\r",
-              "    response_array = globals['response_times'] ? JSON.parse(globals['response_times']) : []\r",
-              "    response_array.push(responseTime)\r",
-              "    postman.setGlobalVariable(\"response_times\", JSON.stringify(response_array))\r",
-              "\r",
-              "    response_average = average(response_array);\r",
-              "    postman.setGlobalVariable('response_average', response_average)\r",
-              "\r",
-              "    response_std = standardDeviation(response_array, response_average)\r",
-              "    postman.setGlobalVariable('response_std', response_std)\r",
-              "}*/"
-            ],
-            "type": "text/javascript"
-          }
-        }
-      ],
-      "protocolProfileBehavior": {
-        "strictSSL": false
-      },
-      "request": {
-        "method": "POST",
-        "header": [],
-        "body": {
-          "mode": "raw",
-          "raw": "{\r\n    \"orderby\": null\r\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        },
-        "url": {
-          "raw": "{{base_url}}/api/query/users",
-          "host": ["{{base_url}}"],
-          "path": ["api", "query", "users"]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "QueryRead_Limit",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "/*function standardDeviation(values, avg) {\r",
-              "    var squareDiffs = values.map(value => Math.pow(value - avg, 2));\r",
-              "    return Math.sqrt(average(squareDiffs));\r",
-              "}\r",
-              "\r",
-              "function average(data) {\r",
-              "    return data.reduce((sum, value)=>sum + value) / data.length;\r",
-              "}\r",
-              "\r",
-              "if (responseCode.code === 200 || responseCode.code === 201) {\r",
-              "    response_array = globals['response_times'] ? JSON.parse(globals['response_times']) : []\r",
-              "    response_array.push(responseTime)\r",
-              "    postman.setGlobalVariable(\"response_times\", JSON.stringify(response_array))\r",
-              "\r",
-              "    response_average = average(response_array);\r",
-              "    postman.setGlobalVariable('response_average', response_average)\r",
-              "\r",
-              "    response_std = standardDeviation(response_array, response_average)\r",
-              "    postman.setGlobalVariable('response_std', response_std)\r",
-              "}*/"
-            ],
-            "type": "text/javascript"
-          }
-        }
-      ],
-      "protocolProfileBehavior": {
-        "strictSSL": false
-      },
-      "request": {
-        "method": "POST",
-        "header": [],
-        "body": {
-          "mode": "raw",
-          "raw": "{\r\n    \"limit\": 3\r\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        },
-        "url": {
-          "raw": "{{base_url}}/api/query/users",
-          "host": ["{{base_url}}"],
-          "path": ["api", "query", "users"]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "QueryRead_Limit_Null",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "/*function standardDeviation(values, avg) {\r",
-              "    var squareDiffs = values.map(value => Math.pow(value - avg, 2));\r",
-              "    return Math.sqrt(average(squareDiffs));\r",
-              "}\r",
-              "\r",
-              "function average(data) {\r",
-              "    return data.reduce((sum, value)=>sum + value) / data.length;\r",
-              "}\r",
-              "\r",
-              "if (responseCode.code === 200 || responseCode.code === 201) {\r",
-              "    response_array = globals['response_times'] ? JSON.parse(globals['response_times']) : []\r",
-              "    response_array.push(responseTime)\r",
-              "    postman.setGlobalVariable(\"response_times\", JSON.stringify(response_array))\r",
-              "\r",
-              "    response_average = average(response_array);\r",
-              "    postman.setGlobalVariable('response_average', response_average)\r",
-              "\r",
-              "    response_std = standardDeviation(response_array, response_average)\r",
-              "    postman.setGlobalVariable('response_std', response_std)\r",
-              "}*/"
-            ],
-            "type": "text/javascript"
-          }
-        }
-      ],
-      "protocolProfileBehavior": {
-        "strictSSL": false
-      },
-      "request": {
-        "method": "POST",
-        "header": [],
-        "body": {
-          "mode": "raw",
-          "raw": "{\r\n    \"limit\": null\r\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        },
-        "url": {
-          "raw": "{{base_url}}/api/query/users",
-          "host": ["{{base_url}}"],
-          "path": ["api", "query", "users"]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "QueryRead_Skip",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "/*function standardDeviation(values, avg) {\r",
-              "    var squareDiffs = values.map(value => Math.pow(value - avg, 2));\r",
-              "    return Math.sqrt(average(squareDiffs));\r",
-              "}\r",
-              "\r",
-              "function average(data) {\r",
-              "    return data.reduce((sum, value)=>sum + value) / data.length;\r",
-              "}\r",
-              "\r",
-              "if (responseCode.code === 200 || responseCode.code === 201) {\r",
-              "    response_array = globals['response_times'] ? JSON.parse(globals['response_times']) : []\r",
-              "    response_array.push(responseTime)\r",
-              "    postman.setGlobalVariable(\"response_times\", JSON.stringify(response_array))\r",
-              "\r",
-              "    response_average = average(response_array);\r",
-              "    postman.setGlobalVariable('response_average', response_average)\r",
-              "\r",
-              "    response_std = standardDeviation(response_array, response_average)\r",
-              "    postman.setGlobalVariable('response_std', response_std)\r",
-              "}*/"
-            ],
-            "type": "text/javascript"
-          }
-        }
-      ],
-      "protocolProfileBehavior": {
-        "strictSSL": false
-      },
-      "request": {
-        "method": "POST",
-        "header": [],
-        "body": {
-          "mode": "raw",
-          "raw": "{\r\n    \"skip\": 3\r\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        },
-        "url": {
-          "raw": "{{base_url}}/api/query/users",
-          "host": ["{{base_url}}"],
-          "path": ["api", "query", "users"]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "QueryRead_Skip_Null",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "/*function standardDeviation(values, avg) {\r",
-              "    var squareDiffs = values.map(value => Math.pow(value - avg, 2));\r",
-              "    return Math.sqrt(average(squareDiffs));\r",
-              "}\r",
-              "\r",
-              "function average(data) {\r",
-              "    return data.reduce((sum, value)=>sum + value) / data.length;\r",
-              "}\r",
-              "\r",
-              "if (responseCode.code === 200 || responseCode.code === 201) {\r",
-              "    response_array = globals['response_times'] ? JSON.parse(globals['response_times']) : []\r",
-              "    response_array.push(responseTime)\r",
-              "    postman.setGlobalVariable(\"response_times\", JSON.stringify(response_array))\r",
-              "\r",
-              "    response_average = average(response_array);\r",
-              "    postman.setGlobalVariable('response_average', response_average)\r",
-              "\r",
-              "    response_std = standardDeviation(response_array, response_average)\r",
-              "    postman.setGlobalVariable('response_std', response_std)\r",
-              "}*/"
-            ],
-            "type": "text/javascript"
-          }
-        }
-      ],
-      "protocolProfileBehavior": {
-        "strictSSL": false
-      },
-      "request": {
-        "method": "POST",
-        "header": [],
-        "body": {
-          "mode": "raw",
-          "raw": "{\r\n    \"skip\": null\r\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        },
-        "url": {
-          "raw": "{{base_url}}/api/query/users",
-          "host": ["{{base_url}}"],
-          "path": ["api", "query", "users"]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "QueryRead_Includes",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "/*function standardDeviation(values, avg) {\r",
-              "    var squareDiffs = values.map(value => Math.pow(value - avg, 2));\r",
-              "    return Math.sqrt(average(squareDiffs));\r",
-              "}\r",
-              "\r",
-              "function average(data) {\r",
-              "    return data.reduce((sum, value)=>sum + value) / data.length;\r",
-              "}\r",
-              "\r",
-              "if (responseCode.code === 200 || responseCode.code === 201) {\r",
-              "    response_array = globals['response_times'] ? JSON.parse(globals['response_times']) : []\r",
-              "    response_array.push(responseTime)\r",
-              "    postman.setGlobalVariable(\"response_times\", JSON.stringify(response_array))\r",
-              "\r",
-              "    response_average = average(response_array);\r",
-              "    postman.setGlobalVariable('response_average', response_average)\r",
-              "\r",
-              "    response_std = standardDeviation(response_array, response_average)\r",
-              "    postman.setGlobalVariable('response_std', response_std)\r",
-              "}*/"
-            ],
-            "type": "text/javascript"
-          }
-        }
-      ],
-      "protocolProfileBehavior": {
-        "strictSSL": false
-      },
-      "request": {
-        "method": "POST",
-        "header": [],
-        "body": {
-          "mode": "raw",
-          "raw": "{\r\n    \"includes\": [\"age\", \"name\", \"address.city\"]\r\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        },
-        "url": {
-          "raw": "{{base_url}}/api/query/users",
-          "host": ["{{base_url}}"],
-          "path": ["api", "query", "users"]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "QueryRead_Includes_Null",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "/*function standardDeviation(values, avg) {\r",
-              "    var squareDiffs = values.map(value => Math.pow(value - avg, 2));\r",
-              "    return Math.sqrt(average(squareDiffs));\r",
-              "}\r",
-              "\r",
-              "function average(data) {\r",
-              "    return data.reduce((sum, value)=>sum + value) / data.length;\r",
-              "}\r",
-              "\r",
-              "if (responseCode.code === 200 || responseCode.code === 201) {\r",
-              "    response_array = globals['response_times'] ? JSON.parse(globals['response_times']) : []\r",
-              "    response_array.push(responseTime)\r",
-              "    postman.setGlobalVariable(\"response_times\", JSON.stringify(response_array))\r",
-              "\r",
-              "    response_average = average(response_array);\r",
-              "    postman.setGlobalVariable('response_average', response_average)\r",
-              "\r",
-              "    response_std = standardDeviation(response_array, response_average)\r",
-              "    postman.setGlobalVariable('response_std', response_std)\r",
-              "}*/"
-            ],
-            "type": "text/javascript"
-          }
-        }
-      ],
-      "protocolProfileBehavior": {
-        "strictSSL": false
-      },
-      "request": {
-        "method": "POST",
-        "header": [],
-        "body": {
-          "mode": "raw",
-          "raw": "{\r\n    \"includes\": null\r\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        },
-        "url": {
-          "raw": "{{base_url}}/api/query/users",
-          "host": ["{{base_url}}"],
-          "path": ["api", "query", "users"]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "QueryRead_Excludes",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "/*function standardDeviation(values, avg) {\r",
-              "    var squareDiffs = values.map(value => Math.pow(value - avg, 2));\r",
-              "    return Math.sqrt(average(squareDiffs));\r",
-              "}\r",
-              "\r",
-              "function average(data) {\r",
-              "    return data.reduce((sum, value)=>sum + value) / data.length;\r",
-              "}\r",
-              "\r",
-              "if (responseCode.code === 200 || responseCode.code === 201) {\r",
-              "    response_array = globals['response_times'] ? JSON.parse(globals['response_times']) : []\r",
-              "    response_array.push(responseTime)\r",
-              "    postman.setGlobalVariable(\"response_times\", JSON.stringify(response_array))\r",
-              "\r",
-              "    response_average = average(response_array);\r",
-              "    postman.setGlobalVariable('response_average', response_average)\r",
-              "\r",
-              "    response_std = standardDeviation(response_array, response_average)\r",
-              "    postman.setGlobalVariable('response_std', response_std)\r",
-              "}*/"
-            ],
-            "type": "text/javascript"
-          }
-        }
-      ],
-      "protocolProfileBehavior": {
-        "strictSSL": false
-      },
-      "request": {
-        "method": "POST",
-        "header": [],
-        "body": {
-          "mode": "raw",
-          "raw": "{\r\n    \"excludes\": [\"hairColor\", \"address.state\"]\r\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        },
-        "url": {
-          "raw": "{{base_url}}/api/query/users",
-          "host": ["{{base_url}}"],
-          "path": ["api", "query", "users"]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "QueryRead_Excludes_Null",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "/*function standardDeviation(values, avg) {\r",
-              "    var squareDiffs = values.map(value => Math.pow(value - avg, 2));\r",
-              "    return Math.sqrt(average(squareDiffs));\r",
-              "}\r",
-              "\r",
-              "function average(data) {\r",
-              "    return data.reduce((sum, value)=>sum + value) / data.length;\r",
-              "}\r",
-              "\r",
-              "if (responseCode.code === 200 || responseCode.code === 201) {\r",
-              "    response_array = globals['response_times'] ? JSON.parse(globals['response_times']) : []\r",
-              "    response_array.push(responseTime)\r",
-              "    postman.setGlobalVariable(\"response_times\", JSON.stringify(response_array))\r",
-              "\r",
-              "    response_average = average(response_array);\r",
-              "    postman.setGlobalVariable('response_average', response_average)\r",
-              "\r",
-              "    response_std = standardDeviation(response_array, response_average)\r",
-              "    postman.setGlobalVariable('response_std', response_std)\r",
-              "}*/"
-            ],
-            "type": "text/javascript"
-          }
-        }
-      ],
-      "protocolProfileBehavior": {
-        "strictSSL": false
-      },
-      "request": {
-        "method": "POST",
-        "header": [],
-        "body": {
-          "mode": "raw",
-          "raw": "{\r\n    \"excludes\": null\r\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        },
-        "url": {
-          "raw": "{{base_url}}/api/query/users",
-          "host": ["{{base_url}}"],
-          "path": ["api", "query", "users"]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "QueryRead_Conditions",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "/*function standardDeviation(values, avg) {\r",
-              "    var squareDiffs = values.map(value => Math.pow(value - avg, 2));\r",
-              "    return Math.sqrt(average(squareDiffs));\r",
-              "}\r",
-              "\r",
-              "function average(data) {\r",
-              "    return data.reduce((sum, value)=>sum + value) / data.length;\r",
-              "}\r",
-              "\r",
-              "if (responseCode.code === 200 || responseCode.code === 201) {\r",
-              "    response_array = globals['response_times'] ? JSON.parse(globals['response_times']) : []\r",
-              "    response_array.push(responseTime)\r",
-              "    postman.setGlobalVariable(\"response_times\", JSON.stringify(response_array))\r",
-              "\r",
-              "    response_average = average(response_array);\r",
-              "    postman.setGlobalVariable('response_average', response_average)\r",
-              "\r",
-              "    response_std = standardDeviation(response_array, response_average)\r",
-              "    postman.setGlobalVariable('response_std', response_std)\r",
-              "}*/"
-            ],
-            "type": "text/javascript"
-          }
-        }
-      ],
-      "protocolProfileBehavior": {
-        "strictSSL": false
-      },
-      "request": {
-        "method": "POST",
-        "header": [],
-        "body": {
-          "mode": "raw",
-          "raw": "{\r\n    \"where\": {\r\n        \"field\": \"hairColor\",\r\n        \"comparisonOperator\": \"==\",\r\n        \"value\": \"brown\"\r\n    }\r\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        },
-        "url": {
-          "raw": "{{base_url}}/api/query/users",
-          "host": ["{{base_url}}"],
-          "path": ["api", "query", "users"]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "QueryRead_NestedConditions",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "/*function standardDeviation(values, avg) {\r",
-              "    var squareDiffs = values.map(value => Math.pow(value - avg, 2));\r",
-              "    return Math.sqrt(average(squareDiffs));\r",
-              "}\r",
-              "\r",
-              "function average(data) {\r",
-              "    return data.reduce((sum, value)=>sum + value) / data.length;\r",
-              "}\r",
-              "\r",
-              "if (responseCode.code === 200 || responseCode.code === 201) {\r",
-              "    response_array = globals['response_times'] ? JSON.parse(globals['response_times']) : []\r",
-              "    response_array.push(responseTime)\r",
-              "    postman.setGlobalVariable(\"response_times\", JSON.stringify(response_array))\r",
-              "\r",
-              "    response_average = average(response_array);\r",
-              "    postman.setGlobalVariable('response_average', response_average)\r",
-              "\r",
-              "    response_std = standardDeviation(response_array, response_average)\r",
-              "    postman.setGlobalVariable('response_std', response_std)\r",
-              "}*/"
-            ],
-            "type": "text/javascript"
-          }
-        }
-      ],
-      "protocolProfileBehavior": {
-        "strictSSL": false
-      },
-      "request": {
-        "method": "POST",
-        "header": [],
-        "body": {
-          "mode": "raw",
-          "raw": "{\r\n    \"where\": {\r\n        \"groupedConditions\": [{\r\n            \"logicalOperator\": \"||\",\r\n            \"conditions\": [{\r\n                \"field\": \"name\",\r\n                \"comparisonOperator\": \"==\",\r\n                \"value\": \"NewUser_0\"\r\n            },\r\n            {\r\n                \"field\": \"name\",\r\n                \"comparisonOperator\": \"==\",\r\n                \"value\": \"Test3\"\r\n            }]\r\n        },\r\n        {\r\n            \"logicalOperator\": \"&&\",\r\n            \"conditions\": [{\r\n                \"field\": \"hairColor\",\r\n                \"comparisonOperator\": \"==\",\r\n                \"value\": \"brown\"\r\n            }]\r\n        },\r\n        {\r\n            \"logicalOperator\": \"&&\",\r\n            \"conditions\": [{\r\n                \"field\": \"age\",\r\n                \"comparisonOperator\": \"==\",\r\n                \"value\": \"25\"\r\n            }]\r\n        }]\r\n    }\r\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        },
-        "url": {
-          "raw": "{{base_url}}/api/query/users",
-          "host": ["{{base_url}}"],
-          "path": ["api", "query", "users"]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "QueryRead_NestedNestedConditions",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "/*function standardDeviation(values, avg) {\r",
-              "    var squareDiffs = values.map(value => Math.pow(value - avg, 2));\r",
-              "    return Math.sqrt(average(squareDiffs));\r",
-              "}\r",
-              "\r",
-              "function average(data) {\r",
-              "    return data.reduce((sum, value)=>sum + value) / data.length;\r",
-              "}\r",
-              "\r",
-              "if (responseCode.code === 200 || responseCode.code === 201) {\r",
-              "    response_array = globals['response_times'] ? JSON.parse(globals['response_times']) : []\r",
-              "    response_array.push(responseTime)\r",
-              "    postman.setGlobalVariable(\"response_times\", JSON.stringify(response_array))\r",
-              "\r",
-              "    response_average = average(response_array);\r",
-              "    postman.setGlobalVariable('response_average', response_average)\r",
-              "\r",
-              "    response_std = standardDeviation(response_array, response_average)\r",
-              "    postman.setGlobalVariable('response_std', response_std)\r",
-              "}*/"
-            ],
-            "type": "text/javascript"
-          }
-        }
-      ],
-      "protocolProfileBehavior": {
-        "strictSSL": false
-      },
-      "request": {
-        "method": "POST",
-        "header": [],
-        "body": {
-          "mode": "raw",
-          "raw": "{\r\n    \"where\": {\r\n        \"groupedConditions\": [{\r\n            \"logicalOperator\": \"&&\",\r\n            \"conditions\": [{\r\n                \"groupedConditions\": [{\r\n                    \"logicalOperator\": \"||\",\r\n                    \"conditions\": [{\r\n                        \"field\": \"name\",\r\n                        \"comparisonOperator\": \"==\",\r\n                        \"value\": \"NewUser_0\"\r\n                    },\r\n                    {\r\n                        \"field\": \"name\",\r\n                        \"comparisonOperator\": \"==\",\r\n                        \"value\": \"Test3\"\r\n                    }]\r\n                },\r\n                {\r\n                    \"logicalOperator\": \"&&\",\r\n                    \"conditions\": [{\r\n                        \"field\": \"Address.City\",\r\n                        \"comparisonOperator\": \"==\",\r\n                        \"value\": \"Pittsburgh\"\r\n                    },\r\n                    {\r\n                        \"field\": \"hairColor\",\r\n                        \"comparisonOperator\": \"==\",\r\n                        \"value\": \"brown\"\r\n                    }]\r\n                }]                       \r\n            }]\r\n        }]\r\n    }\r\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        },
-        "url": {
-          "raw": "{{base_url}}/api/query/users",
-          "host": ["{{base_url}}"],
-          "path": ["api", "query", "users"]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "QueryRead_NestedNestedNestedConditions",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "/*function standardDeviation(values, avg) {\r",
-              "    var squareDiffs = values.map(value => Math.pow(value - avg, 2));\r",
-              "    return Math.sqrt(average(squareDiffs));\r",
-              "}\r",
-              "\r",
-              "function average(data) {\r",
-              "    return data.reduce((sum, value)=>sum + value) / data.length;\r",
-              "}\r",
-              "\r",
-              "if (responseCode.code === 200 || responseCode.code === 201) {\r",
-              "    response_array = globals['response_times'] ? JSON.parse(globals['response_times']) : []\r",
-              "    response_array.push(responseTime)\r",
-              "    postman.setGlobalVariable(\"response_times\", JSON.stringify(response_array))\r",
-              "\r",
-              "    response_average = average(response_array);\r",
-              "    postman.setGlobalVariable('response_average', response_average)\r",
-              "\r",
-              "    response_std = standardDeviation(response_array, response_average)\r",
-              "    postman.setGlobalVariable('response_std', response_std)\r",
-              "}*/"
-            ],
-            "type": "text/javascript"
-          }
-        }
-      ],
-      "protocolProfileBehavior": {
-        "strictSSL": false
-      },
-      "request": {
-        "method": "POST",
-        "header": [],
-        "body": {
-          "mode": "raw",
-          "raw": "{\r\n    \"where\": {\r\n        \"groupedConditions\": [{\r\n            \"logicalOperator\": \"&&\",\r\n            \"conditions\": [{\r\n                \"groupedConditions\": [{\r\n                    \"logicalOperator\": \"&&\",\r\n                    \"conditions\": [{\r\n                        \"groupedConditions\": [{\r\n                            \"logicalOperator\": \"||\",\r\n                            \"conditions\": [{\r\n                                \"field\": \"name\",\r\n                                \"comparisonOperator\": \"==\",\r\n                                \"value\": \"NewUser_0\"\r\n                            },\r\n                            {\r\n                                \"field\": \"name\",\r\n                                \"comparisonOperator\": \"==\",\r\n                                \"value\": \"Test3\"\r\n                            }]\r\n                        }]\r\n                    },\r\n                    {\r\n                        \"field\": \"age\",\r\n                        \"comparisonOperator\": \"==\",\r\n                        \"value\": \"25\"\r\n                    }]\r\n                },\r\n                {\r\n                    \"logicalOperator\": \"||\",\r\n                    \"conditions\": [{\r\n                        \"field\": \"Address.City\",\r\n                        \"comparisonOperator\": \"==\",\r\n                        \"value\": \"Pittsburgh\"\r\n                    },\r\n                    {\r\n                        \"field\": \"hairColor\",\r\n                        \"comparisonOperator\": \"==\",\r\n                        \"value\": \"blonde\"\r\n                    }]\r\n                }]                       \r\n            }]\r\n        }]\r\n    }\r\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        },
-        "url": {
-          "raw": "{{base_url}}/api/query/users",
-          "host": ["{{base_url}}"],
-          "path": ["api", "query", "users"]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "QueryRead_Operators",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "/*function standardDeviation(values, avg) {\r",
-              "    var squareDiffs = values.map(value => Math.pow(value - avg, 2));\r",
-              "    return Math.sqrt(average(squareDiffs));\r",
-              "}\r",
-              "\r",
-              "function average(data) {\r",
-              "    return data.reduce((sum, value)=>sum + value) / data.length;\r",
-              "}\r",
-              "\r",
-              "if (responseCode.code === 200 || responseCode.code === 201) {\r",
-              "    response_array = globals['response_times'] ? JSON.parse(globals['response_times']) : []\r",
-              "    response_array.push(responseTime)\r",
-              "    postman.setGlobalVariable(\"response_times\", JSON.stringify(response_array))\r",
-              "\r",
-              "    response_average = average(response_array);\r",
-              "    postman.setGlobalVariable('response_average', response_average)\r",
-              "\r",
-              "    response_std = standardDeviation(response_array, response_average)\r",
-              "    postman.setGlobalVariable('response_std', response_std)\r",
-              "}*/"
-            ],
-            "type": "text/javascript"
-          }
-        }
-      ],
-      "protocolProfileBehavior": {
-        "strictSSL": false
-      },
-      "request": {
-        "method": "POST",
-        "header": [],
-        "body": {
-          "mode": "raw",
-          "raw": "{\r\n    \"where\": {\r\n        \"groupedConditions\": [{\r\n            \"logicalOperator\": \"&&\",\r\n            \"conditions\": [{\r\n                \"field\": \"age\",\r\n                \"comparisonOperator\": \"<=\",\r\n                \"value\": \"30\"\r\n            }]\r\n        }]\r\n    }\r\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        },
-        "url": {
-          "raw": "{{base_url}}/api/query/users",
-          "host": ["{{base_url}}"],
-          "path": ["api", "query", "users"]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "QueryRead_Operators_Array",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "/*function standardDeviation(values, avg) {\r",
-              "    var squareDiffs = values.map(value => Math.pow(value - avg, 2));\r",
-              "    return Math.sqrt(average(squareDiffs));\r",
-              "}\r",
-              "\r",
-              "function average(data) {\r",
-              "    return data.reduce((sum, value)=>sum + value) / data.length;\r",
-              "}\r",
-              "\r",
-              "if (responseCode.code === 200 || responseCode.code === 201) {\r",
-              "    response_array = globals['response_times'] ? JSON.parse(globals['response_times']) : []\r",
-              "    response_array.push(responseTime)\r",
-              "    postman.setGlobalVariable(\"response_times\", JSON.stringify(response_array))\r",
-              "\r",
-              "    response_average = average(response_array);\r",
-              "    postman.setGlobalVariable('response_average', response_average)\r",
-              "\r",
-              "    response_std = standardDeviation(response_array, response_average)\r",
-              "    postman.setGlobalVariable('response_std', response_std)\r",
-              "}*/"
-            ],
-            "type": "text/javascript"
-          }
-        }
-      ],
-      "protocolProfileBehavior": {
-        "strictSSL": false
-      },
-      "request": {
-        "method": "POST",
-        "header": [],
-        "body": {
-          "mode": "raw",
-          "raw": "{\r\n    \"where\": {\r\n        \"groupedConditions\": [{\r\n            \"logicalOperator\": \"&&\",\r\n            \"conditions\": [{\r\n                \"field\": \"favoriteThings\",\r\n                \"comparisonOperator\": \"in\",\r\n                \"values\": [\"Steelers\", \"Browns\"]\r\n            }]\r\n        }]\r\n    }\r\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        },
-        "url": {
-          "raw": "{{base_url}}/api/query/users",
-          "host": ["{{base_url}}"],
-          "path": ["api", "query", "users"]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "QueryReadCount_Conditions",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "/*function standardDeviation(values, avg) {\r",
-              "    var squareDiffs = values.map(value => Math.pow(value - avg, 2));\r",
-              "    return Math.sqrt(average(squareDiffs));\r",
-              "}\r",
-              "\r",
-              "function average(data) {\r",
-              "    return data.reduce((sum, value)=>sum + value) / data.length;\r",
-              "}\r",
-              "\r",
-              "if (responseCode.code === 200 || responseCode.code === 201) {\r",
-              "    response_array = globals['response_times'] ? JSON.parse(globals['response_times']) : []\r",
-              "    response_array.push(responseTime)\r",
-              "    postman.setGlobalVariable(\"response_times\", JSON.stringify(response_array))\r",
-              "\r",
-              "    response_average = average(response_array);\r",
-              "    postman.setGlobalVariable('response_average', response_average)\r",
-              "\r",
-              "    response_std = standardDeviation(response_array, response_average)\r",
-              "    postman.setGlobalVariable('response_std', response_std)\r",
-              "}*/"
-            ],
-            "type": "text/javascript"
-          }
-        }
-      ],
-      "protocolProfileBehavior": {
-        "strictSSL": false
-      },
-      "request": {
-        "method": "POST",
-        "header": [],
-        "body": {
-          "mode": "raw",
-          "raw": "{\r\n    \"where\": {\r\n        \"field\": \"hairColor\",\r\n        \"comparisonOperator\": \"==\",\r\n        \"value\": \"brown\"\r\n    }\r\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        },
-        "url": {
-          "raw": "{{base_url}}/api/query/users/count",
-          "host": ["{{base_url}}"],
-          "path": ["api", "query", "users", "count"]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "Read_Id",
-      "event": [
-        {
-          "listen": "prerequest",
-          "script": {
-            "exec": [
-              "let externalIds = JSON.parse(pm.environment.get(\"external_ids\"));\r",
-              "let index = pm.environment.get(\"current_read_external_id_index\");\r",
-              "if (index >= externalIds.length) index = 0;\r",
-              "let currentExternalId = externalIds[index];\r",
-              "pm.environment.set(\"current_external_id\", currentExternalId);\r",
-              "pm.environment.set(\"current_read_external_id_index\", ++index);"
-            ],
-            "type": "text/javascript"
-          }
-        }
-      ],
-      "protocolProfileBehavior": {
-        "strictSSL": false
-      },
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{base_url}}/api/users/{{current_external_id}}",
-          "host": ["{{base_url}}"],
-          "path": ["api", "users", "{{current_external_id}}"]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "Read_Params",
-      "event": [
-        {
-          "listen": "prerequest",
-          "script": {
-            "exec": [
-              "let iterations = JSON.parse(pm.environment.get(\"iterations\"));\r",
-              "let index = pm.environment.get(\"current_read_iteration_index\");\r",
-              "if (index >= iterations.length) index = 0;\r",
-              "let currentIternation = iterations[index];\r",
-              "pm.environment.set(\"current_iteration\", currentIternation);\r",
-              "pm.environment.set(\"current_read_iteration_index\", ++index);"
-            ],
-            "type": "text/javascript"
-          }
-        }
-      ],
-      "protocolProfileBehavior": {
-        "strictSSL": false
-      },
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{base_url}}/api/users?name=NewUser_{{current_iteration}}",
-          "host": ["{{base_url}}"],
-          "path": ["api", "users"],
-          "query": [
-            {
-              "key": "name",
-              "value": "NewUser_{{current_iteration}}"
-            }
-          ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "Read_All",
-      "protocolProfileBehavior": {
-        "strictSSL": false
-      },
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{base_url}}/api/users",
-          "host": ["{{base_url}}"],
-          "path": ["api", "users"]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "Update",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [""],
-            "type": "text/javascript"
-          }
-        },
-        {
-          "listen": "prerequest",
-          "script": {
-            "exec": [
-              "let iterations = JSON.parse(pm.environment.get(\"iterations\"));\r",
-              "let iterationIndex = pm.environment.get(\"current_update_iteration_index\");\r",
-              "if (iterationIndex >= iterations.length) iterationIndex = 0;\r",
-              "let currentIternation = iterations[iterationIndex];\r",
-              "pm.environment.set(\"current_iteration\", currentIternation);\r",
-              "pm.environment.set(\"current_update_iteration_index\", ++iterationIndex);\r",
-              "\r",
-              "let externalIds = JSON.parse(pm.environment.get(\"external_ids\"));\r",
-              "let externalIdsIndex = pm.environment.get(\"current_update_external_id_index\");\r",
-              "if (externalIdsIndex >= externalIds.length) externalIdsIndex = 0;\r",
-              "let currentExternalId = externalIds[externalIdsIndex];\r",
-              "pm.environment.set(\"current_external_id\", currentExternalId);\r",
-              "pm.environment.set(\"current_update_external_id_index\", ++externalIdsIndex);"
-            ],
-            "type": "text/javascript"
-          }
-        }
-      ],
-      "protocolProfileBehavior": {
-        "strictSSL": false
-      },
-      "request": {
-        "method": "PUT",
-        "header": [],
-        "body": {
-          "mode": "raw",
-          "raw": "{\r\n    \"externalId\": \"{{current_external_id}}\",\r\n    \"name\": \"NewUser_{{current_iteration}}\",\r\n    \"address\": {\r\n        \"street\": \"46 Maple Street\",\r\n        \"city\": \"Pittsburgh\",\r\n        \"state\": \"PA\"\r\n    },\r\n    \"age\": 26,\r\n    \"hairColor\": \"brown\",\r\n    \"favoriteThings\": [\"Steelers\", \"Pirates\", \"Penguins\"]\r\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        },
-        "url": {
-          "raw": "{{base_url}}/api/users/{{current_external_id}}",
-          "host": ["{{base_url}}"],
-          "path": ["api", "users", "{{current_external_id}}"]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "PartialUpdate_Id",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [""],
-            "type": "text/javascript"
-          }
-        },
-        {
-          "listen": "prerequest",
-          "script": {
-            "exec": [
-              "let externalIds = JSON.parse(pm.environment.get(\"external_ids\"));\r",
-              "let index = pm.environment.get(\"current_partial_external_id_index\");\r",
-              "if (index >= externalIds.length) index = 0;\r",
-              "let currentExternalId = externalIds[index];\r",
-              "pm.environment.set(\"current_external_id\", currentExternalId);\r",
-              "pm.environment.set(\"current_partial_external_id_index\", ++index);"
-            ],
-            "type": "text/javascript"
-          }
-        }
-      ],
-      "protocolProfileBehavior": {
-        "strictSSL": false
-      },
-      "request": {
-        "method": "PATCH",
-        "header": [],
-        "body": {
-          "mode": "raw",
-          "raw": "{\r\n    \"age\": 27,\r\n    \"hairColor\": \"blonde\"\r\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        },
-        "url": {
-          "raw": "{{base_url}}/api/users/{{current_external_id}}",
-          "host": ["{{base_url}}"],
-          "path": ["api", "users", "{{current_external_id}}"]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "PartialUpdate_Params",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [""],
-            "type": "text/javascript"
-          }
-        },
-        {
-          "listen": "prerequest",
-          "script": {
-            "exec": [
-              "let iterations = JSON.parse(pm.environment.get(\"iterations\"));\r",
-              "let index = pm.environment.get(\"current_partial_iteration_index\");\r",
-              "if (index >= iterations.length) index = 0;\r",
-              "let currentIternation = iterations[index];\r",
-              "pm.environment.set(\"current_iteration\", currentIternation);\r",
-              "pm.environment.set(\"current_partial_iteration_index\", ++index);"
-            ],
-            "type": "text/javascript"
-          }
-        }
-      ],
-      "protocolProfileBehavior": {
-        "strictSSL": false
-      },
-      "request": {
-        "method": "PATCH",
-        "header": [],
-        "body": {
-          "mode": "raw",
-          "raw": "{\r\n    \"age\": 28,\r\n    \"hairColor\": \"red\"\r\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        },
-        "url": {
-          "raw": "{{base_url}}/api/users?name=NewUser_{{current_iteration}}",
-          "host": ["{{base_url}}"],
-          "path": ["api", "users"],
-          "query": [
-            {
-              "key": "name",
-              "value": "NewUser_{{current_iteration}}"
-            }
-          ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "PartialUpdate_All",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "/*function standardDeviation(values, avg) {\r",
-              "    var squareDiffs = values.map(value => Math.pow(value - avg, 2));\r",
-              "    return Math.sqrt(average(squareDiffs));\r",
-              "}\r",
-              "\r",
-              "function average(data) {\r",
-              "    return data.reduce((sum, value)=>sum + value) / data.length;\r",
-              "}\r",
-              "\r",
-              "if (responseCode.code === 200 || responseCode.code === 201) {\r",
-              "    response_array = globals['response_times'] ? JSON.parse(globals['response_times']) : []\r",
-              "    response_array.push(responseTime)\r",
-              "    postman.setGlobalVariable(\"response_times\", JSON.stringify(response_array))\r",
-              "\r",
-              "    response_average = average(response_array);\r",
-              "    postman.setGlobalVariable('response_average', response_average)\r",
-              "\r",
-              "    response_std = standardDeviation(response_array, response_average)\r",
-              "    postman.setGlobalVariable('response_std', response_std)\r",
-              "}*/"
-            ],
-            "type": "text/javascript"
-          }
-        }
-      ],
-      "protocolProfileBehavior": {
-        "strictSSL": false
-      },
-      "request": {
-        "method": "PATCH",
-        "header": [],
-        "body": {
-          "mode": "raw",
-          "raw": "{\r\n    \"age\": 29\r\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        },
-        "url": {
-          "raw": "{{base_url}}/api/users",
-          "host": ["{{base_url}}"],
-          "path": ["api", "users"]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "Delete_Id",
-      "event": [
-        {
-          "listen": "prerequest",
-          "script": {
-            "exec": [
-              "function decrementAndSave(variableName) {\r",
-              "    let value = pm.environment.get(variableName);\r",
-              "    let integer = parseInt(value);\r",
-              "    if (integer !== 0) integer--;\r",
-              "    pm.environment.set(variableName, integer);\r",
-              "}\r",
-              "\r",
-              "let externalIds = JSON.parse(pm.environment.get(\"external_ids\"));\r",
-              "let currentExternalId = externalIds.shift();\r",
-              "pm.environment.set(\"current_external_id\", currentExternalId);\r",
-              "pm.environment.set(\"external_ids\", JSON.stringify(externalIds));\r",
-              "\r",
-              "let iterations = JSON.parse(pm.environment.get(\"iterations\"));\r",
-              "iterations.shift();\r",
-              "pm.environment.set(\"iterations\", JSON.stringify(iterations));\r",
-              "\r",
-              "decrementAndSave(\"current_read_iteration_index\");\r",
-              "decrementAndSave(\"current_update_iteration_index\");\r",
-              "decrementAndSave(\"current_partial_iteration_index\");\r",
-              "decrementAndSave(\"current_read_external_id_index\");\r",
-              "decrementAndSave(\"current_update_external_id_index\");\r",
-              "decrementAndSave(\"current_partial_external_id_index\");"
-            ],
-            "type": "text/javascript"
-          }
-        }
-      ],
-      "protocolProfileBehavior": {
-        "strictSSL": false
-      },
-      "request": {
-        "method": "DELETE",
-        "header": [],
-        "url": {
-          "raw": "{{base_url}}/api/users/{{current_external_id}}",
-          "host": ["{{base_url}}"],
-          "path": ["api", "users", "{{current_external_id}}"]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "Delete_Params",
-      "event": [
-        {
-          "listen": "prerequest",
-          "script": {
-            "exec": [
-              "function decrementAndSave(variableName) {\r",
-              "    let value = pm.environment.get(variableName);\r",
-              "    let integer = parseInt(value);\r",
-              "    if (integer !== 0) integer--;\r",
-              "    pm.environment.set(variableName, integer);\r",
-              "}\r",
-              "\r",
-              "let iterations = JSON.parse(pm.environment.get(\"iterations\"));\r",
-              "let currentIteration = iterations.shift();\r",
-              "pm.environment.set(\"current_iteration\", currentIteration);\r",
-              "pm.environment.set(\"iterations\", JSON.stringify(iterations));\r",
-              "\r",
-              "let externalIds = JSON.parse(pm.environment.get(\"external_ids\"));\r",
-              "externalIds.shift();\r",
-              "pm.environment.set(\"external_ids\", JSON.stringify(externalIds));\r",
-              "\r",
-              "decrementAndSave(\"current_read_iteration_index\");\r",
-              "decrementAndSave(\"current_update_iteration_index\");\r",
-              "decrementAndSave(\"current_partial_iteration_index\");\r",
-              "decrementAndSave(\"current_read_external_id_index\");\r",
-              "decrementAndSave(\"current_update_external_id_index\");\r",
-              "decrementAndSave(\"current_partial_external_id_index\");"
-            ],
-            "type": "text/javascript"
-          }
-        }
-      ],
-      "protocolProfileBehavior": {
-        "strictSSL": false
-      },
-      "request": {
-        "method": "DELETE",
-        "header": [],
-        "url": {
-          "raw": "{{base_url}}/api/users?name=NewUser_{{current_iteration}}",
-          "host": ["{{base_url}}"],
-          "path": ["api", "users"],
-          "query": [
-            {
-              "key": "name",
-              "value": "NewUser_{{current_iteration}}"
-            }
-          ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "QueryDelete_Conditions",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "/*function standardDeviation(values, avg) {\r",
-              "    var squareDiffs = values.map(value => Math.pow(value - avg, 2));\r",
-              "    return Math.sqrt(average(squareDiffs));\r",
-              "}\r",
-              "\r",
-              "function average(data) {\r",
-              "    return data.reduce((sum, value)=>sum + value) / data.length;\r",
-              "}\r",
-              "\r",
-              "if (responseCode.code === 200 || responseCode.code === 201) {\r",
-              "    response_array = globals['response_times'] ? JSON.parse(globals['response_times']) : []\r",
-              "    response_array.push(responseTime)\r",
-              "    postman.setGlobalVariable(\"response_times\", JSON.stringify(response_array))\r",
-              "\r",
-              "    response_average = average(response_array);\r",
-              "    postman.setGlobalVariable('response_average', response_average)\r",
-              "\r",
-              "    response_std = standardDeviation(response_array, response_average)\r",
-              "    postman.setGlobalVariable('response_std', response_std)\r",
-              "}*/"
-            ],
-            "type": "text/javascript"
-          }
-        }
-      ],
-      "protocolProfileBehavior": {
-        "strictSSL": false
-      },
-      "request": {
-        "method": "DELETE",
-        "header": [],
-        "body": {
-          "mode": "raw",
-          "raw": "{\r\n    \"where\": {\r\n        \"field\": \"address.city\",\r\n        \"comparisonOperator\": \"==\",\r\n        \"value\": \"Pittsburgh\"\r\n    }\r\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        },
-        "url": {
-          "raw": "{{base_url}}/api/query/users",
-          "host": ["{{base_url}}"],
-          "path": ["api", "query", "users"]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "Delete_All",
-      "protocolProfileBehavior": {
-        "strictSSL": false
-      },
-      "request": {
-        "method": "DELETE",
-        "header": [],
-        "url": {
-          "raw": "{{base_url}}/api/users",
-          "host": ["{{base_url}}"],
-          "path": ["api", "users"]
-        }
-      },
-      "response": []
-    }
-  ]
+	"info": {
+		"_postman_id": "66397f53-ed09-4e30-acb9-4a9383a26372",
+		"name": "Crud",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "1338704"
+	},
+	"item": [
+		{
+			"name": "BadRequests",
+			"item": [
+				{
+					"name": "Create_Name_AlreadyExists",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"/*function standardDeviation(values, avg) {\r",
+									"    var squareDiffs = values.map(value => Math.pow(value - avg, 2));\r",
+									"    return Math.sqrt(average(squareDiffs));\r",
+									"}\r",
+									"\r",
+									"function average(data) {\r",
+									"    return data.reduce((sum, value)=>sum + value) / data.length;\r",
+									"}\r",
+									"\r",
+									"if (responseCode.code === 200 || responseCode.code === 201) {\r",
+									"    response_array = globals['response_times'] ? JSON.parse(globals['response_times']) : []\r",
+									"    response_array.push(responseTime)\r",
+									"    postman.setGlobalVariable(\"response_times\", JSON.stringify(response_array))\r",
+									"\r",
+									"    response_average = average(response_array);\r",
+									"    postman.setGlobalVariable('response_average', response_average)\r",
+									"\r",
+									"    response_std = standardDeviation(response_array, response_average)\r",
+									"    postman.setGlobalVariable('response_std', response_std)\r",
+									"}*/"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"strictSSL": false
+					},
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"NewUser_0\",\r\n    \"address\": {\r\n        \"street\": \"44 Maple Street\",\r\n        \"city\": \"Pittsburgh\",\r\n        \"state\": \"PA\"\r\n    },\r\n    \"age\": 25,\r\n    \"hairColor\": \"brown\",\r\n    \"favoriteThings\": [\"Steelers\", \"Pirates\", \"Penguins\"]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/users",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Read_Params_Filter_IsEmpty",
+					"protocolProfileBehavior": {
+						"strictSSL": false
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/users",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update_Id_IsEmpty",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"/*function standardDeviation(values, avg) {\r",
+									"    var squareDiffs = values.map(value => Math.pow(value - avg, 2));\r",
+									"    return Math.sqrt(average(squareDiffs));\r",
+									"}\r",
+									"\r",
+									"function average(data) {\r",
+									"    return data.reduce((sum, value)=>sum + value) / data.length;\r",
+									"}\r",
+									"\r",
+									"if (responseCode.code === 200 || responseCode.code === 201) {\r",
+									"    response_array = globals['response_times'] ? JSON.parse(globals['response_times']) : []\r",
+									"    response_array.push(responseTime)\r",
+									"    postman.setGlobalVariable(\"response_times\", JSON.stringify(response_array))\r",
+									"\r",
+									"    response_average = average(response_array);\r",
+									"    postman.setGlobalVariable('response_average', response_average)\r",
+									"\r",
+									"    response_std = standardDeviation(response_array, response_average)\r",
+									"    postman.setGlobalVariable('response_std', response_std)\r",
+									"}*/"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"strictSSL": false
+					},
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"externalId\": \"aabf9d27-c180-46c4-a7a5-46bd7ddb7c9e\",\r\n    \"name\": \"NewUser_0\",\r\n    \"address\": {\r\n        \"street\": \"45 Maple Street\",\r\n        \"city\": \"Pittsburgh\",\r\n        \"state\": \"PA\"\r\n    },\r\n    \"age\": 3,\r\n    \"hairColor\": \"brown\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/users/00000000-0000-0000-0000-000000000000",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"00000000-0000-0000-0000-000000000000"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "PartialUpdate_Id_ExternalId_DoNotMatch",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"/*function standardDeviation(values, avg) {\r",
+									"    var squareDiffs = values.map(value => Math.pow(value - avg, 2));\r",
+									"    return Math.sqrt(average(squareDiffs));\r",
+									"}\r",
+									"\r",
+									"function average(data) {\r",
+									"    return data.reduce((sum, value)=>sum + value) / data.length;\r",
+									"}\r",
+									"\r",
+									"if (responseCode.code === 200 || responseCode.code === 201) {\r",
+									"    response_array = globals['response_times'] ? JSON.parse(globals['response_times']) : []\r",
+									"    response_array.push(responseTime)\r",
+									"    postman.setGlobalVariable(\"response_times\", JSON.stringify(response_array))\r",
+									"\r",
+									"    response_average = average(response_array);\r",
+									"    postman.setGlobalVariable('response_average', response_average)\r",
+									"\r",
+									"    response_std = standardDeviation(response_array, response_average)\r",
+									"    postman.setGlobalVariable('response_std', response_std)\r",
+									"}*/"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"strictSSL": false
+					},
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"externalId\": \"8dc544bd-ce6c-44e5-9f8c-6ad32bb581ab\",\r\n    \"age\": 27,\r\n    \"hairColor\": \"blonde\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/users/b5a4cb77-a153-41f3-bb9c-821255ca7e1f",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"b5a4cb77-a153-41f3-bb9c-821255ca7e1f"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "PartialUpdate_Params_ExternalId_IsNotNull",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"strictSSL": false
+					},
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"externalId\": \"8dc544bd-ce6c-44e5-9f8c-6ad32bb581ab\",\r\n    \"age\": 27,\r\n    \"hairColor\": \"blonde\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/users?name=NewUser_0&hairColor=brown",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users"
+							],
+							"query": [
+								{
+									"key": "name",
+									"value": "NewUser_0"
+								},
+								{
+									"key": "hairColor",
+									"value": "brown"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete_Params_Filter_ContainsPropertiesNotInModel",
+					"protocolProfileBehavior": {
+						"strictSSL": false
+					},
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/users?height=8&address_city=Pittsburgh",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users"
+							],
+							"query": [
+								{
+									"key": "height",
+									"value": "8"
+								},
+								{
+									"key": "address_city",
+									"value": "Pittsburgh"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Create",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Test Id\", function () {\r",
+							"    var jsonData = pm.response.json();\r",
+							"    console.log(\"Testing Id: \" + jsonData.id);\r",
+							"    pm.expect(jsonData.id).not.null;\r",
+							"\r",
+							"    let externalIds = JSON.parse(pm.environment.get(\"external_ids\"));\r",
+							"    externalIds.push(jsonData.id);\r",
+							"    pm.environment.set(\"external_ids\", JSON.stringify(externalIds));\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"let iterations = JSON.parse(pm.environment.get(\"iterations\"));\r",
+							"let totalIterations = iterations.length;\r",
+							"pm.environment.set(\"current_iteration\", totalIterations);\r",
+							"iterations.push(totalIterations);\r",
+							"pm.environment.set(\"iterations\", JSON.stringify(iterations));"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"strictSSL": false
+			},
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"Id\": null,\r\n    \"name\": \"NewUser_{{current_iteration}}\",\r\n    \"address\": {\r\n        \"street\": \"44 Maple Street\",\r\n        \"city\": \"Pittsburgh\",\r\n        \"state\": \"PA\"\r\n    },\r\n    \"age\": 25,\r\n    \"hairColor\": \"brown\",\r\n    \"favoriteThings\": [\"Steelers\", \"Pirates\", \"Penguins\"]\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/api/users",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"users"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "QueryRead_Sort",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"/*function standardDeviation(values, avg) {\r",
+							"    var squareDiffs = values.map(value => Math.pow(value - avg, 2));\r",
+							"    return Math.sqrt(average(squareDiffs));\r",
+							"}\r",
+							"\r",
+							"function average(data) {\r",
+							"    return data.reduce((sum, value)=>sum + value) / data.length;\r",
+							"}\r",
+							"\r",
+							"if (responseCode.code === 200 || responseCode.code === 201) {\r",
+							"    response_array = globals['response_times'] ? JSON.parse(globals['response_times']) : []\r",
+							"    response_array.push(responseTime)\r",
+							"    postman.setGlobalVariable(\"response_times\", JSON.stringify(response_array))\r",
+							"\r",
+							"    response_average = average(response_array);\r",
+							"    postman.setGlobalVariable('response_average', response_average)\r",
+							"\r",
+							"    response_std = standardDeviation(response_array, response_average)\r",
+							"    postman.setGlobalVariable('response_std', response_std)\r",
+							"}*/"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"strictSSL": false
+			},
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"orderby\": [{\r\n        \"field\": \"address.city\"\r\n    },\r\n    {\r\n        \"field\": \"age\",\r\n        \"isDescending\": true\r\n    },\r\n    {\r\n        \"field\": \"name\"\r\n    }]\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/api/query/users",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"query",
+						"users"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "QueryRead_Sort_Null",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"/*function standardDeviation(values, avg) {\r",
+							"    var squareDiffs = values.map(value => Math.pow(value - avg, 2));\r",
+							"    return Math.sqrt(average(squareDiffs));\r",
+							"}\r",
+							"\r",
+							"function average(data) {\r",
+							"    return data.reduce((sum, value)=>sum + value) / data.length;\r",
+							"}\r",
+							"\r",
+							"if (responseCode.code === 200 || responseCode.code === 201) {\r",
+							"    response_array = globals['response_times'] ? JSON.parse(globals['response_times']) : []\r",
+							"    response_array.push(responseTime)\r",
+							"    postman.setGlobalVariable(\"response_times\", JSON.stringify(response_array))\r",
+							"\r",
+							"    response_average = average(response_array);\r",
+							"    postman.setGlobalVariable('response_average', response_average)\r",
+							"\r",
+							"    response_std = standardDeviation(response_array, response_average)\r",
+							"    postman.setGlobalVariable('response_std', response_std)\r",
+							"}*/"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"strictSSL": false
+			},
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"orderby\": null\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/api/query/users",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"query",
+						"users"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "QueryRead_Limit",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"/*function standardDeviation(values, avg) {\r",
+							"    var squareDiffs = values.map(value => Math.pow(value - avg, 2));\r",
+							"    return Math.sqrt(average(squareDiffs));\r",
+							"}\r",
+							"\r",
+							"function average(data) {\r",
+							"    return data.reduce((sum, value)=>sum + value) / data.length;\r",
+							"}\r",
+							"\r",
+							"if (responseCode.code === 200 || responseCode.code === 201) {\r",
+							"    response_array = globals['response_times'] ? JSON.parse(globals['response_times']) : []\r",
+							"    response_array.push(responseTime)\r",
+							"    postman.setGlobalVariable(\"response_times\", JSON.stringify(response_array))\r",
+							"\r",
+							"    response_average = average(response_array);\r",
+							"    postman.setGlobalVariable('response_average', response_average)\r",
+							"\r",
+							"    response_std = standardDeviation(response_array, response_average)\r",
+							"    postman.setGlobalVariable('response_std', response_std)\r",
+							"}*/"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"strictSSL": false
+			},
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"limit\": 3\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/api/query/users",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"query",
+						"users"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "QueryRead_Limit_Null",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"/*function standardDeviation(values, avg) {\r",
+							"    var squareDiffs = values.map(value => Math.pow(value - avg, 2));\r",
+							"    return Math.sqrt(average(squareDiffs));\r",
+							"}\r",
+							"\r",
+							"function average(data) {\r",
+							"    return data.reduce((sum, value)=>sum + value) / data.length;\r",
+							"}\r",
+							"\r",
+							"if (responseCode.code === 200 || responseCode.code === 201) {\r",
+							"    response_array = globals['response_times'] ? JSON.parse(globals['response_times']) : []\r",
+							"    response_array.push(responseTime)\r",
+							"    postman.setGlobalVariable(\"response_times\", JSON.stringify(response_array))\r",
+							"\r",
+							"    response_average = average(response_array);\r",
+							"    postman.setGlobalVariable('response_average', response_average)\r",
+							"\r",
+							"    response_std = standardDeviation(response_array, response_average)\r",
+							"    postman.setGlobalVariable('response_std', response_std)\r",
+							"}*/"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"strictSSL": false
+			},
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"limit\": null\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/api/query/users",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"query",
+						"users"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "QueryRead_Skip",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"/*function standardDeviation(values, avg) {\r",
+							"    var squareDiffs = values.map(value => Math.pow(value - avg, 2));\r",
+							"    return Math.sqrt(average(squareDiffs));\r",
+							"}\r",
+							"\r",
+							"function average(data) {\r",
+							"    return data.reduce((sum, value)=>sum + value) / data.length;\r",
+							"}\r",
+							"\r",
+							"if (responseCode.code === 200 || responseCode.code === 201) {\r",
+							"    response_array = globals['response_times'] ? JSON.parse(globals['response_times']) : []\r",
+							"    response_array.push(responseTime)\r",
+							"    postman.setGlobalVariable(\"response_times\", JSON.stringify(response_array))\r",
+							"\r",
+							"    response_average = average(response_array);\r",
+							"    postman.setGlobalVariable('response_average', response_average)\r",
+							"\r",
+							"    response_std = standardDeviation(response_array, response_average)\r",
+							"    postman.setGlobalVariable('response_std', response_std)\r",
+							"}*/"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"strictSSL": false
+			},
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"skip\": 3\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/api/query/users",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"query",
+						"users"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "QueryRead_Skip_Null",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"/*function standardDeviation(values, avg) {\r",
+							"    var squareDiffs = values.map(value => Math.pow(value - avg, 2));\r",
+							"    return Math.sqrt(average(squareDiffs));\r",
+							"}\r",
+							"\r",
+							"function average(data) {\r",
+							"    return data.reduce((sum, value)=>sum + value) / data.length;\r",
+							"}\r",
+							"\r",
+							"if (responseCode.code === 200 || responseCode.code === 201) {\r",
+							"    response_array = globals['response_times'] ? JSON.parse(globals['response_times']) : []\r",
+							"    response_array.push(responseTime)\r",
+							"    postman.setGlobalVariable(\"response_times\", JSON.stringify(response_array))\r",
+							"\r",
+							"    response_average = average(response_array);\r",
+							"    postman.setGlobalVariable('response_average', response_average)\r",
+							"\r",
+							"    response_std = standardDeviation(response_array, response_average)\r",
+							"    postman.setGlobalVariable('response_std', response_std)\r",
+							"}*/"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"strictSSL": false
+			},
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"skip\": null\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/api/query/users",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"query",
+						"users"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "QueryRead_Includes",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"/*function standardDeviation(values, avg) {\r",
+							"    var squareDiffs = values.map(value => Math.pow(value - avg, 2));\r",
+							"    return Math.sqrt(average(squareDiffs));\r",
+							"}\r",
+							"\r",
+							"function average(data) {\r",
+							"    return data.reduce((sum, value)=>sum + value) / data.length;\r",
+							"}\r",
+							"\r",
+							"if (responseCode.code === 200 || responseCode.code === 201) {\r",
+							"    response_array = globals['response_times'] ? JSON.parse(globals['response_times']) : []\r",
+							"    response_array.push(responseTime)\r",
+							"    postman.setGlobalVariable(\"response_times\", JSON.stringify(response_array))\r",
+							"\r",
+							"    response_average = average(response_array);\r",
+							"    postman.setGlobalVariable('response_average', response_average)\r",
+							"\r",
+							"    response_std = standardDeviation(response_array, response_average)\r",
+							"    postman.setGlobalVariable('response_std', response_std)\r",
+							"}*/"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"strictSSL": false
+			},
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"includes\": [\"age\", \"name\", \"address.city\"]\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/api/query/users",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"query",
+						"users"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "QueryRead_Includes_Null",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"/*function standardDeviation(values, avg) {\r",
+							"    var squareDiffs = values.map(value => Math.pow(value - avg, 2));\r",
+							"    return Math.sqrt(average(squareDiffs));\r",
+							"}\r",
+							"\r",
+							"function average(data) {\r",
+							"    return data.reduce((sum, value)=>sum + value) / data.length;\r",
+							"}\r",
+							"\r",
+							"if (responseCode.code === 200 || responseCode.code === 201) {\r",
+							"    response_array = globals['response_times'] ? JSON.parse(globals['response_times']) : []\r",
+							"    response_array.push(responseTime)\r",
+							"    postman.setGlobalVariable(\"response_times\", JSON.stringify(response_array))\r",
+							"\r",
+							"    response_average = average(response_array);\r",
+							"    postman.setGlobalVariable('response_average', response_average)\r",
+							"\r",
+							"    response_std = standardDeviation(response_array, response_average)\r",
+							"    postman.setGlobalVariable('response_std', response_std)\r",
+							"}*/"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"strictSSL": false
+			},
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"includes\": null\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/api/query/users",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"query",
+						"users"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "QueryRead_Excludes",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"/*function standardDeviation(values, avg) {\r",
+							"    var squareDiffs = values.map(value => Math.pow(value - avg, 2));\r",
+							"    return Math.sqrt(average(squareDiffs));\r",
+							"}\r",
+							"\r",
+							"function average(data) {\r",
+							"    return data.reduce((sum, value)=>sum + value) / data.length;\r",
+							"}\r",
+							"\r",
+							"if (responseCode.code === 200 || responseCode.code === 201) {\r",
+							"    response_array = globals['response_times'] ? JSON.parse(globals['response_times']) : []\r",
+							"    response_array.push(responseTime)\r",
+							"    postman.setGlobalVariable(\"response_times\", JSON.stringify(response_array))\r",
+							"\r",
+							"    response_average = average(response_array);\r",
+							"    postman.setGlobalVariable('response_average', response_average)\r",
+							"\r",
+							"    response_std = standardDeviation(response_array, response_average)\r",
+							"    postman.setGlobalVariable('response_std', response_std)\r",
+							"}*/"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"strictSSL": false
+			},
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"excludes\": [\"hairColor\", \"address.state\"]\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/api/query/users",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"query",
+						"users"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "QueryRead_Excludes_Null",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"/*function standardDeviation(values, avg) {\r",
+							"    var squareDiffs = values.map(value => Math.pow(value - avg, 2));\r",
+							"    return Math.sqrt(average(squareDiffs));\r",
+							"}\r",
+							"\r",
+							"function average(data) {\r",
+							"    return data.reduce((sum, value)=>sum + value) / data.length;\r",
+							"}\r",
+							"\r",
+							"if (responseCode.code === 200 || responseCode.code === 201) {\r",
+							"    response_array = globals['response_times'] ? JSON.parse(globals['response_times']) : []\r",
+							"    response_array.push(responseTime)\r",
+							"    postman.setGlobalVariable(\"response_times\", JSON.stringify(response_array))\r",
+							"\r",
+							"    response_average = average(response_array);\r",
+							"    postman.setGlobalVariable('response_average', response_average)\r",
+							"\r",
+							"    response_std = standardDeviation(response_array, response_average)\r",
+							"    postman.setGlobalVariable('response_std', response_std)\r",
+							"}*/"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"strictSSL": false
+			},
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"excludes\": null\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/api/query/users",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"query",
+						"users"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "QueryRead_Conditions",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"/*function standardDeviation(values, avg) {\r",
+							"    var squareDiffs = values.map(value => Math.pow(value - avg, 2));\r",
+							"    return Math.sqrt(average(squareDiffs));\r",
+							"}\r",
+							"\r",
+							"function average(data) {\r",
+							"    return data.reduce((sum, value)=>sum + value) / data.length;\r",
+							"}\r",
+							"\r",
+							"if (responseCode.code === 200 || responseCode.code === 201) {\r",
+							"    response_array = globals['response_times'] ? JSON.parse(globals['response_times']) : []\r",
+							"    response_array.push(responseTime)\r",
+							"    postman.setGlobalVariable(\"response_times\", JSON.stringify(response_array))\r",
+							"\r",
+							"    response_average = average(response_array);\r",
+							"    postman.setGlobalVariable('response_average', response_average)\r",
+							"\r",
+							"    response_std = standardDeviation(response_array, response_average)\r",
+							"    postman.setGlobalVariable('response_std', response_std)\r",
+							"}*/"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"strictSSL": false
+			},
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"where\": {\r\n        \"field\": \"hairColor\",\r\n        \"comparisonOperator\": \"==\",\r\n        \"value\": \"brown\"\r\n    }\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/api/query/users",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"query",
+						"users"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "QueryRead_NestedConditions",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"/*function standardDeviation(values, avg) {\r",
+							"    var squareDiffs = values.map(value => Math.pow(value - avg, 2));\r",
+							"    return Math.sqrt(average(squareDiffs));\r",
+							"}\r",
+							"\r",
+							"function average(data) {\r",
+							"    return data.reduce((sum, value)=>sum + value) / data.length;\r",
+							"}\r",
+							"\r",
+							"if (responseCode.code === 200 || responseCode.code === 201) {\r",
+							"    response_array = globals['response_times'] ? JSON.parse(globals['response_times']) : []\r",
+							"    response_array.push(responseTime)\r",
+							"    postman.setGlobalVariable(\"response_times\", JSON.stringify(response_array))\r",
+							"\r",
+							"    response_average = average(response_array);\r",
+							"    postman.setGlobalVariable('response_average', response_average)\r",
+							"\r",
+							"    response_std = standardDeviation(response_array, response_average)\r",
+							"    postman.setGlobalVariable('response_std', response_std)\r",
+							"}*/"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"strictSSL": false
+			},
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"where\": {\r\n        \"groupedConditions\": [{\r\n            \"logicalOperator\": \"||\",\r\n            \"conditions\": [{\r\n                \"field\": \"name\",\r\n                \"comparisonOperator\": \"==\",\r\n                \"value\": \"NewUser_0\"\r\n            },\r\n            {\r\n                \"field\": \"name\",\r\n                \"comparisonOperator\": \"==\",\r\n                \"value\": \"Test3\"\r\n            }]\r\n        },\r\n        {\r\n            \"logicalOperator\": \"&&\",\r\n            \"conditions\": [{\r\n                \"field\": \"hairColor\",\r\n                \"comparisonOperator\": \"==\",\r\n                \"value\": \"brown\"\r\n            }]\r\n        },\r\n        {\r\n            \"logicalOperator\": \"&&\",\r\n            \"conditions\": [{\r\n                \"field\": \"age\",\r\n                \"comparisonOperator\": \"==\",\r\n                \"value\": \"25\"\r\n            }]\r\n        }]\r\n    }\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/api/query/users",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"query",
+						"users"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "QueryRead_NestedNestedConditions",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"/*function standardDeviation(values, avg) {\r",
+							"    var squareDiffs = values.map(value => Math.pow(value - avg, 2));\r",
+							"    return Math.sqrt(average(squareDiffs));\r",
+							"}\r",
+							"\r",
+							"function average(data) {\r",
+							"    return data.reduce((sum, value)=>sum + value) / data.length;\r",
+							"}\r",
+							"\r",
+							"if (responseCode.code === 200 || responseCode.code === 201) {\r",
+							"    response_array = globals['response_times'] ? JSON.parse(globals['response_times']) : []\r",
+							"    response_array.push(responseTime)\r",
+							"    postman.setGlobalVariable(\"response_times\", JSON.stringify(response_array))\r",
+							"\r",
+							"    response_average = average(response_array);\r",
+							"    postman.setGlobalVariable('response_average', response_average)\r",
+							"\r",
+							"    response_std = standardDeviation(response_array, response_average)\r",
+							"    postman.setGlobalVariable('response_std', response_std)\r",
+							"}*/"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"strictSSL": false
+			},
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"where\": {\r\n        \"groupedConditions\": [{\r\n            \"logicalOperator\": \"&&\",\r\n            \"conditions\": [{\r\n                \"groupedConditions\": [{\r\n                    \"logicalOperator\": \"||\",\r\n                    \"conditions\": [{\r\n                        \"field\": \"name\",\r\n                        \"comparisonOperator\": \"==\",\r\n                        \"value\": \"NewUser_0\"\r\n                    },\r\n                    {\r\n                        \"field\": \"name\",\r\n                        \"comparisonOperator\": \"==\",\r\n                        \"value\": \"Test3\"\r\n                    }]\r\n                },\r\n                {\r\n                    \"logicalOperator\": \"&&\",\r\n                    \"conditions\": [{\r\n                        \"field\": \"Address.City\",\r\n                        \"comparisonOperator\": \"==\",\r\n                        \"value\": \"Pittsburgh\"\r\n                    },\r\n                    {\r\n                        \"field\": \"hairColor\",\r\n                        \"comparisonOperator\": \"==\",\r\n                        \"value\": \"brown\"\r\n                    }]\r\n                }]                       \r\n            }]\r\n        }]\r\n    }\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/api/query/users",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"query",
+						"users"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "QueryRead_NestedNestedNestedConditions",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"/*function standardDeviation(values, avg) {\r",
+							"    var squareDiffs = values.map(value => Math.pow(value - avg, 2));\r",
+							"    return Math.sqrt(average(squareDiffs));\r",
+							"}\r",
+							"\r",
+							"function average(data) {\r",
+							"    return data.reduce((sum, value)=>sum + value) / data.length;\r",
+							"}\r",
+							"\r",
+							"if (responseCode.code === 200 || responseCode.code === 201) {\r",
+							"    response_array = globals['response_times'] ? JSON.parse(globals['response_times']) : []\r",
+							"    response_array.push(responseTime)\r",
+							"    postman.setGlobalVariable(\"response_times\", JSON.stringify(response_array))\r",
+							"\r",
+							"    response_average = average(response_array);\r",
+							"    postman.setGlobalVariable('response_average', response_average)\r",
+							"\r",
+							"    response_std = standardDeviation(response_array, response_average)\r",
+							"    postman.setGlobalVariable('response_std', response_std)\r",
+							"}*/"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"strictSSL": false
+			},
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"where\": {\r\n        \"groupedConditions\": [{\r\n            \"logicalOperator\": \"&&\",\r\n            \"conditions\": [{\r\n                \"groupedConditions\": [{\r\n                    \"logicalOperator\": \"&&\",\r\n                    \"conditions\": [{\r\n                        \"groupedConditions\": [{\r\n                            \"logicalOperator\": \"||\",\r\n                            \"conditions\": [{\r\n                                \"field\": \"name\",\r\n                                \"comparisonOperator\": \"==\",\r\n                                \"value\": \"NewUser_0\"\r\n                            },\r\n                            {\r\n                                \"field\": \"name\",\r\n                                \"comparisonOperator\": \"==\",\r\n                                \"value\": \"Test3\"\r\n                            }]\r\n                        }]\r\n                    },\r\n                    {\r\n                        \"field\": \"age\",\r\n                        \"comparisonOperator\": \"==\",\r\n                        \"value\": \"25\"\r\n                    }]\r\n                },\r\n                {\r\n                    \"logicalOperator\": \"||\",\r\n                    \"conditions\": [{\r\n                        \"field\": \"Address.City\",\r\n                        \"comparisonOperator\": \"==\",\r\n                        \"value\": \"Pittsburgh\"\r\n                    },\r\n                    {\r\n                        \"field\": \"hairColor\",\r\n                        \"comparisonOperator\": \"==\",\r\n                        \"value\": \"blonde\"\r\n                    }]\r\n                }]                       \r\n            }]\r\n        }]\r\n    }\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/api/query/users",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"query",
+						"users"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "QueryRead_Operators_EQ",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"/*function standardDeviation(values, avg) {\r",
+							"    var squareDiffs = values.map(value => Math.pow(value - avg, 2));\r",
+							"    return Math.sqrt(average(squareDiffs));\r",
+							"}\r",
+							"\r",
+							"function average(data) {\r",
+							"    return data.reduce((sum, value)=>sum + value) / data.length;\r",
+							"}\r",
+							"\r",
+							"if (responseCode.code === 200 || responseCode.code === 201) {\r",
+							"    response_array = globals['response_times'] ? JSON.parse(globals['response_times']) : []\r",
+							"    response_array.push(responseTime)\r",
+							"    postman.setGlobalVariable(\"response_times\", JSON.stringify(response_array))\r",
+							"\r",
+							"    response_average = average(response_array);\r",
+							"    postman.setGlobalVariable('response_average', response_average)\r",
+							"\r",
+							"    response_std = standardDeviation(response_array, response_average)\r",
+							"    postman.setGlobalVariable('response_std', response_std)\r",
+							"}*/"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"strictSSL": false
+			},
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"where\": {\r\n        \"field\": \"age\",\r\n        \"comparisonOperator\": \"==\",\r\n        \"value\": \"25\"\r\n    }\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/api/query/users",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"query",
+						"users"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "QueryRead_Operators_NE",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"/*function standardDeviation(values, avg) {\r",
+							"    var squareDiffs = values.map(value => Math.pow(value - avg, 2));\r",
+							"    return Math.sqrt(average(squareDiffs));\r",
+							"}\r",
+							"\r",
+							"function average(data) {\r",
+							"    return data.reduce((sum, value)=>sum + value) / data.length;\r",
+							"}\r",
+							"\r",
+							"if (responseCode.code === 200 || responseCode.code === 201) {\r",
+							"    response_array = globals['response_times'] ? JSON.parse(globals['response_times']) : []\r",
+							"    response_array.push(responseTime)\r",
+							"    postman.setGlobalVariable(\"response_times\", JSON.stringify(response_array))\r",
+							"\r",
+							"    response_average = average(response_array);\r",
+							"    postman.setGlobalVariable('response_average', response_average)\r",
+							"\r",
+							"    response_std = standardDeviation(response_array, response_average)\r",
+							"    postman.setGlobalVariable('response_std', response_std)\r",
+							"}*/"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"strictSSL": false
+			},
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"where\": {\r\n        \"field\": \"age\",\r\n        \"comparisonOperator\": \"!=\",\r\n        \"value\": \"23\"\r\n    }\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/api/query/users",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"query",
+						"users"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "QueryRead_Operators_GT",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"/*function standardDeviation(values, avg) {\r",
+							"    var squareDiffs = values.map(value => Math.pow(value - avg, 2));\r",
+							"    return Math.sqrt(average(squareDiffs));\r",
+							"}\r",
+							"\r",
+							"function average(data) {\r",
+							"    return data.reduce((sum, value)=>sum + value) / data.length;\r",
+							"}\r",
+							"\r",
+							"if (responseCode.code === 200 || responseCode.code === 201) {\r",
+							"    response_array = globals['response_times'] ? JSON.parse(globals['response_times']) : []\r",
+							"    response_array.push(responseTime)\r",
+							"    postman.setGlobalVariable(\"response_times\", JSON.stringify(response_array))\r",
+							"\r",
+							"    response_average = average(response_array);\r",
+							"    postman.setGlobalVariable('response_average', response_average)\r",
+							"\r",
+							"    response_std = standardDeviation(response_array, response_average)\r",
+							"    postman.setGlobalVariable('response_std', response_std)\r",
+							"}*/"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"strictSSL": false
+			},
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"where\": {\r\n        \"field\": \"age\",\r\n        \"comparisonOperator\": \">\",\r\n        \"value\": \"23\"\r\n    }\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/api/query/users",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"query",
+						"users"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "QueryRead_Operators_GTE",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"/*function standardDeviation(values, avg) {\r",
+							"    var squareDiffs = values.map(value => Math.pow(value - avg, 2));\r",
+							"    return Math.sqrt(average(squareDiffs));\r",
+							"}\r",
+							"\r",
+							"function average(data) {\r",
+							"    return data.reduce((sum, value)=>sum + value) / data.length;\r",
+							"}\r",
+							"\r",
+							"if (responseCode.code === 200 || responseCode.code === 201) {\r",
+							"    response_array = globals['response_times'] ? JSON.parse(globals['response_times']) : []\r",
+							"    response_array.push(responseTime)\r",
+							"    postman.setGlobalVariable(\"response_times\", JSON.stringify(response_array))\r",
+							"\r",
+							"    response_average = average(response_array);\r",
+							"    postman.setGlobalVariable('response_average', response_average)\r",
+							"\r",
+							"    response_std = standardDeviation(response_array, response_average)\r",
+							"    postman.setGlobalVariable('response_std', response_std)\r",
+							"}*/"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"strictSSL": false
+			},
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"where\": {\r\n        \"field\": \"age\",\r\n        \"comparisonOperator\": \">=\",\r\n        \"value\": \"25\"\r\n    }\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/api/query/users",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"query",
+						"users"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "QueryRead_Operators_LT",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"/*function standardDeviation(values, avg) {\r",
+							"    var squareDiffs = values.map(value => Math.pow(value - avg, 2));\r",
+							"    return Math.sqrt(average(squareDiffs));\r",
+							"}\r",
+							"\r",
+							"function average(data) {\r",
+							"    return data.reduce((sum, value)=>sum + value) / data.length;\r",
+							"}\r",
+							"\r",
+							"if (responseCode.code === 200 || responseCode.code === 201) {\r",
+							"    response_array = globals['response_times'] ? JSON.parse(globals['response_times']) : []\r",
+							"    response_array.push(responseTime)\r",
+							"    postman.setGlobalVariable(\"response_times\", JSON.stringify(response_array))\r",
+							"\r",
+							"    response_average = average(response_array);\r",
+							"    postman.setGlobalVariable('response_average', response_average)\r",
+							"\r",
+							"    response_std = standardDeviation(response_array, response_average)\r",
+							"    postman.setGlobalVariable('response_std', response_std)\r",
+							"}*/"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"strictSSL": false
+			},
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"where\": {\r\n        \"field\": \"age\",\r\n        \"comparisonOperator\": \"<\",\r\n        \"value\": \"30\"\r\n    }\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/api/query/users",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"query",
+						"users"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "QueryRead_Operators_LTE",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"/*function standardDeviation(values, avg) {\r",
+							"    var squareDiffs = values.map(value => Math.pow(value - avg, 2));\r",
+							"    return Math.sqrt(average(squareDiffs));\r",
+							"}\r",
+							"\r",
+							"function average(data) {\r",
+							"    return data.reduce((sum, value)=>sum + value) / data.length;\r",
+							"}\r",
+							"\r",
+							"if (responseCode.code === 200 || responseCode.code === 201) {\r",
+							"    response_array = globals['response_times'] ? JSON.parse(globals['response_times']) : []\r",
+							"    response_array.push(responseTime)\r",
+							"    postman.setGlobalVariable(\"response_times\", JSON.stringify(response_array))\r",
+							"\r",
+							"    response_average = average(response_array);\r",
+							"    postman.setGlobalVariable('response_average', response_average)\r",
+							"\r",
+							"    response_std = standardDeviation(response_array, response_average)\r",
+							"    postman.setGlobalVariable('response_std', response_std)\r",
+							"}*/"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"strictSSL": false
+			},
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"where\": {\r\n        \"field\": \"age\",\r\n        \"comparisonOperator\": \"<=\",\r\n        \"value\": \"30\"\r\n    }\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/api/query/users",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"query",
+						"users"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "QueryRead_Operators_CONTAINS",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"/*function standardDeviation(values, avg) {\r",
+							"    var squareDiffs = values.map(value => Math.pow(value - avg, 2));\r",
+							"    return Math.sqrt(average(squareDiffs));\r",
+							"}\r",
+							"\r",
+							"function average(data) {\r",
+							"    return data.reduce((sum, value)=>sum + value) / data.length;\r",
+							"}\r",
+							"\r",
+							"if (responseCode.code === 200 || responseCode.code === 201) {\r",
+							"    response_array = globals['response_times'] ? JSON.parse(globals['response_times']) : []\r",
+							"    response_array.push(responseTime)\r",
+							"    postman.setGlobalVariable(\"response_times\", JSON.stringify(response_array))\r",
+							"\r",
+							"    response_average = average(response_array);\r",
+							"    postman.setGlobalVariable('response_average', response_average)\r",
+							"\r",
+							"    response_std = standardDeviation(response_array, response_average)\r",
+							"    postman.setGlobalVariable('response_std', response_std)\r",
+							"}*/"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"strictSSL": false
+			},
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"where\": {\r\n        \"field\": \"name\",\r\n        \"comparisonOperator\": \"contains\",\r\n        \"value\": \"user\"\r\n    }\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/api/query/users",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"query",
+						"users"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "QueryRead_Operators_STARTSWITH",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"/*function standardDeviation(values, avg) {\r",
+							"    var squareDiffs = values.map(value => Math.pow(value - avg, 2));\r",
+							"    return Math.sqrt(average(squareDiffs));\r",
+							"}\r",
+							"\r",
+							"function average(data) {\r",
+							"    return data.reduce((sum, value)=>sum + value) / data.length;\r",
+							"}\r",
+							"\r",
+							"if (responseCode.code === 200 || responseCode.code === 201) {\r",
+							"    response_array = globals['response_times'] ? JSON.parse(globals['response_times']) : []\r",
+							"    response_array.push(responseTime)\r",
+							"    postman.setGlobalVariable(\"response_times\", JSON.stringify(response_array))\r",
+							"\r",
+							"    response_average = average(response_array);\r",
+							"    postman.setGlobalVariable('response_average', response_average)\r",
+							"\r",
+							"    response_std = standardDeviation(response_array, response_average)\r",
+							"    postman.setGlobalVariable('response_std', response_std)\r",
+							"}*/"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"strictSSL": false
+			},
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"where\": {\r\n        \"field\": \"name\",\r\n        \"comparisonOperator\": \"startswith\",\r\n        \"value\": \"new\"\r\n    }\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/api/query/users",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"query",
+						"users"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "QueryRead_Operators_ENDSWITH",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"/*function standardDeviation(values, avg) {\r",
+							"    var squareDiffs = values.map(value => Math.pow(value - avg, 2));\r",
+							"    return Math.sqrt(average(squareDiffs));\r",
+							"}\r",
+							"\r",
+							"function average(data) {\r",
+							"    return data.reduce((sum, value)=>sum + value) / data.length;\r",
+							"}\r",
+							"\r",
+							"if (responseCode.code === 200 || responseCode.code === 201) {\r",
+							"    response_array = globals['response_times'] ? JSON.parse(globals['response_times']) : []\r",
+							"    response_array.push(responseTime)\r",
+							"    postman.setGlobalVariable(\"response_times\", JSON.stringify(response_array))\r",
+							"\r",
+							"    response_average = average(response_array);\r",
+							"    postman.setGlobalVariable('response_average', response_average)\r",
+							"\r",
+							"    response_std = standardDeviation(response_array, response_average)\r",
+							"    postman.setGlobalVariable('response_std', response_std)\r",
+							"}*/"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"strictSSL": false
+			},
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"where\": {\r\n        \"field\": \"name\",\r\n        \"comparisonOperator\": \"endswith\",\r\n        \"value\": \"0\"\r\n    }\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/api/query/users",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"query",
+						"users"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "QueryRead_Operators_Array_IN",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"/*function standardDeviation(values, avg) {\r",
+							"    var squareDiffs = values.map(value => Math.pow(value - avg, 2));\r",
+							"    return Math.sqrt(average(squareDiffs));\r",
+							"}\r",
+							"\r",
+							"function average(data) {\r",
+							"    return data.reduce((sum, value)=>sum + value) / data.length;\r",
+							"}\r",
+							"\r",
+							"if (responseCode.code === 200 || responseCode.code === 201) {\r",
+							"    response_array = globals['response_times'] ? JSON.parse(globals['response_times']) : []\r",
+							"    response_array.push(responseTime)\r",
+							"    postman.setGlobalVariable(\"response_times\", JSON.stringify(response_array))\r",
+							"\r",
+							"    response_average = average(response_array);\r",
+							"    postman.setGlobalVariable('response_average', response_average)\r",
+							"\r",
+							"    response_std = standardDeviation(response_array, response_average)\r",
+							"    postman.setGlobalVariable('response_std', response_std)\r",
+							"}*/"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"strictSSL": false
+			},
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"where\": {\r\n        \"field\": \"favoriteThings\",\r\n        \"comparisonOperator\": \"in\",\r\n        \"values\": [\r\n            \"Steelers\",\r\n            \"Browns\"\r\n        ]\r\n    }\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/api/query/users",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"query",
+						"users"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "QueryRead_Operators_Array_NIN",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"/*function standardDeviation(values, avg) {\r",
+							"    var squareDiffs = values.map(value => Math.pow(value - avg, 2));\r",
+							"    return Math.sqrt(average(squareDiffs));\r",
+							"}\r",
+							"\r",
+							"function average(data) {\r",
+							"    return data.reduce((sum, value)=>sum + value) / data.length;\r",
+							"}\r",
+							"\r",
+							"if (responseCode.code === 200 || responseCode.code === 201) {\r",
+							"    response_array = globals['response_times'] ? JSON.parse(globals['response_times']) : []\r",
+							"    response_array.push(responseTime)\r",
+							"    postman.setGlobalVariable(\"response_times\", JSON.stringify(response_array))\r",
+							"\r",
+							"    response_average = average(response_array);\r",
+							"    postman.setGlobalVariable('response_average', response_average)\r",
+							"\r",
+							"    response_std = standardDeviation(response_array, response_average)\r",
+							"    postman.setGlobalVariable('response_std', response_std)\r",
+							"}*/"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"strictSSL": false
+			},
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"where\": {\r\n        \"field\": \"favoriteThings\",\r\n        \"comparisonOperator\": \"nin\",\r\n        \"values\": [\r\n            \"Bengals\",\r\n            \"Browns\"\r\n        ]\r\n    }\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/api/query/users",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"query",
+						"users"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "QueryReadCount_Conditions",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"/*function standardDeviation(values, avg) {\r",
+							"    var squareDiffs = values.map(value => Math.pow(value - avg, 2));\r",
+							"    return Math.sqrt(average(squareDiffs));\r",
+							"}\r",
+							"\r",
+							"function average(data) {\r",
+							"    return data.reduce((sum, value)=>sum + value) / data.length;\r",
+							"}\r",
+							"\r",
+							"if (responseCode.code === 200 || responseCode.code === 201) {\r",
+							"    response_array = globals['response_times'] ? JSON.parse(globals['response_times']) : []\r",
+							"    response_array.push(responseTime)\r",
+							"    postman.setGlobalVariable(\"response_times\", JSON.stringify(response_array))\r",
+							"\r",
+							"    response_average = average(response_array);\r",
+							"    postman.setGlobalVariable('response_average', response_average)\r",
+							"\r",
+							"    response_std = standardDeviation(response_array, response_average)\r",
+							"    postman.setGlobalVariable('response_std', response_std)\r",
+							"}*/"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"strictSSL": false
+			},
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"where\": {\r\n        \"field\": \"hairColor\",\r\n        \"comparisonOperator\": \"==\",\r\n        \"value\": \"brown\"\r\n    }\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/api/query/users/count",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"query",
+						"users",
+						"count"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Read_Id",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"let externalIds = JSON.parse(pm.environment.get(\"external_ids\"));\r",
+							"let index = pm.environment.get(\"current_read_external_id_index\");\r",
+							"if (index >= externalIds.length) index = 0;\r",
+							"let currentExternalId = externalIds[index];\r",
+							"pm.environment.set(\"current_external_id\", currentExternalId);\r",
+							"pm.environment.set(\"current_read_external_id_index\", ++index);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"strictSSL": false
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/users/{{current_external_id}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"users",
+						"{{current_external_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Read_Params",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"let iterations = JSON.parse(pm.environment.get(\"iterations\"));\r",
+							"let index = pm.environment.get(\"current_read_iteration_index\");\r",
+							"if (index >= iterations.length) index = 0;\r",
+							"let currentIternation = iterations[index];\r",
+							"pm.environment.set(\"current_iteration\", currentIternation);\r",
+							"pm.environment.set(\"current_read_iteration_index\", ++index);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"strictSSL": false
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/users?name=NewUser_{{current_iteration}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"users"
+					],
+					"query": [
+						{
+							"key": "name",
+							"value": "NewUser_{{current_iteration}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Read_All",
+			"protocolProfileBehavior": {
+				"strictSSL": false
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/users",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"users"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"let iterations = JSON.parse(pm.environment.get(\"iterations\"));\r",
+							"let iterationIndex = pm.environment.get(\"current_update_iteration_index\");\r",
+							"if (iterationIndex >= iterations.length) iterationIndex = 0;\r",
+							"let currentIternation = iterations[iterationIndex];\r",
+							"pm.environment.set(\"current_iteration\", currentIternation);\r",
+							"pm.environment.set(\"current_update_iteration_index\", ++iterationIndex);\r",
+							"\r",
+							"let externalIds = JSON.parse(pm.environment.get(\"external_ids\"));\r",
+							"let externalIdsIndex = pm.environment.get(\"current_update_external_id_index\");\r",
+							"if (externalIdsIndex >= externalIds.length) externalIdsIndex = 0;\r",
+							"let currentExternalId = externalIds[externalIdsIndex];\r",
+							"pm.environment.set(\"current_external_id\", currentExternalId);\r",
+							"pm.environment.set(\"current_update_external_id_index\", ++externalIdsIndex);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"strictSSL": false
+			},
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"id\": \"{{current_external_id}}\",\r\n    \"name\": \"NewUser_{{current_iteration}}\",\r\n    \"address\": {\r\n        \"street\": \"46 Maple Street\",\r\n        \"city\": \"Pittsburgh\",\r\n        \"state\": \"PA\"\r\n    },\r\n    \"age\": 26,\r\n    \"hairColor\": \"brown\",\r\n    \"favoriteThings\": [\"Steelers\", \"Pirates\", \"Penguins\"]\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/api/users/{{current_external_id}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"users",
+						"{{current_external_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "PartialUpdate_Id",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"let externalIds = JSON.parse(pm.environment.get(\"external_ids\"));\r",
+							"let index = pm.environment.get(\"current_partial_external_id_index\");\r",
+							"if (index >= externalIds.length) index = 0;\r",
+							"let currentExternalId = externalIds[index];\r",
+							"pm.environment.set(\"current_external_id\", currentExternalId);\r",
+							"pm.environment.set(\"current_partial_external_id_index\", ++index);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"strictSSL": false
+			},
+			"request": {
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"age\": 27,\r\n    \"hairColor\": \"blonde\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/api/users/{{current_external_id}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"users",
+						"{{current_external_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "PartialUpdate_Params",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"let iterations = JSON.parse(pm.environment.get(\"iterations\"));\r",
+							"let index = pm.environment.get(\"current_partial_iteration_index\");\r",
+							"if (index >= iterations.length) index = 0;\r",
+							"let currentIternation = iterations[index];\r",
+							"pm.environment.set(\"current_iteration\", currentIternation);\r",
+							"pm.environment.set(\"current_partial_iteration_index\", ++index);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"strictSSL": false
+			},
+			"request": {
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"age\": 28,\r\n    \"hairColor\": \"red\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/api/users?name=NewUser_{{current_iteration}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"users"
+					],
+					"query": [
+						{
+							"key": "name",
+							"value": "NewUser_{{current_iteration}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "PartialUpdate_All",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"/*function standardDeviation(values, avg) {\r",
+							"    var squareDiffs = values.map(value => Math.pow(value - avg, 2));\r",
+							"    return Math.sqrt(average(squareDiffs));\r",
+							"}\r",
+							"\r",
+							"function average(data) {\r",
+							"    return data.reduce((sum, value)=>sum + value) / data.length;\r",
+							"}\r",
+							"\r",
+							"if (responseCode.code === 200 || responseCode.code === 201) {\r",
+							"    response_array = globals['response_times'] ? JSON.parse(globals['response_times']) : []\r",
+							"    response_array.push(responseTime)\r",
+							"    postman.setGlobalVariable(\"response_times\", JSON.stringify(response_array))\r",
+							"\r",
+							"    response_average = average(response_array);\r",
+							"    postman.setGlobalVariable('response_average', response_average)\r",
+							"\r",
+							"    response_std = standardDeviation(response_array, response_average)\r",
+							"    postman.setGlobalVariable('response_std', response_std)\r",
+							"}*/"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"strictSSL": false
+			},
+			"request": {
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"age\": 29\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/api/users",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"users"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete_Id",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"function decrementAndSave(variableName) {\r",
+							"    let value = pm.environment.get(variableName);\r",
+							"    let integer = parseInt(value);\r",
+							"    if (integer !== 0) integer--;\r",
+							"    pm.environment.set(variableName, integer);\r",
+							"}\r",
+							"\r",
+							"let externalIds = JSON.parse(pm.environment.get(\"external_ids\"));\r",
+							"let currentExternalId = externalIds.shift();\r",
+							"pm.environment.set(\"current_external_id\", currentExternalId);\r",
+							"pm.environment.set(\"external_ids\", JSON.stringify(externalIds));\r",
+							"\r",
+							"let iterations = JSON.parse(pm.environment.get(\"iterations\"));\r",
+							"iterations.shift();\r",
+							"pm.environment.set(\"iterations\", JSON.stringify(iterations));\r",
+							"\r",
+							"decrementAndSave(\"current_read_iteration_index\");\r",
+							"decrementAndSave(\"current_update_iteration_index\");\r",
+							"decrementAndSave(\"current_partial_iteration_index\");\r",
+							"decrementAndSave(\"current_read_external_id_index\");\r",
+							"decrementAndSave(\"current_update_external_id_index\");\r",
+							"decrementAndSave(\"current_partial_external_id_index\");"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"strictSSL": false
+			},
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/users/{{current_external_id}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"users",
+						"{{current_external_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete_Params",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"function decrementAndSave(variableName) {\r",
+							"    let value = pm.environment.get(variableName);\r",
+							"    let integer = parseInt(value);\r",
+							"    if (integer !== 0) integer--;\r",
+							"    pm.environment.set(variableName, integer);\r",
+							"}\r",
+							"\r",
+							"let iterations = JSON.parse(pm.environment.get(\"iterations\"));\r",
+							"let currentIteration = iterations.shift();\r",
+							"pm.environment.set(\"current_iteration\", currentIteration);\r",
+							"pm.environment.set(\"iterations\", JSON.stringify(iterations));\r",
+							"\r",
+							"let externalIds = JSON.parse(pm.environment.get(\"external_ids\"));\r",
+							"externalIds.shift();\r",
+							"pm.environment.set(\"external_ids\", JSON.stringify(externalIds));\r",
+							"\r",
+							"decrementAndSave(\"current_read_iteration_index\");\r",
+							"decrementAndSave(\"current_update_iteration_index\");\r",
+							"decrementAndSave(\"current_partial_iteration_index\");\r",
+							"decrementAndSave(\"current_read_external_id_index\");\r",
+							"decrementAndSave(\"current_update_external_id_index\");\r",
+							"decrementAndSave(\"current_partial_external_id_index\");"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"strictSSL": false
+			},
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/users?name=NewUser_{{current_iteration}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"users"
+					],
+					"query": [
+						{
+							"key": "name",
+							"value": "NewUser_{{current_iteration}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "QueryDelete_Conditions",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"/*function standardDeviation(values, avg) {\r",
+							"    var squareDiffs = values.map(value => Math.pow(value - avg, 2));\r",
+							"    return Math.sqrt(average(squareDiffs));\r",
+							"}\r",
+							"\r",
+							"function average(data) {\r",
+							"    return data.reduce((sum, value)=>sum + value) / data.length;\r",
+							"}\r",
+							"\r",
+							"if (responseCode.code === 200 || responseCode.code === 201) {\r",
+							"    response_array = globals['response_times'] ? JSON.parse(globals['response_times']) : []\r",
+							"    response_array.push(responseTime)\r",
+							"    postman.setGlobalVariable(\"response_times\", JSON.stringify(response_array))\r",
+							"\r",
+							"    response_average = average(response_array);\r",
+							"    postman.setGlobalVariable('response_average', response_average)\r",
+							"\r",
+							"    response_std = standardDeviation(response_array, response_average)\r",
+							"    postman.setGlobalVariable('response_std', response_std)\r",
+							"}*/"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"strictSSL": false
+			},
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"where\": {\r\n        \"field\": \"address.city\",\r\n        \"comparisonOperator\": \"==\",\r\n        \"value\": \"Pittsburgh\"\r\n    }\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/api/query/users",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"query",
+						"users"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete_All",
+			"protocolProfileBehavior": {
+				"strictSSL": false
+			},
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/users",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"users"
+					]
+				}
+			},
+			"response": []
+		}
+	]
 }

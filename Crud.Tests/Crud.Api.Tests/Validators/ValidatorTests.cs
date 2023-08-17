@@ -1,6 +1,10 @@
+using System.Reflection;
+using Crud.Api.Options;
 using Crud.Api.Preservers;
 using Crud.Api.QueryModels;
 using Crud.Api.Validators;
+using Crud.Api.Validators.Attributes;
+using Microsoft.Extensions.Options;
 using Moq;
 using DataAnnotations = System.ComponentModel.DataAnnotations;
 
@@ -9,13 +13,15 @@ namespace Crud.Api.Tests.Validators
     public class ValidatorTests
     {
         private Mock<IPreserver> _preserver;
+        private IOptions<ApplicationOptions> _applicationOptions;
         private Validator _validator;
 
         public ValidatorTests()
         {
             _preserver = new Mock<IPreserver>();
+            _applicationOptions = Microsoft.Extensions.Options.Options.Create(new ApplicationOptions { PreventAllQueryContains = false, PreventAllQueryStartsWith = false, PreventAllQueryEndsWith = false });
 
-            _validator = new Validator(_preserver.Object);
+            _validator = new Validator(_preserver.Object, _applicationOptions);
         }
 
         [Fact]
@@ -567,6 +573,179 @@ namespace Crud.Api.Tests.Validators
         }
 
         [Fact]
+        public void ValidateCondition_OperatorNotAllowedByApplicationOptions_ReturnsFalseValidationResult()
+        {
+            object model = new ModelForValidation();
+            var condition = new Condition
+            {
+                Field = nameof(ModelForValidation.Id),
+                ComparisonOperator = Operator.Contains
+            };
+            _applicationOptions.Value.PreventAllQueryContains = true;
+
+            var result = _validator.ValidateCondition(model.GetType().GetProperties(), condition);
+
+            Assert.NotNull(result);
+            Assert.False(result.IsValid);
+            Assert.Equal($"{nameof(Condition.ComparisonOperator)} '{condition.ComparisonOperator}' may not be used.", result.Message);
+        }
+
+        [Fact]
+        public void ValidateCondition_OperatorNotAllowedByPropertyQueryAttribute_ReturnsFalseValidationResult()
+        {
+            object model = new PreventQueryModel();
+            var condition = new Condition
+            {
+                Field = nameof(PreventQueryModel.NameContains),
+                ComparisonOperator = Operator.Contains
+            };
+
+            var result = _validator.ValidateCondition(model.GetType().GetProperties(), condition);
+
+            Assert.NotNull(result);
+            Assert.False(result.IsValid);
+            Assert.Equal($"{nameof(Condition.ComparisonOperator)} '{condition.ComparisonOperator}' may not be used on the {condition.Field} property.", result.Message);
+        }
+
+        [Theory]
+        [ClassData(typeof(ValueIsNotAllLettersOrNumbers))]
+        public void ValidateCondition_ContainsOperatorAndValueIsNotAllLettersOrNumbers_ReturnsFalseValidationResult(String comparisonOperator, String value)
+        {
+            object model = new ModelForValidation();
+            var condition = new Condition
+            {
+                Field = nameof(ModelForValidation.Name),
+                ComparisonOperator = comparisonOperator,
+                Value = value
+            };
+
+            var result = _validator.ValidateCondition(model.GetType().GetProperties(), condition);
+
+            Assert.NotNull(result);
+            Assert.False(result.IsValid);
+            Assert.Equal($"{nameof(Condition.ComparisonOperator)} '{condition.ComparisonOperator}' can only contain letters and numbers.", result.Message);
+        }
+
+        [Theory]
+        [ClassData(typeof(ValueIsAllLettersOrNumbers))]
+        public void ValidateCondition_ContainsOperatorAndValueIsAllLettersOrNumbers_ReturnsTrueValidationResult(String comparisonOperator, String value)
+        {
+            object model = new ModelForValidation();
+            var condition = new Condition
+            {
+                Field = nameof(ModelForValidation.Name),
+                ComparisonOperator = comparisonOperator,
+                Value = value
+            };
+
+            var result = _validator.ValidateCondition(model.GetType().GetProperties(), condition);
+
+            Assert.NotNull(result);
+            Assert.True(result.IsValid);
+        }
+
+        [Fact]
+        public void ValidateQueryApplicationOptions_ComparisonOperatorIsNull_ReturnsTrueValidationResult()
+        {
+            string? comparisonOperator = null;
+
+            var result = _validator.ValidateQueryApplicationOptions(comparisonOperator);
+
+            Assert.NotNull(result);
+            Assert.True(result.IsValid);
+        }
+
+        [Fact]
+        public void ValidateQueryApplicationOptions_ComparisonOperatorContainsAndPreventAllQueryContains_ReturnsFalseValidationResult()
+        {
+            string? comparisonOperator = Operator.Contains;
+            _applicationOptions.Value.PreventAllQueryContains = true;
+
+            var result = _validator.ValidateQueryApplicationOptions(comparisonOperator);
+
+            Assert.NotNull(result);
+            Assert.False(result.IsValid);
+            Assert.Equal($"{nameof(Condition.ComparisonOperator)} '{comparisonOperator}' may not be used.", result.Message);
+        }
+
+        [Fact]
+        public void ValidateQueryApplicationOptions_ComparisonOperatorStartsWithAndPreventAllQueryStartsWith_ReturnsFalseValidationResult()
+        {
+            string? comparisonOperator = Operator.StartsWith;
+            _applicationOptions.Value.PreventAllQueryStartsWith = true;
+
+            var result = _validator.ValidateQueryApplicationOptions(comparisonOperator);
+
+            Assert.NotNull(result);
+            Assert.False(result.IsValid);
+            Assert.Equal($"{nameof(Condition.ComparisonOperator)} '{comparisonOperator}' may not be used.", result.Message);
+        }
+
+        [Fact]
+        public void ValidateQueryApplicationOptions_ComparisonOperatorEndsWithAndPreventAllQueryEndsWith_ReturnsFalseValidationResult()
+        {
+            string? comparisonOperator = Operator.EndsWith;
+            _applicationOptions.Value.PreventAllQueryEndsWith = true;
+
+            var result = _validator.ValidateQueryApplicationOptions(comparisonOperator);
+
+            Assert.NotNull(result);
+            Assert.False(result.IsValid);
+            Assert.Equal($"{nameof(Condition.ComparisonOperator)} '{comparisonOperator}' may not be used.", result.Message);
+        }
+
+        [Fact]
+        public void ValidatePropertyQueryAttributes_ComparisonOperatorIsNull_ReturnsTrueValidationsResult()
+        {
+            var propertyInfo = typeof(PreventQueryModel).GetProperty(nameof(PreventQueryModel.NameContains));
+            string? comparisonOperator = null;
+
+            var result = _validator.ValidatePropertyQueryAttributes(propertyInfo!, comparisonOperator);
+
+            Assert.NotNull(result);
+            Assert.True(result.IsValid);
+        }
+
+        [Fact]
+        public void ValidatePropertyQueryAttributes_ComparisonOperatorContainsAndPropertyHasPreventQueryContainsAttribute_ReturnsFalseValidationsResult()
+        {
+            var propertyInfo = typeof(PreventQueryModel).GetProperty(nameof(PreventQueryModel.NameContains))!;
+            string? comparisonOperator = Operator.Contains;
+
+            var result = _validator.ValidatePropertyQueryAttributes(propertyInfo, comparisonOperator);
+
+            Assert.NotNull(result);
+            Assert.False(result.IsValid);
+            Assert.Equal($"{nameof(Condition.ComparisonOperator)} '{comparisonOperator}' may not be used on the {propertyInfo.Name} property.", result.Message);
+        }
+
+        [Fact]
+        public void ValidatePropertyQueryAttributes_ComparisonOperatorStartsWithAndPropertyHasPreventQueryStartsWithAttribute_ReturnsFalseValidationsResult()
+        {
+            var propertyInfo = typeof(PreventQueryModel).GetProperty(nameof(PreventQueryModel.NameStartsWith))!;
+            string? comparisonOperator = Operator.StartsWith;
+
+            var result = _validator.ValidatePropertyQueryAttributes(propertyInfo, comparisonOperator);
+
+            Assert.NotNull(result);
+            Assert.False(result.IsValid);
+            Assert.Equal($"{nameof(Condition.ComparisonOperator)} '{comparisonOperator}' may not be used on the {propertyInfo.Name} property.", result.Message);
+        }
+
+        [Fact]
+        public void ValidatePropertyQueryAttributes_ComparisonOperatorEndsWithAndPropertyHasPreventQueryEndsWithAttribute_ReturnsFalseValidationsResult()
+        {
+            var propertyInfo = typeof(PreventQueryModel).GetProperty(nameof(PreventQueryModel.NameEndsWith))!;
+            string? comparisonOperator = Operator.EndsWith;
+
+            var result = _validator.ValidatePropertyQueryAttributes(propertyInfo, comparisonOperator);
+
+            Assert.NotNull(result);
+            Assert.False(result.IsValid);
+            Assert.Equal($"{nameof(Condition.ComparisonOperator)} '{comparisonOperator}' may not be used on the {propertyInfo.Name} property.", result.Message);
+        }
+
+        [Fact]
         public void ValidateCondition_GroupedConditionsContainsAtLeastOneInvalidGroupedCondition_ReturnsFalseValidationResult()
         {
             object model = new ModelForValidation();
@@ -728,6 +907,16 @@ namespace Crud.Api.Tests.Validators
             public String? Name { get; set; }
         }
 
+        private class PreventQueryModel
+        {
+            [PreventQueryContains]
+            public String? NameContains { get; set; }
+            [PreventQueryStartsWith]
+            public String? NameStartsWith { get; set; }
+            [PreventQueryEndsWith]
+            public String? NameEndsWith { get; set; }
+        }
+
         private class QueryParamsIsNullOrEmpty : TheoryData<IDictionary<String, String>?>
         {
             public QueryParamsIsNullOrEmpty()
@@ -752,6 +941,26 @@ namespace Crud.Api.Tests.Validators
             {
                 Add(null);
                 Add(new List<Condition>());
+            }
+        }
+
+        private class ValueIsAllLettersOrNumbers : TheoryData<String, String>
+        {
+            public ValueIsAllLettersOrNumbers()
+            {
+                Add(Operator.Contains, "letters");
+                Add(Operator.StartsWith, "12345");
+                Add(Operator.EndsWith, "L3tt3r5");
+            }
+        }
+
+        private class ValueIsNotAllLettersOrNumbers : TheoryData<String, String>
+        {
+            public ValueIsNotAllLettersOrNumbers()
+            {
+                Add(Operator.Contains, "letter$");
+                Add(Operator.StartsWith, "");
+                Add(Operator.EndsWith, " ");
             }
         }
     }

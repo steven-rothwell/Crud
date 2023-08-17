@@ -12,6 +12,9 @@ namespace Crud.Api.QueryModels
         public const String LessThanOrEquals = "<=";
         public const String In = "IN";
         public const String NotIn = "NIN";
+        public const String Contains = "CONTAINS";
+        public const String StartsWith = "STARTSWITH";
+        public const String EndsWith = "ENDSWITH";
 
         public static Dictionary<String, String> LogicalAliasLookup = new Dictionary<String, String>(StringComparer.OrdinalIgnoreCase)
         {
@@ -43,7 +46,10 @@ namespace Crud.Api.QueryModels
             { "LTE", LessThanOrEquals },
             { In, In },
             { NotIn, NotIn },
-            { "NotIn", NotIn }
+            { "NotIn", NotIn },
+            { Contains, Contains },
+            { StartsWith, StartsWith },
+            { EndsWith, EndsWith }
         };
     }
 }

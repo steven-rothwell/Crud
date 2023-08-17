@@ -12,7 +12,6 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddScoped<IValidator, Validator>();
-//builder.Services.AddScoped<IPreserver, Crud.Api.Preservers.Dapper.SqlServer.Preserver>();
 builder.Services.AddScoped<IPreserver, Crud.Api.Preservers.MongoDb.Preserver>();
 builder.Services.AddScoped<IMongoDbService, MongoDbService>();
 builder.Services.AddScoped<IQueryCollectionService, QueryCollectionService>();
@@ -29,7 +28,6 @@ ConventionRegistry.Register("conventionPack", conventionPack, t => true);
 BsonDefaults.GuidRepresentationMode = GuidRepresentationMode.V3;
 BsonSerializer.RegisterSerializer(new GuidSerializer(GuidRepresentation.Standard));
 
-//builder.Services.Configure<SqlServerOptions>(builder.Configuration.GetSection(nameof(SqlServerOptions)));
 builder.Services.Configure<MongoDbOptions>(builder.Configuration.GetSection(nameof(MongoDbOptions)));
 builder.Services.Configure<ApplicationOptions>(builder.Configuration.GetSection(nameof(ApplicationOptions)));
 

@@ -802,7 +802,7 @@ namespace Crud.Api.Tests.Services
 
         [Theory]
         [ClassData(typeof(EqualityAliasFound))]
-        public void GetComparisonOperatorFilter_WithStringStringDynamic_EqualityOperatorFound_ThrowsKeyNotFoundException(String comparisonOperator)
+        public void GetComparisonOperatorFilter_WithStringStringDynamic_EqualityOperatorFound_ReturnsEqFilter(String comparisonOperator)
         {
             var field = "Field";
             var value = "Value";
@@ -820,7 +820,7 @@ namespace Crud.Api.Tests.Services
 
         [Theory]
         [ClassData(typeof(InequalityAliasFound))]
-        public void GetComparisonOperatorFilter_WithStringStringDynamic_InequalityOperatorFound_ThrowsKeyNotFoundException(String comparisonOperator)
+        public void GetComparisonOperatorFilter_WithStringStringDynamic_InequalityOperatorFound_ReturnsNeFilter(String comparisonOperator)
         {
             var field = "Field";
             var value = "Value";
@@ -838,7 +838,7 @@ namespace Crud.Api.Tests.Services
 
         [Theory]
         [ClassData(typeof(GreaterThanAliasFound))]
-        public void GetComparisonOperatorFilter_WithStringStringDynamic_GreaterThanOperatorFound_ThrowsKeyNotFoundException(String comparisonOperator)
+        public void GetComparisonOperatorFilter_WithStringStringDynamic_GreaterThanOperatorFound_ReturnsGtFilter(String comparisonOperator)
         {
             var field = "Field";
             var value = "Value";
@@ -856,7 +856,7 @@ namespace Crud.Api.Tests.Services
 
         [Theory]
         [ClassData(typeof(GreaterThanOrEqualsAliasFound))]
-        public void GetComparisonOperatorFilter_WithStringStringDynamic_GreaterThanOrEqualsOperatorFound_ThrowsKeyNotFoundException(String comparisonOperator)
+        public void GetComparisonOperatorFilter_WithStringStringDynamic_GreaterThanOrEqualsOperatorFound_ReturnsGteFilter(String comparisonOperator)
         {
             var field = "Field";
             var value = "Value";
@@ -874,7 +874,7 @@ namespace Crud.Api.Tests.Services
 
         [Theory]
         [ClassData(typeof(LessThanAliasFound))]
-        public void GetComparisonOperatorFilter_WithStringStringDynamic_LessThanOperatorFound_ThrowsKeyNotFoundException(String comparisonOperator)
+        public void GetComparisonOperatorFilter_WithStringStringDynamic_LessThanOperatorFound_ReturnsLtFilter(String comparisonOperator)
         {
             var field = "Field";
             var value = "Value";
@@ -892,7 +892,7 @@ namespace Crud.Api.Tests.Services
 
         [Theory]
         [ClassData(typeof(LessThanOrEqualsAliasFound))]
-        public void GetComparisonOperatorFilter_WithStringStringDynamic_LessThanOrEqualsOperatorFound_ThrowsKeyNotFoundException(String comparisonOperator)
+        public void GetComparisonOperatorFilter_WithStringStringDynamic_LessThanOrEqualsOperatorFound_ReturnsLteFilter(String comparisonOperator)
         {
             var field = "Field";
             var value = "Value";
@@ -902,6 +902,60 @@ namespace Crud.Api.Tests.Services
             Assert.NotNull(result);
 
             var expectedFilter = Builders<BsonDocument>.Filter.Lte(field, value);
+            var expectedJson = ConvertFilterToJson(expectedFilter);
+            var resultJson = ConvertFilterToJson(result);
+
+            Assert.Equal(expectedJson, resultJson);
+        }
+
+        [Theory]
+        [ClassData(typeof(ContainsAliasFound))]
+        public void GetComparisonOperatorFilter_WithStringStringDynamic_ContainsOperatorFound_ReturnsRegexFilter(String comparisonOperator)
+        {
+            var field = "Field";
+            var value = "Value";
+
+            var result = _mongoDbService.GetComparisonOperatorFilter(field, comparisonOperator, value);
+
+            Assert.NotNull(result);
+
+            var expectedFilter = Builders<BsonDocument>.Filter.Regex(field, new BsonRegularExpression(value, "i"));
+            var expectedJson = ConvertFilterToJson(expectedFilter);
+            var resultJson = ConvertFilterToJson(result);
+
+            Assert.Equal(expectedJson, resultJson);
+        }
+
+        [Theory]
+        [ClassData(typeof(StartsWithAliasFound))]
+        public void GetComparisonOperatorFilter_WithStringStringDynamic_StartsWithOperatorFound_ReturnsRegexFilter(String comparisonOperator)
+        {
+            var field = "Field";
+            var value = "Value";
+
+            var result = _mongoDbService.GetComparisonOperatorFilter(field, comparisonOperator, value);
+
+            Assert.NotNull(result);
+
+            var expectedFilter = Builders<BsonDocument>.Filter.Regex(field, new BsonRegularExpression($"^{value}", "i"));
+            var expectedJson = ConvertFilterToJson(expectedFilter);
+            var resultJson = ConvertFilterToJson(result);
+
+            Assert.Equal(expectedJson, resultJson);
+        }
+
+        [Theory]
+        [ClassData(typeof(EndsWithAliasFound))]
+        public void GetComparisonOperatorFilter_WithStringStringDynamic_EndsWithOperatorFound_ReturnsRegexFilter(String comparisonOperator)
+        {
+            var field = "Field";
+            var value = "Value";
+
+            var result = _mongoDbService.GetComparisonOperatorFilter(field, comparisonOperator, value);
+
+            Assert.NotNull(result);
+
+            var expectedFilter = Builders<BsonDocument>.Filter.Regex(field, new BsonRegularExpression($"{value}$", "i"));
             var expectedJson = ConvertFilterToJson(expectedFilter);
             var resultJson = ConvertFilterToJson(result);
 
@@ -1224,6 +1278,30 @@ namespace Crud.Api.Tests.Services
                 Add(Operator.LessThanOrEquals);
                 Add("LessThanOrEquals");
                 Add("LTE");
+            }
+        }
+
+        private class ContainsAliasFound : TheoryData<String>
+        {
+            public ContainsAliasFound()
+            {
+                Add(Operator.Contains);
+            }
+        }
+
+        private class StartsWithAliasFound : TheoryData<String>
+        {
+            public StartsWithAliasFound()
+            {
+                Add(Operator.StartsWith);
+            }
+        }
+
+        private class EndsWithAliasFound : TheoryData<String>
+        {
+            public EndsWithAliasFound()
+            {
+                Add(Operator.EndsWith);
             }
         }
 
