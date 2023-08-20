@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Reflection;
 
 namespace Crud.Api
@@ -31,14 +32,18 @@ namespace Crud.Api
                     return null;
 
                 var childPropertyType = childPropertyInfo.PropertyType;
-
-                if (childPropertyType.IsClass && childPropertyType != typeof(string))
+                string nextPropertyName = propertyName.Substring(childPropertyDelimiterIndex + 1);
+                if (typeof(IEnumerable).IsAssignableFrom(childPropertyType) && childPropertyType.IsGenericType)
                 {
-                    string nextPropertyName = propertyName.Substring(childPropertyDelimiterIndex + 1);
+                    var tType = childPropertyType.GenericTypeArguments.First();
+                    return tType.GetProperties().GetProperty(nextPropertyName, childPropertyDelimiter);
+                }
+                else if (childPropertyType.IsClass && childPropertyType != typeof(string))
+                {
                     return childPropertyType.GetProperties().GetProperty(nextPropertyName, childPropertyDelimiter);
                 }
 
-                throw new NotSupportedException($"Child property {parentPropertyName} of type {childPropertyType} is unsupported.");
+                throw new NotSupportedException($"Retrieving child property info from {parentPropertyName} of type {childPropertyType} is unsupported.");
             }
         }
 

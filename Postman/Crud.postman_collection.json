@@ -338,7 +338,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"Id\": null,\r\n    \"name\": \"NewUser_{{current_iteration}}\",\r\n    \"address\": {\r\n        \"street\": \"44 Maple Street\",\r\n        \"city\": \"Pittsburgh\",\r\n        \"state\": \"PA\"\r\n    },\r\n    \"age\": 25,\r\n    \"hairColor\": \"brown\",\r\n    \"favoriteThings\": [\"Steelers\", \"Pirates\", \"Penguins\"]\r\n}",
+					"raw": "{\r\n    \"Id\": null,\r\n    \"name\": \"NewUser_{{current_iteration}}\",\r\n    \"address\": {\r\n        \"street\": \"44 Maple Street\",\r\n        \"city\": \"Pittsburgh\",\r\n        \"state\": \"PA\"\r\n    },\r\n    \"age\": 25,\r\n    \"hairColor\": \"brown\",\r\n    \"favoriteThings\": [\r\n        \"Steelers\",\r\n        \"Pirates\",\r\n        \"Penguins\"\r\n    ],\r\n    \"formerAddresses\": [\r\n        {\r\n            \"street\": \"100 Elm Street\",\r\n            \"city\": \"Kittanning\",\r\n            \"state\": \"PA\"\r\n        },\r\n        {\r\n            \"street\": \"202 Oak Street\",\r\n            \"city\": \"Ford City\",\r\n            \"state\": \"PA\"\r\n        },\r\n        {\r\n            \"street\": \"66 Robin Road\",\r\n            \"city\": \"Butler\",\r\n            \"state\": \"PA\"\r\n        }\r\n    ]\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -1762,6 +1762,128 @@
 			"response": []
 		},
 		{
+			"name": "QueryRead_Operators_Object_IN",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"/*function standardDeviation(values, avg) {\r",
+							"    var squareDiffs = values.map(value => Math.pow(value - avg, 2));\r",
+							"    return Math.sqrt(average(squareDiffs));\r",
+							"}\r",
+							"\r",
+							"function average(data) {\r",
+							"    return data.reduce((sum, value)=>sum + value) / data.length;\r",
+							"}\r",
+							"\r",
+							"if (responseCode.code === 200 || responseCode.code === 201) {\r",
+							"    response_array = globals['response_times'] ? JSON.parse(globals['response_times']) : []\r",
+							"    response_array.push(responseTime)\r",
+							"    postman.setGlobalVariable(\"response_times\", JSON.stringify(response_array))\r",
+							"\r",
+							"    response_average = average(response_array);\r",
+							"    postman.setGlobalVariable('response_average', response_average)\r",
+							"\r",
+							"    response_std = standardDeviation(response_array, response_average)\r",
+							"    postman.setGlobalVariable('response_std', response_std)\r",
+							"}*/"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"strictSSL": false
+			},
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"where\": {\r\n        \"field\": \"age\",\r\n        \"comparisonOperator\": \"in\",\r\n        \"values\": [\r\n            \"25\",\r\n            \"26\",\r\n            \"27\"\r\n        ]\r\n    }\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/api/query/users",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"query",
+						"users"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "QueryRead_Operators_Object_NIN",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"/*function standardDeviation(values, avg) {\r",
+							"    var squareDiffs = values.map(value => Math.pow(value - avg, 2));\r",
+							"    return Math.sqrt(average(squareDiffs));\r",
+							"}\r",
+							"\r",
+							"function average(data) {\r",
+							"    return data.reduce((sum, value)=>sum + value) / data.length;\r",
+							"}\r",
+							"\r",
+							"if (responseCode.code === 200 || responseCode.code === 201) {\r",
+							"    response_array = globals['response_times'] ? JSON.parse(globals['response_times']) : []\r",
+							"    response_array.push(responseTime)\r",
+							"    postman.setGlobalVariable(\"response_times\", JSON.stringify(response_array))\r",
+							"\r",
+							"    response_average = average(response_array);\r",
+							"    postman.setGlobalVariable('response_average', response_average)\r",
+							"\r",
+							"    response_std = standardDeviation(response_array, response_average)\r",
+							"    postman.setGlobalVariable('response_std', response_std)\r",
+							"}*/"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"strictSSL": false
+			},
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"where\": {\r\n        \"field\": \"age\",\r\n        \"comparisonOperator\": \"nin\",\r\n        \"values\": [\r\n            \"20\",\r\n            \"30\",\r\n            \"40\"\r\n        ]\r\n    }\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/api/query/users",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"query",
+						"users"
+					]
+				}
+			},
+			"response": []
+		},
+		{
 			"name": "QueryRead_Operators_Array_IN",
 			"event": [
 				{
@@ -1863,6 +1985,250 @@
 				"body": {
 					"mode": "raw",
 					"raw": "{\r\n    \"where\": {\r\n        \"field\": \"favoriteThings\",\r\n        \"comparisonOperator\": \"nin\",\r\n        \"values\": [\r\n            \"Bengals\",\r\n            \"Browns\"\r\n        ]\r\n    }\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/api/query/users",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"query",
+						"users"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "QueryRead_Operators_Array_ALL",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"/*function standardDeviation(values, avg) {\r",
+							"    var squareDiffs = values.map(value => Math.pow(value - avg, 2));\r",
+							"    return Math.sqrt(average(squareDiffs));\r",
+							"}\r",
+							"\r",
+							"function average(data) {\r",
+							"    return data.reduce((sum, value)=>sum + value) / data.length;\r",
+							"}\r",
+							"\r",
+							"if (responseCode.code === 200 || responseCode.code === 201) {\r",
+							"    response_array = globals['response_times'] ? JSON.parse(globals['response_times']) : []\r",
+							"    response_array.push(responseTime)\r",
+							"    postman.setGlobalVariable(\"response_times\", JSON.stringify(response_array))\r",
+							"\r",
+							"    response_average = average(response_array);\r",
+							"    postman.setGlobalVariable('response_average', response_average)\r",
+							"\r",
+							"    response_std = standardDeviation(response_array, response_average)\r",
+							"    postman.setGlobalVariable('response_std', response_std)\r",
+							"}*/"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"strictSSL": false
+			},
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"where\": {\r\n        \"field\": \"favoriteThings\",\r\n        \"comparisonOperator\": \"all\",\r\n        \"values\": [\r\n            \"Pirates\",\r\n            \"Penguins\"\r\n        ]\r\n    }\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/api/query/users",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"query",
+						"users"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "QueryRead_Operators_ArrayObjects_IN",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"/*function standardDeviation(values, avg) {\r",
+							"    var squareDiffs = values.map(value => Math.pow(value - avg, 2));\r",
+							"    return Math.sqrt(average(squareDiffs));\r",
+							"}\r",
+							"\r",
+							"function average(data) {\r",
+							"    return data.reduce((sum, value)=>sum + value) / data.length;\r",
+							"}\r",
+							"\r",
+							"if (responseCode.code === 200 || responseCode.code === 201) {\r",
+							"    response_array = globals['response_times'] ? JSON.parse(globals['response_times']) : []\r",
+							"    response_array.push(responseTime)\r",
+							"    postman.setGlobalVariable(\"response_times\", JSON.stringify(response_array))\r",
+							"\r",
+							"    response_average = average(response_array);\r",
+							"    postman.setGlobalVariable('response_average', response_average)\r",
+							"\r",
+							"    response_std = standardDeviation(response_array, response_average)\r",
+							"    postman.setGlobalVariable('response_std', response_std)\r",
+							"}*/"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"strictSSL": false
+			},
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"where\": {\r\n        \"field\": \"formerAddresses.city\",\r\n        \"comparisonOperator\": \"in\",\r\n        \"values\": [\r\n            \"Kittanning\",\r\n            \"Johnstown\"\r\n        ]\r\n    }\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/api/query/users",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"query",
+						"users"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "QueryRead_Operators_ArrayObjects_NIN",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"/*function standardDeviation(values, avg) {\r",
+							"    var squareDiffs = values.map(value => Math.pow(value - avg, 2));\r",
+							"    return Math.sqrt(average(squareDiffs));\r",
+							"}\r",
+							"\r",
+							"function average(data) {\r",
+							"    return data.reduce((sum, value)=>sum + value) / data.length;\r",
+							"}\r",
+							"\r",
+							"if (responseCode.code === 200 || responseCode.code === 201) {\r",
+							"    response_array = globals['response_times'] ? JSON.parse(globals['response_times']) : []\r",
+							"    response_array.push(responseTime)\r",
+							"    postman.setGlobalVariable(\"response_times\", JSON.stringify(response_array))\r",
+							"\r",
+							"    response_average = average(response_array);\r",
+							"    postman.setGlobalVariable('response_average', response_average)\r",
+							"\r",
+							"    response_std = standardDeviation(response_array, response_average)\r",
+							"    postman.setGlobalVariable('response_std', response_std)\r",
+							"}*/"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"strictSSL": false
+			},
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"where\": {\r\n        \"field\": \"formerAddresses.city\",\r\n        \"comparisonOperator\": \"nin\",\r\n        \"values\": [\r\n            \"Beaver\",\r\n            \"Latrobe\",\r\n            \"Washington\"\r\n        ]\r\n    }\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/api/query/users",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"query",
+						"users"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "QueryRead_Operators_ArrayObjects_ALL",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"/*function standardDeviation(values, avg) {\r",
+							"    var squareDiffs = values.map(value => Math.pow(value - avg, 2));\r",
+							"    return Math.sqrt(average(squareDiffs));\r",
+							"}\r",
+							"\r",
+							"function average(data) {\r",
+							"    return data.reduce((sum, value)=>sum + value) / data.length;\r",
+							"}\r",
+							"\r",
+							"if (responseCode.code === 200 || responseCode.code === 201) {\r",
+							"    response_array = globals['response_times'] ? JSON.parse(globals['response_times']) : []\r",
+							"    response_array.push(responseTime)\r",
+							"    postman.setGlobalVariable(\"response_times\", JSON.stringify(response_array))\r",
+							"\r",
+							"    response_average = average(response_array);\r",
+							"    postman.setGlobalVariable('response_average', response_average)\r",
+							"\r",
+							"    response_std = standardDeviation(response_array, response_average)\r",
+							"    postman.setGlobalVariable('response_std', response_std)\r",
+							"}*/"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"strictSSL": false
+			},
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"where\": {\r\n        \"field\": \"formerAddresses.city\",\r\n        \"comparisonOperator\": \"all\",\r\n        \"values\": [\r\n            \"Kittanning\",\r\n            \"Ford City\"\r\n        ]\r\n    }\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"

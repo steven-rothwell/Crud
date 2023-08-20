@@ -82,6 +82,21 @@ namespace Crud.Api.Tests.Extensions
         }
 
         [Fact]
+        public void GetProperty_ChildPropertyDelimiterInPropertyNameParentPropertyImplementsIEnumerable_ReturnsPropertyInfo()
+        {
+            var properties = typeof(Parent).GetProperties();
+            var childPropertyDelimiter = Delimiter.QueryParamChildProperty;
+            var propertyName = $"{nameof(Parent.GrandChildren)}{childPropertyDelimiter}{nameof(Child.Id)}";
+
+            var result = properties.GetProperty(propertyName, childPropertyDelimiter);
+
+            Assert.NotNull(result);
+            Assert.Equal(typeof(Child), result.ReflectedType);
+            Assert.Equal(typeof(int), result.PropertyType);
+            Assert.Equal(nameof(Child.Id), result.Name);
+        }
+
+        [Fact]
         public void GetProperty_ChildPropertyDelimiterInPropertyNameParentPropertyIsClassPropertyNameDoesNotExistsInChild_ReturnsNull()
         {
             var properties = typeof(Parent).GetProperties();
@@ -103,7 +118,7 @@ namespace Crud.Api.Tests.Extensions
             var action = () => properties.GetProperty(propertyName, childPropertyDelimiter);
 
             var exception = Assert.Throws<NotSupportedException>(action);
-            Assert.Equal($"Child property {nameof(Parent.Id)} of type {typeof(int)} is unsupported.", exception.Message);
+            Assert.Equal($"Retrieving child property info from {nameof(Parent.Id)} of type {typeof(int)} is unsupported.", exception.Message);
         }
 
         [Fact]
@@ -116,7 +131,7 @@ namespace Crud.Api.Tests.Extensions
             var action = () => properties.GetProperty(propertyName, childPropertyDelimiter);
 
             var exception = Assert.Throws<NotSupportedException>(action);
-            Assert.Equal($"Child property {nameof(Parent.Name)} of type {typeof(string)} is unsupported.", exception.Message);
+            Assert.Equal($"Retrieving child property info from {nameof(Parent.Name)} of type {typeof(string)} is unsupported.", exception.Message);
         }
 
         [Fact]
@@ -181,6 +196,7 @@ namespace Crud.Api.Tests.Extensions
             public Int32 Id { get; set; }
             public String? Name { get; set; }
             public Child? Child { get; set; }
+            public List<Child>? GrandChildren { get; set; }
         }
 
         private class Child

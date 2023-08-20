@@ -977,7 +977,7 @@ namespace Crud.Api.Tests.Services
 
         [Theory]
         [ClassData(typeof(InAliasFound))]
-        public void GetComparisonOperatorFilter_WithStringStringIEnumerableOfObject_InOperatorFound_ThrowsKeyNotFoundException(String comparisonOperator)
+        public void GetComparisonOperatorFilter_WithStringStringIEnumerableOfObject_InOperatorFound_ReturnsInFilter(String comparisonOperator)
         {
             var field = "Field";
             var values = new List<string> { "Value1", "Value2" };
@@ -995,7 +995,7 @@ namespace Crud.Api.Tests.Services
 
         [Theory]
         [ClassData(typeof(NotInAliasFound))]
-        public void GetComparisonOperatorFilter_WithStringStringIEnumerableOfObject_NotInOperatorFound_ThrowsKeyNotFoundException(String comparisonOperator)
+        public void GetComparisonOperatorFilter_WithStringStringIEnumerableOfObject_NotInOperatorFound_ReturnsNinFilter(String comparisonOperator)
         {
             var field = "Field";
             var values = new List<string> { "Value1", "Value2" };
@@ -1005,6 +1005,24 @@ namespace Crud.Api.Tests.Services
             Assert.NotNull(result);
 
             var expectedFilter = Builders<BsonDocument>.Filter.Nin(field, values);
+            var expectedJson = ConvertFilterToJson(expectedFilter);
+            var resultJson = ConvertFilterToJson(result);
+
+            Assert.Equal(expectedJson, resultJson);
+        }
+
+        [Theory]
+        [ClassData(typeof(AllAliasFound))]
+        public void GetComparisonOperatorFilter_WithStringStringIEnumerableOfObject_AllOperatorFound_ReturnsAllFilter(String comparisonOperator)
+        {
+            var field = "Field";
+            var values = new List<string> { "Value1", "Value2" };
+
+            var result = _mongoDbService.GetComparisonOperatorFilter(field, comparisonOperator, values);
+
+            Assert.NotNull(result);
+
+            var expectedFilter = Builders<BsonDocument>.Filter.All(field, values);
             var expectedJson = ConvertFilterToJson(expectedFilter);
             var resultJson = ConvertFilterToJson(result);
 
@@ -1319,6 +1337,14 @@ namespace Crud.Api.Tests.Services
             {
                 Add(Operator.NotIn);
                 Add("NotIn");
+            }
+        }
+
+        private class AllAliasFound : TheoryData<String>
+        {
+            public AllAliasFound()
+            {
+                Add(Operator.All);
             }
         }
 
