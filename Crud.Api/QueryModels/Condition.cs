@@ -7,17 +7,17 @@ namespace Crud.Api.QueryModels
     {
         /// <summary>
         /// Name of the field/column side being evaluated.
-        /// Should be null if <see cref="GroupedConditions"/></param> is populated.
+        /// Should be null if <see cref="GroupedConditions"/> is populated.
         /// </summary>
         public String? Field { get; set; }
         /// <summary>
         /// The operator used in the evaluation.
-        /// Should be null if <see cref="GroupedConditions"/></param> is populated.
+        /// Should be null if <see cref="GroupedConditions"/>is populated.
         /// </summary>
         public String? ComparisonOperator { get; set; }
         /// <summary>
-        /// Value that the <see cref="ComparisonOperator"/></param> will compare the <see cref="Field"/></param> against in the evaluation.
-        /// Should be null if <see cref="GroupedConditions"/></param> is populated.
+        /// Value that the <see cref="ComparisonOperator"/> will compare the <see cref="Field"/> against in the evaluation.
+        /// Should be null if <see cref="GroupedConditions"/> is populated.
         /// </summary>
         public String? Value { get; set; }
         public IReadOnlyCollection<String>? Values { get; set; }

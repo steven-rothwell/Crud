@@ -135,7 +135,7 @@ namespace Crud.Api.Services
 
                 if (condition.Values is not null)
                 {
-                    var values = condition.Values!.Select(value => ChangeType(field, fieldType, value));
+                    IEnumerable<dynamic> values = condition.Values!.Select(value => ChangeType(field, fieldType, value));
                     filter = GetComparisonOperatorFilter(field, condition.ComparisonOperator, values);
                 }
                 else
@@ -225,6 +225,7 @@ namespace Crud.Api.Services
             {
                 Operator.In => Builders<BsonDocument>.Filter.In(field, values),
                 Operator.NotIn => Builders<BsonDocument>.Filter.Nin(field, values),
+                Operator.All => Builders<BsonDocument>.Filter.All(field, values),
                 _ => throw new NotImplementedException($"Unable to compare {field} to {values}. {nameof(Condition.ComparisonOperator)} '{comparisonOperator}' is not implemented.")
             };
         }

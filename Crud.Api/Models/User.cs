@@ -17,5 +17,6 @@ namespace Crud.Api.Models
         [PreventQueryEndsWith]
         public String? HairColor { get; set; }
         public ICollection<String>? FavoriteThings { get; set; }
+        public ICollection<Address>? FormerAddresses { get; set; }
     }
 }
