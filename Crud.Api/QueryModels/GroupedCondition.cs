@@ -1,7 +1,7 @@
 namespace Crud.Api.QueryModels
 {
     /// <summary>
-    /// Groups conditions together to constrains what documents/rows are returned from the database.
+    /// Groups of conditions used for complex logic to constrain what documents/rows are filtered on in the data store.
     /// </summary>
     public class GroupedCondition
     {
