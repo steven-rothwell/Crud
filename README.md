@@ -4,7 +4,7 @@ The goal of this application is to solve the problem of needing to write boilerp
 
 # Quick Start
 
-Examples in the following documentation use the [User](/Crud.Api/Models/User.cs) and [Address](/Crud.Api/Models/Address.cs) models that come defaultly in this project. These are used soley for examples and may be removed.
+Examples in the following documentation use the [User](/Crud.Api/Models/User.cs) and [Address](/Crud.Api/Models/Address.cs) models that come defaultly in this project. These are used soley for examples and may be removed. Do not remove [IExternalEntity](#iexternalentity) or ExternalEntity.
 
 This application uses a RESTful naming convention for the routes. In the examples below, replace `{typeName}` with the pluralized name of the model the action will be on. For example, when acting on [User](/Crud.Api/Models/User.cs), replace `{typeName}` with "users".
 
@@ -36,19 +36,15 @@ This returns the `number` of documents/rows that the [query filtering](#body-que
 
 # Update
 
-## Replacement Update
-
-### api/{typeName}/{id:guid} - HttpPut
+## api/{typeName}/{id:guid} - HttpPut
 
 Replace `{id:guid}` with the `Id` of the model to be updated. The document/row that this `Id` matches will be replaced by the JSON object in the body of the request.
 
-## Partial Update
-
-### api/{typeName}/{id:guid} - HttpPatch
+## api/{typeName}/{id:guid} - HttpPatch
 
 Replace `{id:guid}` with the `Id` of the model to be updated. The document/row that this `Id` matches will have only the fields/columns updated that are in the JSON object in the body of the request.
 
-### api/{typeName}{?prop1=val1...&propN=valN} - HttpPatch
+## api/{typeName}{?prop1=val1...&propN=valN} - HttpPatch
 
 Replace `{?prop1=val1...&propN=valN}` with [query parameter filtering](#query-parameter-filtering). By default, at least one query parameter is required. To allow updating all, the [validator](/Crud.Api/Validators/Validator.cs) check for this will need to be removed. All documents/rows that match the filter will have only the fields/columns updated that are in the JSON object in the body of the request.
 
@@ -383,6 +379,55 @@ if (
 ```
 
 # Validation
+
+| Signature | Description |
+| --------- | ----------- |
+| `Task<ValidationResult> ValidateCreateAsync(Object model)` | Validates the model when creating. |
+| `Task<ValidationResult> ValidateReadAsync(Object model, IDictionary<String, String>? queryParams)` | Validates the model when reading with [query parameter filtering](#query-parameter-filtering). |
+| `Task<ValidationResult> ValidateUpdateAsync(Guid id, Object model)` | Validates the model when replacement updating with an Id. |
+| `Task<ValidationResult> ValidatePartialUpdateAsync(Guid id, Object model, IReadOnlyCollection<String>? propertiesToBeUpdated)` | Validates the model when partially updating with an Id. |
+| `Task<ValidationResult> ValidatePartialUpdateAsync(Object model, IDictionary<String, String>? queryParams, IReadOnlyCollection<String>? propertiesToBeUpdated)` | Validates the model when partially updating with [query parameter filtering](#query-parameter-filtering). |
+| `Task<ValidationResult> ValidateDeleteAsync(Object model, IDictionary<String, String>? queryParams)` | Validates the model when deleting with [query parameter filtering](#query-parameter-filtering). |
+| `ValidationResult ValidateQuery(Object model, Query query)` | Validates the model when using [body query filtering](#body-query-filtering). |
+
+Each signature above may be overriden by replacing the `Object model` parameter with a specific model type. There are many examples using the [User](/Crud.Api/Models/User.cs) model to override the validating method in the [Validator](/Crud.Api/Validators/Validator.cs) class. These may be removed as they are solely there as examples. 
+
+The following example overrides the `Task<ValidationResult> ValidateCreateAsync(Object model)` valdating method and also calls the `Object model` version of the method to reuse the logic.
+
+```c#
+public async Task<ValidationResult> ValidateCreateAsync(User user)
+{
+    if (user is null)
+        return new ValidationResult(false, $"{nameof(User)} cannot be null.");
+
+    var objectValidationResult = await ValidateCreateAsync((object)user);
+    if (!objectValidationResult.IsValid)
+        return objectValidationResult;
+
+    return new ValidationResult(true);
+}
+```
+
+# ExternalEntity
+
+This class and IExternalEntity interface should not be removed from the application. Although not necessary, it is highly suggested to inherit from for models that map directly to a collection/table. Example: [User](/Crud.Api/Models/User.cs) maps to the `Users` collection while [Address](/Crud.Api/Models/Address.cs) is stored within a document in that collection. The purpose of this class is to give each document/row a unique "random" identifier so that it may be safely referenced by external applications. Sequential identifiers are not as safe to use as they can be easily manipulated and without the proper checks, allow access to other data. They do make for better clustered indexes, so they should continue to be used within the data store.
+
+# Metrics
+
+All of this is well and good. CRUD operations on models has been simplified. But at what cost? The following metrics were obtained by running the exact same [Postman requests](/Postman/Crud.postman_collection.json) against this application versus running them against an application that does the same operations, but without the dynamic model capabilities, called [CrudMetrics](https://github.com/steven-rothwell/CrudMetrics).
+
+The following is the average of each request which was run with 100 iterations and no indexes on the collections.
+
+| Request | CrudMetrics (baseline) | Crud (dynamic models) |
+| ------- | ---------------------: | --------------------: |
+| CreateUser  | 4 ms | 4 ms |
+| ReadUser_Id  | 3 ms | 3 ms |
+| ReadUser_Name  | 3 ms | 3 ms |
+| UpdateUser_Id  | 3 ms | 3 ms |
+| PartialUpdateUser_Id  | 3 ms | 4 ms |
+| PartialUpdateUser_Name  | 3 ms | 3 ms |
+| DeleteUser_Id  | 3 ms | 3 ms |
+| DeleteUser_Name  | 3 ms | 3 ms |
 
 # Versions
 
