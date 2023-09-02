@@ -6,7 +6,7 @@ namespace Crud.Api.QueryModels
     public class Sort
     {
         /// <summary>
-        /// Name of the field/column side being sorted.
+        /// Name of the field/column being sorted.
         /// </summary>
         public String? Field { get; set; }
         /// <summary>

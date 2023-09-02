@@ -23,15 +23,15 @@ namespace Crud.Api.QueryModels
         /// </summary>
         public const String All = "ALL";
         /// <summary>
-        /// For use with <see cref="Condition.Field"/> properties of type <see cref="String"/>. If value in <see cref="Condition.Field"/> contains the value in <see cref="Condition.Values"/>.
+        /// For use with <see cref="Condition.Field"/> properties of type <see cref="String"/>. If value in <see cref="Condition.Field"/> contains the value in <see cref="Condition.Value"/>.
         /// </summary>
         public const String Contains = "CONTAINS";
         /// <summary>
-        /// For use with <see cref="Condition.Field"/> properties of type <see cref="String"/>. If value in <see cref="Condition.Field"/> starts with the value in <see cref="Condition.Values"/>.
+        /// For use with <see cref="Condition.Field"/> properties of type <see cref="String"/>. If value in <see cref="Condition.Field"/> starts with the value in <see cref="Condition.Value"/>.
         /// </summary>
         public const String StartsWith = "STARTSWITH";
         /// <summary>
-        /// For use with <see cref="Condition.Field"/> properties of type <see cref="String"/>. If value in <see cref="Condition.Field"/> ends with the value in <see cref="Condition.Values"/>.
+        /// For use with <see cref="Condition.Field"/> properties of type <see cref="String"/>. If value in <see cref="Condition.Field"/> ends with the value in <see cref="Condition.Value"/>.
         /// </summary>
         public const String EndsWith = "ENDSWITH";
 

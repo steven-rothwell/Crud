@@ -359,7 +359,7 @@
 			"response": []
 		},
 		{
-			"name": "QueryRead_Sort",
+			"name": "QueryRead_OrderBy",
 			"event": [
 				{
 					"listen": "test",
@@ -420,7 +420,7 @@
 			"response": []
 		},
 		{
-			"name": "QueryRead_Sort_Null",
+			"name": "QueryRead_OrderBy_Null",
 			"event": [
 				{
 					"listen": "test",
