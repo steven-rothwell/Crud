@@ -4,11 +4,42 @@ The goal of this application is to solve the problem of needing to write boilerp
 
 # Quick Start
 
-Examples in the following documentation use the [User](/Crud.Api/Models/User.cs) and [Address](/Crud.Api/Models/Address.cs) models that come defaultly in this project. These are used soley for examples and may be removed. Do not remove [IExternalEntity](#iexternalentity) or ExternalEntity.
+1. Start off by [forking](https://docs.github.com/en/get-started/quickstart/fork-a-repo#forking-a-repository) this repository. Check out [versions](#versions) and [branching strategy](#branching-strategy) to decide what branch to start from.
+2. Clone the new repo locally.
+3. Create a new branch.
+4. Open the [solution](/Crud.sln) in an IDE.
+5. Add any [models](#models) if desired or use existing example models.
+6. Ensure data store is running.
+7. Add connection information to [appsettings](/Crud.Api/appsettings.Development.json).
+8. Start the application.
+9. Use Postman or similar application to start calling the [C](#create)[R](#read)[U](#update)[D](#delete) routes. (See example [Postman requests](/Postman/Crud.postman_collection.json).)
+
+# Models
+
+Models are POCOs located in the [Models](/Crud.Api/Models/) folder. These map directly to a collection/table in the data store.
+
+Examples in the following documentation use the [User](/Crud.Api/Models/User.cs) and [Address](/Crud.Api/Models/Address.cs) models that come defaultly in this project. These are used soley for examples and may be removed. Do not remove IExternalEntity or [ExternalEntity](#externalentity).
+
+## Attributes
+
+### Table Data Annotation
+
+This is not required. It may be used to specify the name of the collection/table that the model will be stored in. Otherwise, the name that will be used as the collection/table will default to the pluralized version of the class name.
+
+The following example will specify that the name of the collection/table to store the model in should be "users".
+
+```c#
+[Table("users")]
+public class User : ExternalEntity
+```
+
+### Validator Data Annotations
+
+Standard and custom [data annotation](https://learn.microsoft.com/en-us/dotnet/api/system.componentmodel.dataannotations?view=net-7.0) validators may be added to properties in the model. These will automatically be used to validate the model without adding any additional code to the [Validator](/Crud.Api/Validators/Validator.cs).
+
+# Routing
 
 This application uses a RESTful naming convention for the routes. In the examples below, replace `{typeName}` with the pluralized name of the model the action will be on. For example, when acting on [User](/Crud.Api/Models/User.cs), replace `{typeName}` with "users".
-
-TODO: write how to setup and quickly get entries in db.
 
 # Create
 
@@ -410,7 +441,7 @@ public async Task<ValidationResult> ValidateCreateAsync(User user)
 
 # ExternalEntity
 
-This class and IExternalEntity interface should not be removed from the application. Although not necessary, it is highly suggested to inherit from for models that map directly to a collection/table. Example: [User](/Crud.Api/Models/User.cs) maps to the `Users` collection while [Address](/Crud.Api/Models/Address.cs) is stored within a document in that collection. The purpose of this class is to give each document/row a unique "random" identifier so that it may be safely referenced by external applications. Sequential identifiers are not as safe to use as they can be easily manipulated and without the proper checks, allow access to other data. They do make for better clustered indexes, so they should continue to be used within the data store.
+This class and IExternalEntity interface should not be removed from the application. Although not necessary, it is highly suggested to inherit from for [models](#models) that map directly to a collection/table. Example: [User](/Crud.Api/Models/User.cs) maps to the `Users` collection while [Address](/Crud.Api/Models/Address.cs) is stored within a document in that collection. The purpose of this class is to give each document/row a unique "random" identifier so that it may be safely referenced by external applications. Sequential identifiers are not as safe to use as they can be easily manipulated and without the proper checks, allow access to other data. They do make for better clustered indexes, so they should continue to be used within the data store.
 
 # Metrics
 
@@ -431,15 +462,35 @@ The following is the average of each request which was run with 100 iterations a
 
 # Versions
 
-| Number | Available Preservers | Framework |
-| ------ | -------------------- | --------- |
-| 1.0.0  | MongoDB              | .NET 7    |
+Pattern: #.#.# - *breaking-change*.*new-features*.*maintenance*
+<br/>Incrementing version zeroes-out version numbers to the right.
+<br/>Example: Current version is 1.0.3, new features are added, new version is 1.1.0.
+
+# Updating Versions
+
+If a new version is released and these updates would be useful in a forked application:
+
+1. At minimum, read all release notes for each v# since the last fetch. (Example: Last forked from v1.0.3. Desired updated version is v4.2.6. At least read release notes of v2.0.0, v3.0.0, and v4.0.0 as they may require code changes.)
+1. Fetch the desired v#.#.# branch from this repository into the forked repository.
+2. Create a new branch.
+3. Merge existing forked application code and v#.#.# branch.
+3. Fix any merge conflicts.
+4. Test.
+
+# Branching Strategy
+
+| Name | Description |
+| ---- | ----------- |
+| master | Contains the latest v#.#.#. |
+| v#.#.# | Standard branches to create a forked application from. |
+| alpha-v#.#.# | Used to test the next version to be released. |
+| beta-v#.#.# | Used when the next version has major changes and burn in testing is required. |
 
 # Release Notes
 
-| Number | Notes                                                                                        |
-| ------ | -------------------------------------------------------------------------------------------- |
-| 1.0.0  | Initial release with basic CRUD operations, filtering by query parameters, and body queries. |
+| Number | Available Preservers | Framework | Notes                                                                                        |
+| ------ | -------------------- | --------- | -------------------------------------------------------------------------------------------- |
+| 1.0.0 | MongoDB | .NET 7 | Initial release with basic CRUD operations, filtering by query parameters, and body queries. |
 
 # Contributing
 
