@@ -137,9 +137,8 @@ namespace Crud.Api.Services
 
                 if (condition.Values is not null)
                 {
-                    //IEnumerable<dynamic> values = condition.Values!.Select(value => ChangeType(field, fieldType, value));
-                    dynamic values = condition.Values!.Select(value => ChangeType(field, fieldType, value)).ToList();
-                    filter = GetComparisonOperatorFilterValues(field, condition.ComparisonOperator, values);
+                    IEnumerable<dynamic> values = condition.Values!.Select(value => ChangeType(field, fieldType, value));
+                    filter = GetComparisonOperatorFilter(field, condition.ComparisonOperator, values);
                 }
                 else
                 {
@@ -219,8 +218,7 @@ namespace Crud.Api.Services
             };
         }
 
-        //public FilterDefinition<BsonDocument> GetComparisonOperatorFilter(String field, String comparisonOperator, IEnumerable<dynamic> values)
-        public FilterDefinition<BsonDocument> GetComparisonOperatorFilterValues(String field, String comparisonOperator, dynamic values)
+        public FilterDefinition<BsonDocument> GetComparisonOperatorFilter(String field, String comparisonOperator, IEnumerable<dynamic> values)
         {
             if (!Operator.ComparisonAliasLookup.ContainsKey(comparisonOperator))
                 throw new KeyNotFoundException($"{nameof(Condition.ComparisonOperator)} '{comparisonOperator}' was not found in {Operator.ComparisonAliasLookup}.");
