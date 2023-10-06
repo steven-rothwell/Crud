@@ -25,6 +25,13 @@ var conventionPack = new ConventionPack
 };
 ConventionRegistry.Register("conventionPack", conventionPack, t => true);
 
+// This is necessary for IEnumerable<dynamic> to properly choose the correct GuidRepresentation when dynamic is Guid.
+// This is currently a bug in the MongoDB C# driver. This may be removed when fixed.
+// https://jira.mongodb.org/browse/CSHARP-4784
+var discriminatorConvention = BsonSerializer.LookupDiscriminatorConvention(typeof(object));
+var objectSerializer = new ObjectSerializer(discriminatorConvention, GuidRepresentation.Standard);
+BsonSerializer.RegisterSerializer(objectSerializer);
+
 BsonDefaults.GuidRepresentationMode = GuidRepresentationMode.V3;
 BsonSerializer.RegisterSerializer(new GuidSerializer(GuidRepresentation.Standard));
 

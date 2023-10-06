@@ -39,8 +39,9 @@ namespace Crud.Api.Services
             {
                 foreach (var queryParam in queryParams)
                 {
-                    string key = queryParam.Key.Replace(Delimiter.QueryParamChildProperty, Delimiter.MongoDbChildProperty);
-                    dynamic? value = queryParam.Value.ChangeType(type.GetProperties().GetProperty(key, Delimiter.MongoDbChildProperty)!.PropertyType);
+                    var propertyInfo = type.GetProperties().GetProperty(queryParam.Key, Delimiter.MongoDbChildProperty);
+                    string key = propertyInfo!.Name.Replace(Delimiter.QueryParamChildProperty, Delimiter.MongoDbChildProperty);
+                    dynamic? value = queryParam.Value.ChangeType(propertyInfo!.PropertyType);
                     filter &= Builders<BsonDocument>.Filter.Eq(key.Camelize(Delimiter.MongoDbChildProperty), value);
                 }
             }
@@ -125,8 +126,9 @@ namespace Crud.Api.Services
                 if (condition.Field is null || condition.ComparisonOperator is null)
                     return filter;
 
-                string field = condition.Field!.Camelize(Delimiter.MongoDbChildProperty);
-                Type fieldType = type.GetProperties().GetProperty(condition.Field, Delimiter.MongoDbChildProperty)!.PropertyType;
+                var fieldPropertyInfo = type.GetProperties().GetProperty(condition.Field, Delimiter.MongoDbChildProperty);
+                string field = fieldPropertyInfo!.Name.Camelize(Delimiter.MongoDbChildProperty);
+                Type fieldType = fieldPropertyInfo!.PropertyType;
 
                 if (typeof(IEnumerable).IsAssignableFrom(fieldType) && fieldType.IsGenericType)
                 {
@@ -216,7 +218,7 @@ namespace Crud.Api.Services
             };
         }
 
-        public FilterDefinition<BsonDocument> GetComparisonOperatorFilter(String field, String comparisonOperator, IEnumerable<object> values)
+        public FilterDefinition<BsonDocument> GetComparisonOperatorFilter(String field, String comparisonOperator, IEnumerable<dynamic> values)
         {
             if (!Operator.ComparisonAliasLookup.ContainsKey(comparisonOperator))
                 throw new KeyNotFoundException($"{nameof(Condition.ComparisonOperator)} '{comparisonOperator}' was not found in {Operator.ComparisonAliasLookup}.");

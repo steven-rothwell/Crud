@@ -1,15 +1,32 @@
 using System.Reflection;
+using System.Text.Json.Serialization;
 using Crud.Api.Constants;
 
 namespace Crud.Api.Tests.Extensions
 {
     public class PropertyInfoExtensionsTests
     {
+        private const String _parentName = "parentName";
+        private const String _childName = "childName";
+
         [Fact]
         public void GetProperty_PropertiesAreNull_ReturnsNull()
         {
             PropertyInfo[]? properties = null;
             var propertyName = "propertyName";
+
+            var result = properties.GetProperty(propertyName);
+
+            Assert.Null(result);
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        [InlineData("    ")]
+        public void GetProperty_PropertyNameIsNullOrWhiteSpace_ReturnsNull(String? propertyName)
+        {
+            var properties = typeof(Parent).GetProperties();
 
             var result = properties.GetProperty(propertyName);
 
@@ -41,6 +58,20 @@ namespace Crud.Api.Tests.Extensions
             Assert.Equal(typeof(Parent), result.ReflectedType);
             Assert.Equal(typeof(int), result.PropertyType);
             Assert.Equal(nameof(Parent.Id), result.Name);
+        }
+
+        [Fact]
+        public void GetProperty_ChildPropertyDelimiterNotInPropertyNamePropertyMatchesAlias_ReturnsPropertyInfo()
+        {
+            var properties = typeof(Parent).GetProperties();
+            var propertyName = _parentName;
+
+            var result = properties.GetProperty(propertyName);
+
+            Assert.NotNull(result);
+            Assert.Equal(typeof(Parent), result.ReflectedType);
+            Assert.Equal(typeof(string), result.PropertyType);
+            Assert.Equal(nameof(Parent.Name), result.Name);
         }
 
         [Fact]
@@ -79,6 +110,21 @@ namespace Crud.Api.Tests.Extensions
             Assert.Equal(typeof(Child), result.ReflectedType);
             Assert.Equal(typeof(int), result.PropertyType);
             Assert.Equal(nameof(Child.Id), result.Name);
+        }
+
+        [Fact]
+        public void GetProperty_ChildPropertyDelimiterInPropertyNameParentPropertyIsClassPropertyNameMatchesAliasInChild_ReturnsPropertyInfo()
+        {
+            var properties = typeof(Parent).GetProperties();
+            var childPropertyDelimiter = Delimiter.QueryParamChildProperty;
+            var propertyName = $"{nameof(Parent.Child)}{childPropertyDelimiter}{_childName}";
+
+            var result = properties.GetProperty(propertyName, childPropertyDelimiter);
+
+            Assert.NotNull(result);
+            Assert.Equal(typeof(Child), result.ReflectedType);
+            Assert.Equal(typeof(string), result.PropertyType);
+            Assert.Equal(nameof(Child.Name), result.Name);
         }
 
         [Fact]
@@ -191,9 +237,67 @@ namespace Crud.Api.Tests.Extensions
             Assert.True(result);
         }
 
+        [Fact]
+        void MatchesAlias_PropertyInfoIsNull_ReturnsFalse()
+        {
+            PropertyInfo? propertyInfo = null;
+            String? propertyName = "propertyName";
+
+            var result = propertyInfo.MatchesAlias(propertyName);
+
+            Assert.False(result);
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        [InlineData("    ")]
+        void MatchesAlias_PropertyNameIsNullOrWhiteSpace_ReturnsFalse(String? propertyName)
+        {
+            PropertyInfo? propertyInfo = typeof(Parent).GetProperty(nameof(Parent.Name));
+
+            var result = propertyInfo.MatchesAlias(propertyName);
+
+            Assert.False(result);
+        }
+
+        [Fact]
+        void MatchesAlias_JsonPropertyNameAttributeIsNotDefined_ReturnsFalse()
+        {
+            PropertyInfo? propertyInfo = typeof(Parent).GetProperty(nameof(Parent.Id));
+            String? propertyName = "propertyName";
+
+            var result = propertyInfo.MatchesAlias(propertyName);
+
+            Assert.False(result);
+        }
+
+        [Fact]
+        void MatchesAlias_JsonPropertyNameAttributeIsDefinedNameDoesNotMatch_ReturnsFalse()
+        {
+            PropertyInfo? propertyInfo = typeof(Parent).GetProperty(nameof(Parent.Name));
+            String? propertyName = "propertyName";
+
+            var result = propertyInfo.MatchesAlias(propertyName);
+
+            Assert.False(result);
+        }
+
+        [Fact]
+        void MatchesAlias_JsonPropertyNameAttributeIsDefinedNameDoesMatch_ReturnsTrue()
+        {
+            PropertyInfo? propertyInfo = typeof(Parent).GetProperty(nameof(Parent.Name));
+            String? propertyName = _parentName;
+
+            var result = propertyInfo.MatchesAlias(propertyName);
+
+            Assert.True(result);
+        }
+
         private class Parent
         {
             public Int32 Id { get; set; }
+            [JsonPropertyName(_parentName)]
             public String? Name { get; set; }
             public Child? Child { get; set; }
             public List<Child>? GrandChildren { get; set; }
@@ -202,6 +306,8 @@ namespace Crud.Api.Tests.Extensions
         private class Child
         {
             public Int32 Id { get; set; }
+            [JsonPropertyName(_childName)]
+            public String? Name { get; set; }
         }
     }
 }
