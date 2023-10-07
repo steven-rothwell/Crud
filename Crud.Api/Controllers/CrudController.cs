@@ -8,6 +8,7 @@ using Crud.Api.Options;
 using Crud.Api.Preservers;
 using Crud.Api.QueryModels;
 using Crud.Api.Services;
+using Crud.Api.Services.Models;
 using Crud.Api.Validators;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -24,8 +25,11 @@ public class CrudController : BaseApiController
     private readonly IStreamService _streamService;
     private readonly ITypeService _typeService;
     private readonly IQueryCollectionService _queryCollectionService;
+    private readonly IPreprocessingService _preprocessingService;
+    private readonly IPostprocessingService _postprocessingService;
 
-    public CrudController(IOptions<ApplicationOptions> applicationOptions, ILogger<CrudController> logger, IValidator validator, IPreserver preserver, IStreamService streamService, ITypeService typeService, IQueryCollectionService queryCollectionService)
+    public CrudController(IOptions<ApplicationOptions> applicationOptions, ILogger<CrudController> logger, IValidator validator, IPreserver preserver, IStreamService streamService, ITypeService typeService, IQueryCollectionService queryCollectionService,
+        PreprocessingService preprocessingService, PostprocessingService postprocessingService)
         : base(applicationOptions)
     {
         _logger = logger;
@@ -34,6 +38,8 @@ public class CrudController : BaseApiController
         _streamService = streamService;
         _typeService = typeService;
         _queryCollectionService = queryCollectionService;
+        _preprocessingService = preprocessingService;
+        _postprocessingService = postprocessingService;
     }
 
     [Route("{typeName}"), HttpPost]
@@ -55,7 +61,15 @@ public class CrudController : BaseApiController
             if (!validationResult.IsValid)
                 return BadRequest(validationResult.Message);
 
+            var preprocessingMessageResult = (MessageResult)await _preprocessingService.PreprocessCreateAsync(model);
+            if (!preprocessingMessageResult.IsSuccessful)
+                return InternalServerError(preprocessingMessageResult.Message);
+
             var createdModel = await _preserver.CreateAsync(model);
+
+            var postprocessingMessageResult = (MessageResult)await _postprocessingService.PostprocessCreateAsync(model);
+            if (!postprocessingMessageResult.IsSuccessful)
+                return InternalServerError(postprocessingMessageResult.Message);
 
             return Ok(createdModel);
         }

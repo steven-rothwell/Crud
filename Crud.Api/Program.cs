@@ -17,6 +17,7 @@ builder.Services.AddScoped<IMongoDbService, MongoDbService>();
 builder.Services.AddScoped<IQueryCollectionService, QueryCollectionService>();
 builder.Services.AddScoped<IStreamService, StreamService>();
 builder.Services.AddScoped<ITypeService, TypeService>();
+builder.Services.AddScoped<IPreprocessingService, PreprocessingService>();
 
 var conventionPack = new ConventionPack
 {
