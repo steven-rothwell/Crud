@@ -1,6 +1,5 @@
 using System.Text;
 using System.Text.Json;
-using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using Crud.Api.Constants;
 using Crud.Api.Helpers;
@@ -29,7 +28,7 @@ public class CrudController : BaseApiController
     private readonly IPostprocessingService _postprocessingService;
 
     public CrudController(IOptions<ApplicationOptions> applicationOptions, ILogger<CrudController> logger, IValidator validator, IPreserver preserver, IStreamService streamService, ITypeService typeService, IQueryCollectionService queryCollectionService,
-        PreprocessingService preprocessingService, PostprocessingService postprocessingService)
+        IPreprocessingService preprocessingService, IPostprocessingService postprocessingService)
         : base(applicationOptions)
     {
         _logger = logger;

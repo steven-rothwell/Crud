@@ -7,6 +7,7 @@ using Crud.Api.Options;
 using Crud.Api.Preservers;
 using Crud.Api.QueryModels;
 using Crud.Api.Services;
+using Crud.Api.Services.Models;
 using Crud.Api.Tests.TestingModels;
 using Crud.Api.Validators;
 using Humanizer;
@@ -27,6 +28,8 @@ namespace Crud.Api.Tests.Controllers
         private Mock<IStreamService> _streamService;
         private Mock<ITypeService> _typeService;
         private Mock<IQueryCollectionService> _queryCollectionService;
+        private Mock<IPreprocessingService> _preprocessingService;
+        private Mock<IPostprocessingService> _postprocessingService;
         private CrudController _controller;
         private Stream _stream;
 
@@ -39,11 +42,13 @@ namespace Crud.Api.Tests.Controllers
             _streamService = new Mock<IStreamService>();
             _typeService = new Mock<ITypeService>();
             _queryCollectionService = new Mock<IQueryCollectionService>();
+            _preprocessingService = new Mock<IPreprocessingService>();
+            _postprocessingService = new Mock<IPostprocessingService>();
             _stream = new MemoryStream(Encoding.UTF8.GetBytes("this-does-not-matter"));
             var httpContext = new DefaultHttpContext() { Request = { Body = _stream, ContentLength = _stream.Length } };
             var controllerContext = new ControllerContext { HttpContext = httpContext };
 
-            _controller = new CrudController(_applicationOptions, _logger.Object, _validator.Object, _preserver.Object, _streamService.Object, _typeService.Object, _queryCollectionService.Object) { ControllerContext = controllerContext };
+            _controller = new CrudController(_applicationOptions, _logger.Object, _validator.Object, _preserver.Object, _streamService.Object, _typeService.Object, _queryCollectionService.Object, _preprocessingService.Object, _postprocessingService.Object) { ControllerContext = controllerContext };
         }
 
         public void Dispose()
@@ -106,17 +111,66 @@ namespace Crud.Api.Tests.Controllers
         }
 
         [Fact]
+        public async Task CreateAsync_PreprocessingIsNotSuccessful_ReturnsInternalServerError()
+        {
+            var typeName = "some-type-name";
+            var model = new Model { Id = 1 };
+            var json = JsonSerializer.Serialize(model);
+            var validationResult = new ValidationResult { IsValid = true };
+            var preprocessingMessageResult = new MessageResult(false, "preprocessing-failed");
+
+            _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(model.GetType());
+            _streamService.Setup(m => m.ReadToEndThenDisposeAsync(It.IsAny<Stream>(), It.IsAny<Encoding>())).ReturnsAsync(json);
+            _validator.Setup(m => m.ValidateCreateAsync(It.IsAny<Model>())).ReturnsAsync(validationResult);
+            _preprocessingService.Setup(m => m.PreprocessCreateAsync(It.IsAny<Model>())).ReturnsAsync(preprocessingMessageResult);
+
+            var result = await _controller.CreateAsync(typeName) as ObjectResult;
+
+            Assert.NotNull(result);
+            Assert.Equal(StatusCodes.Status500InternalServerError, result.StatusCode);
+            Assert.Equal(preprocessingMessageResult.Message, result.Value);
+        }
+
+        [Fact]
+        public async Task CreateAsync_PostprocessingIsNotSuccessful_ReturnsInternalServerError()
+        {
+            var typeName = "some-type-name";
+            var model = new Model { Id = 1 };
+            var json = JsonSerializer.Serialize(model);
+            var validationResult = new ValidationResult { IsValid = true };
+            var preprocessingMessageResult = new MessageResult(true);
+            var postprocessingMessageResult = new MessageResult(false, "postprocessing-failed");
+
+            _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(model.GetType());
+            _streamService.Setup(m => m.ReadToEndThenDisposeAsync(It.IsAny<Stream>(), It.IsAny<Encoding>())).ReturnsAsync(json);
+            _validator.Setup(m => m.ValidateCreateAsync(It.IsAny<Model>())).ReturnsAsync(validationResult);
+            _preserver.Setup(m => m.CreateAsync(It.IsAny<Model>())).ReturnsAsync(model);
+            _preprocessingService.Setup(m => m.PreprocessCreateAsync(It.IsAny<Model>())).ReturnsAsync(preprocessingMessageResult);
+            _postprocessingService.Setup(m => m.PostprocessCreateAsync(It.IsAny<Model>())).ReturnsAsync(postprocessingMessageResult);
+
+            var result = await _controller.CreateAsync(typeName) as ObjectResult;
+
+            Assert.NotNull(result);
+            Assert.Equal(StatusCodes.Status500InternalServerError, result.StatusCode);
+            Assert.Equal(postprocessingMessageResult.Message, result.Value);
+        }
+
+        [Fact]
         public async Task CreateAsync_ModelCreated_ReturnsOkCreatedModel()
         {
             var typeName = "some-type-name";
             var model = new Model { Id = 1 };
             var json = JsonSerializer.Serialize(model);
             var validationResult = new ValidationResult { IsValid = true };
+            var preprocessingMessageResult = new MessageResult(true);
+            var postprocessingMessageResult = new MessageResult(true);
 
             _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(model.GetType());
             _streamService.Setup(m => m.ReadToEndThenDisposeAsync(It.IsAny<Stream>(), It.IsAny<Encoding>())).ReturnsAsync(json);
             _validator.Setup(m => m.ValidateCreateAsync(It.IsAny<Model>())).ReturnsAsync(validationResult);
             _preserver.Setup(m => m.CreateAsync(It.IsAny<Model>())).ReturnsAsync(model);
+            _preprocessingService.Setup(m => m.PreprocessCreateAsync(It.IsAny<Model>())).ReturnsAsync(preprocessingMessageResult);
+            _postprocessingService.Setup(m => m.PostprocessCreateAsync(It.IsAny<Model>())).ReturnsAsync(postprocessingMessageResult);
 
             var result = await _controller.CreateAsync(typeName) as OkObjectResult;
 
