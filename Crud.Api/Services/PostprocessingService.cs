@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Crud.Api.QueryModels;
 using Crud.Api.Services.Models;
 
@@ -36,6 +37,11 @@ namespace Crud.Api.Services
         }
 
         public Task<MessageResult> PostprocessUpdateAsync(Object updatedModel, Guid id)
+        {
+            return Task.FromResult(new MessageResult(true));
+        }
+
+        public Task<MessageResult> PostprocessPartialUpdateAsync(Object updatedModel, Guid id, IDictionary<String, JsonElement> propertyValues)
         {
             return Task.FromResult(new MessageResult(true));
         }

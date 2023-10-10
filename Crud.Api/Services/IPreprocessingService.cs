@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Crud.Api.QueryModels;
 using Crud.Api.Services.Models;
 
@@ -11,5 +12,6 @@ namespace Crud.Api.Services
         Task<MessageResult> PreprocessReadAsync(Object model, Query query);
         Task<MessageResult> PreprocessReadCountAsync(Object model, Query query);
         Task<MessageResult> PreprocessUpdateAsync(Object model, Guid id);
+        Task<MessageResult> PreprocessPartialUpdateAsync(Object model, Guid id, IDictionary<String, JsonElement> propertyValues);
     }
 }

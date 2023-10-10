@@ -415,8 +415,8 @@ if (
 | --------- | ----------- |
 | `Task<ValidationResult> ValidateCreateAsync(Object model)` | Validates the model when creating. |
 | `Task<ValidationResult> ValidateReadAsync(Object model, IDictionary<String, String>? queryParams)` | Validates the model when reading with [query parameter filtering](#query-parameter-filtering). |
-| `Task<ValidationResult> ValidateUpdateAsync(Guid id, Object model)` | Validates the model when replacement updating with an Id. |
-| `Task<ValidationResult> ValidatePartialUpdateAsync(Guid id, Object model, IReadOnlyCollection<String>? propertiesToBeUpdated)` | Validates the model when partially updating with an Id. |
+| `Task<ValidationResult> ValidateUpdateAsync(Object model, Guid id)` | Validates the model when replacement updating with an Id. |
+| `Task<ValidationResult> ValidatePartialUpdateAsync(Object model, Guid id, IReadOnlyCollection<String>? propertiesToBeUpdated)` | Validates the model when partially updating with an Id. |
 | `Task<ValidationResult> ValidatePartialUpdateAsync(Object model, IDictionary<String, String>? queryParams, IReadOnlyCollection<String>? propertiesToBeUpdated)` | Validates the model when partially updating with [query parameter filtering](#query-parameter-filtering). |
 | `Task<ValidationResult> ValidateDeleteAsync(Object model, IDictionary<String, String>? queryParams)` | Validates the model when deleting with [query parameter filtering](#query-parameter-filtering). |
 | `ValidationResult ValidateQuery(Object model, Query query)` | Validates the model when using [body query filtering](#body-query-filtering). |
