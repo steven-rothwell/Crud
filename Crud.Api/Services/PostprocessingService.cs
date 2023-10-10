@@ -10,7 +10,7 @@ namespace Crud.Api.Services
 
         }
 
-        public Task<MessageResult> PostprocessCreateAsync(Object model)
+        public Task<MessageResult> PostprocessCreateAsync(Object createdModel)
         {
             return Task.FromResult(new MessageResult(true));
         }
@@ -31,6 +31,11 @@ namespace Crud.Api.Services
         }
 
         public Task<MessageResult> PostprocessReadCountAsync(Object model, Query query, Int64 count)
+        {
+            return Task.FromResult(new MessageResult(true));
+        }
+
+        public Task<MessageResult> PostprocessUpdateAsync(Object updatedModel, Guid id)
         {
             return Task.FromResult(new MessageResult(true));
         }

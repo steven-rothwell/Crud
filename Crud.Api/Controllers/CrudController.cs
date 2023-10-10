@@ -279,10 +279,18 @@ public class CrudController : BaseApiController
             if (!validationResult.IsValid)
                 return BadRequest(validationResult.Message);
 
+            var preprocessingMessageResult = (MessageResult)await _preprocessingService.PreprocessUpdateAsync(model, id);
+            if (!preprocessingMessageResult.IsSuccessful)
+                return InternalServerError(preprocessingMessageResult.Message);
+
             var updatedModel = await _preserver.UpdateAsync(model, id);
 
             if (updatedModel is null)
                 return NotFound(String.Format(ErrorMessage.NotFoundUpdate, typeName));
+
+            var postprocessingMessageResult = (MessageResult)await _postprocessingService.PostprocessUpdateAsync(updatedModel, id);
+            if (!postprocessingMessageResult.IsSuccessful)
+                return InternalServerError(postprocessingMessageResult.Message);
 
             return Ok(updatedModel);
         }

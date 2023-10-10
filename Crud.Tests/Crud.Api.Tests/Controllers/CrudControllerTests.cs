@@ -965,6 +965,29 @@ namespace Crud.Api.Tests.Controllers
         }
 
         [Fact]
+        public async Task UpdateAsync_PreprocessingIsNotSuccessful_ReturnsInternalServerError()
+        {
+            var typeName = "some-type-name";
+            Type? type = typeof(Model);
+            Guid id = Guid.Empty;
+            var model = new Model { Id = 1 };
+            var json = JsonSerializer.Serialize(model);
+            var validationResult = new ValidationResult { IsValid = true };
+            var preprocessingMessageResult = new MessageResult(false, "preprocessing-failed");
+
+            _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(type);
+            _streamService.Setup(m => m.ReadToEndThenDisposeAsync(It.IsAny<Stream>(), It.IsAny<Encoding>())).ReturnsAsync(json);
+            _validator.Setup(m => m.ValidateUpdateAsync(It.IsAny<Model>(), It.IsAny<Guid>())).ReturnsAsync(validationResult);
+            _preprocessingService.Setup(m => m.PreprocessUpdateAsync(It.IsAny<Model>(), It.IsAny<Guid>())).ReturnsAsync(preprocessingMessageResult);
+
+            var result = await _controller.UpdateAsync(typeName, id) as ObjectResult;
+
+            Assert.NotNull(result);
+            Assert.Equal(StatusCodes.Status500InternalServerError, result.StatusCode);
+            Assert.Equal(preprocessingMessageResult.Message, result.Value);
+        }
+
+        [Fact]
         public async Task UpdateAsync_UpdatedModelIsNull_ReturnsNotFound()
         {
             var typeName = "some-type-name";
@@ -974,16 +997,45 @@ namespace Crud.Api.Tests.Controllers
             var json = JsonSerializer.Serialize(model);
             var validationResult = new ValidationResult { IsValid = true };
             Model? updatedModel = null;
+            var preprocessingMessageResult = new MessageResult(true);
 
             _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(type);
             _streamService.Setup(m => m.ReadToEndThenDisposeAsync(It.IsAny<Stream>(), It.IsAny<Encoding>())).ReturnsAsync(json);
             _validator.Setup(m => m.ValidateUpdateAsync(It.IsAny<Model>(), It.IsAny<Guid>())).ReturnsAsync(validationResult);
+            _preprocessingService.Setup(m => m.PreprocessUpdateAsync(It.IsAny<Model>(), It.IsAny<Guid>())).ReturnsAsync(preprocessingMessageResult);
             _preserver.Setup(m => m.UpdateAsync(It.IsAny<Model>(), It.IsAny<Guid>())).ReturnsAsync(updatedModel);
 
             var result = await _controller.UpdateAsync(typeName, id) as NotFoundObjectResult;
 
             Assert.NotNull(result);
             Assert.Equal(String.Format(ErrorMessage.NotFoundUpdate, typeName), result.Value);
+        }
+
+        [Fact]
+        public async Task UpdateAsync_PostprocessingIsNotSuccessful_ReturnsInternalServerError()
+        {
+            var typeName = "some-type-name";
+            Type? type = typeof(Model);
+            Guid id = Guid.Empty;
+            var model = new Model { Id = 1 };
+            var json = JsonSerializer.Serialize(model);
+            var validationResult = new ValidationResult { IsValid = true };
+            Model updatedModel = model;
+            var preprocessingMessageResult = new MessageResult(true);
+            var postprocessingMessageResult = new MessageResult(false, "postprocessing-failed");
+
+            _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(type);
+            _streamService.Setup(m => m.ReadToEndThenDisposeAsync(It.IsAny<Stream>(), It.IsAny<Encoding>())).ReturnsAsync(json);
+            _validator.Setup(m => m.ValidateUpdateAsync(It.IsAny<Model>(), It.IsAny<Guid>())).ReturnsAsync(validationResult);
+            _preprocessingService.Setup(m => m.PreprocessUpdateAsync(It.IsAny<Model>(), It.IsAny<Guid>())).ReturnsAsync(preprocessingMessageResult);
+            _preserver.Setup(m => m.UpdateAsync(It.IsAny<Model>(), It.IsAny<Guid>())).ReturnsAsync(updatedModel);
+            _postprocessingService.Setup(m => m.PostprocessUpdateAsync(It.IsAny<Model>(), It.IsAny<Guid>())).ReturnsAsync(postprocessingMessageResult);
+
+            var result = await _controller.UpdateAsync(typeName, id) as ObjectResult;
+
+            Assert.NotNull(result);
+            Assert.Equal(StatusCodes.Status500InternalServerError, result.StatusCode);
+            Assert.Equal(postprocessingMessageResult.Message, result.Value);
         }
 
         [Fact]
@@ -996,11 +1048,15 @@ namespace Crud.Api.Tests.Controllers
             var json = JsonSerializer.Serialize(model);
             var validationResult = new ValidationResult { IsValid = true };
             Model updatedModel = model;
+            var preprocessingMessageResult = new MessageResult(true);
+            var postprocessingMessageResult = new MessageResult(true);
 
             _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(type);
             _streamService.Setup(m => m.ReadToEndThenDisposeAsync(It.IsAny<Stream>(), It.IsAny<Encoding>())).ReturnsAsync(json);
             _validator.Setup(m => m.ValidateUpdateAsync(It.IsAny<Model>(), It.IsAny<Guid>())).ReturnsAsync(validationResult);
+            _preprocessingService.Setup(m => m.PreprocessUpdateAsync(It.IsAny<Model>(), It.IsAny<Guid>())).ReturnsAsync(preprocessingMessageResult);
             _preserver.Setup(m => m.UpdateAsync(It.IsAny<Model>(), It.IsAny<Guid>())).ReturnsAsync(updatedModel);
+            _postprocessingService.Setup(m => m.PostprocessUpdateAsync(It.IsAny<Model>(), It.IsAny<Guid>())).ReturnsAsync(postprocessingMessageResult);
 
             var result = await _controller.UpdateAsync(typeName, id) as OkObjectResult;
 
