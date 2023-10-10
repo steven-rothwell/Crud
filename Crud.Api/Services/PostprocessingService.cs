@@ -1,3 +1,4 @@
+using Crud.Api.QueryModels;
 using Crud.Api.Services.Models;
 
 namespace Crud.Api.Services
@@ -20,6 +21,11 @@ namespace Crud.Api.Services
         }
 
         public Task<MessageResult> PostprocessReadAsync(IEnumerable<Object> models, IDictionary<String, String>? queryParams)
+        {
+            return Task.FromResult(new MessageResult(true));
+        }
+
+        public Task<MessageResult> PostprocessReadAsync(IEnumerable<Object> models, Query query)
         {
             return Task.FromResult(new MessageResult(true));
         }
