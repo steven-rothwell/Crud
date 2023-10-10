@@ -29,5 +29,10 @@ namespace Crud.Api.Services
         {
             return Task.FromResult(new MessageResult(true));
         }
+
+        public Task<MessageResult> PostprocessReadCountAsync(Object model, Query query, Int64 count)
+        {
+            return Task.FromResult(new MessageResult(true));
+        }
     }
 }

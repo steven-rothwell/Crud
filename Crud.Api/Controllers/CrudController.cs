@@ -232,16 +232,24 @@ public class CrudController : BaseApiController
             if (query is null)
                 return BadRequest(String.Format(ErrorMessage.BadRequestQuery, jsonExMessage));
 
+            dynamic model = Convert.ChangeType(Activator.CreateInstance(type, null), type)!;
+
             if (_applicationOptions.ValidateQuery)
             {
-                dynamic model = Convert.ChangeType(Activator.CreateInstance(type, null), type)!;
-
                 var validationResult = (ValidationResult)_validator.ValidateQuery(model!, query);
                 if (!validationResult.IsValid)
                     return BadRequest(validationResult.Message);
             }
 
+            var preprocessingMessageResult = (MessageResult)await _preprocessingService.PreprocessReadCountAsync(model!, query);
+            if (!preprocessingMessageResult.IsSuccessful)
+                return InternalServerError(preprocessingMessageResult.Message);
+
             long count = await _preserver.QueryReadCountAsync(type, query);
+
+            var postprocessingMessageResult = (MessageResult)await _postprocessingService.PostprocessReadCountAsync(model!, query, count);
+            if (!postprocessingMessageResult.IsSuccessful)
+                return InternalServerError(postprocessingMessageResult.Message);
 
             return Ok(count);
         }

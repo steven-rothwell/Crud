@@ -9,5 +9,6 @@ namespace Crud.Api.Services
         Task<MessageResult> PreprocessReadAsync(Object model, Guid id);
         Task<MessageResult> PreprocessReadAsync(Object model, IDictionary<String, String>? queryParams);
         Task<MessageResult> PreprocessReadAsync(Object model, Query query);
+        Task<MessageResult> PreprocessReadCountAsync(Object model, Query query);
     }
 }
