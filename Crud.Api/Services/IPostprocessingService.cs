@@ -13,5 +13,6 @@ namespace Crud.Api.Services
         Task<MessageResult> PostprocessReadCountAsync(Object model, Query query, Int64 count);
         Task<MessageResult> PostprocessUpdateAsync(Object updatedModel, Guid id);
         Task<MessageResult> PostprocessPartialUpdateAsync(Object updatedModel, Guid id, IDictionary<String, JsonElement> propertyValues);
+        Task<MessageResult> PostprocessPartialUpdateAsync(Object model, IDictionary<String, String>? queryParams, IDictionary<String, JsonElement> propertyValues, Int64 updatedCount);
     }
 }

@@ -45,5 +45,10 @@ namespace Crud.Api.Services
         {
             return Task.FromResult(new MessageResult(true));
         }
+
+        public Task<MessageResult> PreprocessPartialUpdateAsync(Object model, IDictionary<String, String>? queryParams, IDictionary<String, JsonElement> propertyValues)
+        {
+            return Task.FromResult(new MessageResult(true));
+        }
     }
 }

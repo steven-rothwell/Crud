@@ -366,8 +366,16 @@ public class CrudController : BaseApiController
             if (!validationResult.IsValid)
                 return BadRequest(validationResult.Message);
 
+            var preprocessingMessageResult = (MessageResult)await _preprocessingService.PreprocessPartialUpdateAsync(model, queryParams, propertyValues);
+            if (!preprocessingMessageResult.IsSuccessful)
+                return InternalServerError(preprocessingMessageResult.Message);
+
             var partialUpdateAsync = ReflectionHelper.GetGenericMethod(type, typeof(IPreserver), nameof(IPreserver.PartialUpdateAsync), new Type[] { typeof(IDictionary<String, String>), typeof(IDictionary<String, JsonElement>) });
             var updatedCount = await (dynamic)partialUpdateAsync.Invoke(_preserver, new object[] { queryParams, propertyValues });
+
+            var postprocessingMessageResult = (MessageResult)await _postprocessingService.PostprocessPartialUpdateAsync(model, queryParams, propertyValues, updatedCount);
+            if (!postprocessingMessageResult.IsSuccessful)
+                return InternalServerError(postprocessingMessageResult.Message);
 
             return Ok(updatedCount);
         }
