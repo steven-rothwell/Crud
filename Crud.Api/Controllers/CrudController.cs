@@ -88,11 +88,21 @@ public class CrudController : BaseApiController
             if (type is null)
                 return BadRequest(ErrorMessage.BadRequestModelType);
 
+            dynamic model = Convert.ChangeType(Activator.CreateInstance(type, null), type)!;
+
+            var preprocessingMessageResult = (MessageResult)await _preprocessingService.PreprocessReadAsync(model, id);
+            if (!preprocessingMessageResult.IsSuccessful)
+                return InternalServerError(preprocessingMessageResult.Message);
+
             var readAsync = ReflectionHelper.GetGenericMethod(type, typeof(IPreserver), nameof(IPreserver.ReadAsync), new Type[] { typeof(Guid) });
-            var model = await (dynamic)readAsync.Invoke(_preserver, new object[] { id });
+            model = await (dynamic)readAsync.Invoke(_preserver, new object[] { id });
 
             if (model is null)
                 return NotFound(String.Format(ErrorMessage.NotFoundRead, typeName));
+
+            var postprocessingMessageResult = (MessageResult)await _postprocessingService.PostprocessReadAsync(model, id);
+            if (!postprocessingMessageResult.IsSuccessful)
+                return InternalServerError(postprocessingMessageResult.Message);
 
             return Ok(model);
         }

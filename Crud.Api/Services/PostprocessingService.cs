@@ -13,5 +13,10 @@ namespace Crud.Api.Services
         {
             return Task.FromResult(new MessageResult(true));
         }
+
+        public Task<MessageResult> PostprocessReadAsync(Object model, Guid id)
+        {
+            return Task.FromResult(new MessageResult(true));
+        }
     }
 }

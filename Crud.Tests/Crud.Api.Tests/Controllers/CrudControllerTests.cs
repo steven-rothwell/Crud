@@ -214,14 +214,34 @@ namespace Crud.Api.Tests.Controllers
         }
 
         [Fact]
+        public async Task ReadAsync_WithStringGuid_PreprocessingIsNotSuccessful_ReturnsInternalServerError()
+        {
+            var typeName = "some-type-name";
+            Type? type = typeof(Model);
+            Guid id = Guid.Empty;
+            var preprocessingMessageResult = new MessageResult(false, "preprocessing-failed");
+
+            _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(type);
+            _preprocessingService.Setup(m => m.PreprocessReadAsync(It.IsAny<Model>(), It.IsAny<Guid>())).ReturnsAsync(preprocessingMessageResult);
+
+            var result = await _controller.ReadAsync(typeName, id) as ObjectResult;
+
+            Assert.NotNull(result);
+            Assert.Equal(StatusCodes.Status500InternalServerError, result.StatusCode);
+            Assert.Equal(preprocessingMessageResult.Message, result.Value);
+        }
+
+        [Fact]
         public async Task ReadAsync_WithStringGuid_ModelIsNull_ReturnsNotFound()
         {
             var typeName = "some-type-name";
             Type? type = typeof(Model);
             Guid id = Guid.Empty;
             Model? model = null;
+            var preprocessingMessageResult = new MessageResult(true);
 
             _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(type);
+            _preprocessingService.Setup(m => m.PreprocessReadAsync(It.IsAny<Model>(), It.IsAny<Guid>())).ReturnsAsync(preprocessingMessageResult);
             _preserver.Setup(m => m.ReadAsync<Model>(It.IsAny<Guid>())).ReturnsAsync(model);
 
             var result = await _controller.ReadAsync(typeName, id) as NotFoundObjectResult;
@@ -231,15 +251,41 @@ namespace Crud.Api.Tests.Controllers
         }
 
         [Fact]
+        public async Task ReadAsync_WithStringGuid_PostprocessingIsNotSuccessful_ReturnsInternalServerError()
+        {
+            var typeName = "some-type-name";
+            Type? type = typeof(Model);
+            Guid id = Guid.Empty;
+            var model = new Model { Id = 1 };
+            var preprocessingMessageResult = new MessageResult(true);
+            var postprocessingMessageResult = new MessageResult(false, "postprocessing-failed");
+
+            _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(type);
+            _preprocessingService.Setup(m => m.PreprocessReadAsync(It.IsAny<Model>(), It.IsAny<Guid>())).ReturnsAsync(preprocessingMessageResult);
+            _preserver.Setup(m => m.ReadAsync<Model>(It.IsAny<Guid>())).ReturnsAsync(model);
+            _postprocessingService.Setup(m => m.PostprocessReadAsync(It.IsAny<Model>(), It.IsAny<Guid>())).ReturnsAsync(postprocessingMessageResult);
+
+            var result = await _controller.ReadAsync(typeName, id) as ObjectResult;
+
+            Assert.NotNull(result);
+            Assert.Equal(StatusCodes.Status500InternalServerError, result.StatusCode);
+            Assert.Equal(postprocessingMessageResult.Message, result.Value);
+        }
+
+        [Fact]
         public async Task ReadAsync_WithStringGuid_ModelIsFound_ReturnsFoundModel()
         {
             var typeName = "some-type-name";
             Type? type = typeof(Model);
             Guid id = Guid.Empty;
             var model = new Model { Id = 1 };
+            var preprocessingMessageResult = new MessageResult(true);
+            var postprocessingMessageResult = new MessageResult(true);
 
             _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(type);
+            _preprocessingService.Setup(m => m.PreprocessReadAsync(It.IsAny<Model>(), It.IsAny<Guid>())).ReturnsAsync(preprocessingMessageResult);
             _preserver.Setup(m => m.ReadAsync<Model>(It.IsAny<Guid>())).ReturnsAsync(model);
+            _postprocessingService.Setup(m => m.PostprocessReadAsync(It.IsAny<Model>(), It.IsAny<Guid>())).ReturnsAsync(postprocessingMessageResult);
 
             var result = await _controller.ReadAsync(typeName, id) as OkObjectResult;
 
