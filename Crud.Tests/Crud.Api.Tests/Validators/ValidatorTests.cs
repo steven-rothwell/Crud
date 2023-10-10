@@ -97,7 +97,7 @@ namespace Crud.Api.Tests.Validators
             var id = Guid.Empty;
             object model = new ModelForValidation { Id = 1 };
 
-            var result = await _validator.ValidateUpdateAsync(id, model);
+            var result = await _validator.ValidateUpdateAsync(model, id);
 
             Assert.NotNull(result);
             Assert.False(result.IsValid);
@@ -110,7 +110,7 @@ namespace Crud.Api.Tests.Validators
             var id = Guid.Empty;
             object model = new ModelForValidation { Id = 1, Name = "Test" };
 
-            var result = await _validator.ValidateUpdateAsync(id, model);
+            var result = await _validator.ValidateUpdateAsync(model, id);
 
             Assert.NotNull(result);
             Assert.True(result.IsValid);
@@ -123,7 +123,7 @@ namespace Crud.Api.Tests.Validators
             var id = Guid.Empty;
             object model = new Object();
 
-            var result = await _validator.ValidatePartialUpdateAsync(id, model, propertiesToBeUpdated);
+            var result = await _validator.ValidatePartialUpdateAsync(model, id, propertiesToBeUpdated);
 
             Assert.NotNull(result);
             Assert.False(result.IsValid);
@@ -140,7 +140,7 @@ namespace Crud.Api.Tests.Validators
                 "PropertyDoesNotExist"
             };
 
-            var result = await _validator.ValidatePartialUpdateAsync(id, model, propertiesToBeUpdated);
+            var result = await _validator.ValidatePartialUpdateAsync(model, id, propertiesToBeUpdated);
 
             Assert.NotNull(result);
             Assert.False(result.IsValid);
@@ -157,7 +157,7 @@ namespace Crud.Api.Tests.Validators
                 nameof(ModelForValidation.Id)
             };
 
-            var result = await _validator.ValidatePartialUpdateAsync(id, model, propertiesToBeUpdated);
+            var result = await _validator.ValidatePartialUpdateAsync(model, id, propertiesToBeUpdated);
 
             Assert.NotNull(result);
             Assert.True(result.IsValid);
@@ -174,7 +174,7 @@ namespace Crud.Api.Tests.Validators
                 nameof(ModelForValidation.Name)
             };
 
-            var result = await _validator.ValidatePartialUpdateAsync(id, model, propertiesToBeUpdated);
+            var result = await _validator.ValidatePartialUpdateAsync(model, id, propertiesToBeUpdated);
 
             Assert.NotNull(result);
             Assert.False(result.IsValid);
@@ -192,7 +192,7 @@ namespace Crud.Api.Tests.Validators
                 nameof(ModelForValidation.Name)
             };
 
-            var result = await _validator.ValidatePartialUpdateAsync(id, model, propertiesToBeUpdated);
+            var result = await _validator.ValidatePartialUpdateAsync(model, id, propertiesToBeUpdated);
 
             Assert.NotNull(result);
             Assert.True(result.IsValid);

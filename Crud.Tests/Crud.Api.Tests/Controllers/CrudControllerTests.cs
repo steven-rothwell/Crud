@@ -956,7 +956,7 @@ namespace Crud.Api.Tests.Controllers
 
             _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(type);
             _streamService.Setup(m => m.ReadToEndThenDisposeAsync(It.IsAny<Stream>(), It.IsAny<Encoding>())).ReturnsAsync(json);
-            _validator.Setup(m => m.ValidateUpdateAsync(It.IsAny<Guid>(), It.IsAny<Model>())).ReturnsAsync(validationResult);
+            _validator.Setup(m => m.ValidateUpdateAsync(It.IsAny<Model>(), It.IsAny<Guid>())).ReturnsAsync(validationResult);
 
             var result = await _controller.UpdateAsync(typeName, id) as BadRequestObjectResult;
 
@@ -977,8 +977,8 @@ namespace Crud.Api.Tests.Controllers
 
             _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(type);
             _streamService.Setup(m => m.ReadToEndThenDisposeAsync(It.IsAny<Stream>(), It.IsAny<Encoding>())).ReturnsAsync(json);
-            _validator.Setup(m => m.ValidateUpdateAsync(It.IsAny<Guid>(), It.IsAny<Model>())).ReturnsAsync(validationResult);
-            _preserver.Setup(m => m.UpdateAsync(It.IsAny<Guid>(), It.IsAny<Model>())).ReturnsAsync(updatedModel);
+            _validator.Setup(m => m.ValidateUpdateAsync(It.IsAny<Model>(), It.IsAny<Guid>())).ReturnsAsync(validationResult);
+            _preserver.Setup(m => m.UpdateAsync(It.IsAny<Model>(), It.IsAny<Guid>())).ReturnsAsync(updatedModel);
 
             var result = await _controller.UpdateAsync(typeName, id) as NotFoundObjectResult;
 
@@ -999,8 +999,8 @@ namespace Crud.Api.Tests.Controllers
 
             _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(type);
             _streamService.Setup(m => m.ReadToEndThenDisposeAsync(It.IsAny<Stream>(), It.IsAny<Encoding>())).ReturnsAsync(json);
-            _validator.Setup(m => m.ValidateUpdateAsync(It.IsAny<Guid>(), It.IsAny<Model>())).ReturnsAsync(validationResult);
-            _preserver.Setup(m => m.UpdateAsync(It.IsAny<Guid>(), It.IsAny<Model>())).ReturnsAsync(updatedModel);
+            _validator.Setup(m => m.ValidateUpdateAsync(It.IsAny<Model>(), It.IsAny<Guid>())).ReturnsAsync(validationResult);
+            _preserver.Setup(m => m.UpdateAsync(It.IsAny<Model>(), It.IsAny<Guid>())).ReturnsAsync(updatedModel);
 
             var result = await _controller.UpdateAsync(typeName, id) as OkObjectResult;
 
@@ -1078,7 +1078,7 @@ namespace Crud.Api.Tests.Controllers
 
             _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(type);
             _streamService.Setup(m => m.ReadToEndThenDisposeAsync(It.IsAny<Stream>(), It.IsAny<Encoding>())).ReturnsAsync(json);
-            _validator.Setup(m => m.ValidatePartialUpdateAsync(It.IsAny<Guid>(), It.IsAny<Model>(), It.IsAny<IReadOnlyCollection<string>>())).ReturnsAsync(validationResult);
+            _validator.Setup(m => m.ValidatePartialUpdateAsync(It.IsAny<Model>(), It.IsAny<Guid>(), It.IsAny<IReadOnlyCollection<string>>())).ReturnsAsync(validationResult);
 
             var result = await _controller.PartialUpdateAsync(typeName, id) as BadRequestObjectResult;
 
@@ -1099,7 +1099,7 @@ namespace Crud.Api.Tests.Controllers
 
             _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(type);
             _streamService.Setup(m => m.ReadToEndThenDisposeAsync(It.IsAny<Stream>(), It.IsAny<Encoding>())).ReturnsAsync(json);
-            _validator.Setup(m => m.ValidatePartialUpdateAsync(It.IsAny<Guid>(), It.IsAny<Model>(), It.IsAny<IReadOnlyCollection<string>>())).ReturnsAsync(validationResult);
+            _validator.Setup(m => m.ValidatePartialUpdateAsync(It.IsAny<Model>(), It.IsAny<Guid>(), It.IsAny<IReadOnlyCollection<string>>())).ReturnsAsync(validationResult);
             _preserver.Setup(m => m.PartialUpdateAsync<Model>(It.IsAny<Guid>(), It.IsAny<IDictionary<string, JsonElement>>())).ReturnsAsync(updatedModel);
 
             var result = await _controller.PartialUpdateAsync(typeName, id) as NotFoundObjectResult;
@@ -1121,7 +1121,7 @@ namespace Crud.Api.Tests.Controllers
 
             _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(type);
             _streamService.Setup(m => m.ReadToEndThenDisposeAsync(It.IsAny<Stream>(), It.IsAny<Encoding>())).ReturnsAsync(json);
-            _validator.Setup(m => m.ValidatePartialUpdateAsync(It.IsAny<Guid>(), It.IsAny<Model>(), It.IsAny<IReadOnlyCollection<string>>())).ReturnsAsync(validationResult);
+            _validator.Setup(m => m.ValidatePartialUpdateAsync(It.IsAny<Model>(), It.IsAny<Guid>(), It.IsAny<IReadOnlyCollection<string>>())).ReturnsAsync(validationResult);
             _preserver.Setup(m => m.PartialUpdateAsync<Model>(It.IsAny<Guid>(), It.IsAny<IDictionary<string, JsonElement>>())).ReturnsAsync(updatedModel);
 
             var result = await _controller.PartialUpdateAsync(typeName, id) as OkObjectResult;

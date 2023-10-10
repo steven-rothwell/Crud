@@ -275,11 +275,11 @@ public class CrudController : BaseApiController
 
             dynamic? model = JsonSerializer.Deserialize(json, type, JsonSerializerOption.Default);
 
-            var validationResult = (ValidationResult)await _validator.ValidateUpdateAsync(id, model);
+            var validationResult = (ValidationResult)await _validator.ValidateUpdateAsync(model, id);
             if (!validationResult.IsValid)
                 return BadRequest(validationResult.Message);
 
-            var updatedModel = await _preserver.UpdateAsync(id, model);
+            var updatedModel = await _preserver.UpdateAsync(model, id);
 
             if (updatedModel is null)
                 return NotFound(String.Format(ErrorMessage.NotFoundUpdate, typeName));
@@ -309,7 +309,7 @@ public class CrudController : BaseApiController
             dynamic? model = JsonSerializer.Deserialize(json, type, JsonSerializerOption.Default);
             var propertyValues = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(json, JsonSerializerOption.Default);
 
-            var validationResult = (ValidationResult)await _validator.ValidatePartialUpdateAsync(id, model, propertyValues?.Keys);
+            var validationResult = (ValidationResult)await _validator.ValidatePartialUpdateAsync(model, id, propertyValues?.Keys);
             if (!validationResult.IsValid)
                 return BadRequest(validationResult.Message);
 

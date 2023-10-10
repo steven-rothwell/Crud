@@ -117,7 +117,7 @@ namespace Crud.Api.Preservers.MongoDb
             });
         }
 
-        public async Task<T?> UpdateAsync<T>(Guid id, T model)
+        public async Task<T?> UpdateAsync<T>(T model, Guid id)
         {
             var dbClient = new MongoClient(_mongoDbOptions.ConnectionString);
             var database = dbClient.GetDatabase(_mongoDbOptions.DatabaseName);
