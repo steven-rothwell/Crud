@@ -349,16 +349,60 @@ namespace Crud.Api.Tests.Controllers
         }
 
         [Fact]
+        public async Task ReadAsync_WithString_PreprocessingIsNotSuccessful_ReturnsInternalServerError()
+        {
+            var typeName = "some-type-name";
+            Type? type = typeof(Model);
+            var validationResult = new ValidationResult { IsValid = true };
+            var preprocessingMessageResult = new MessageResult(false, "preprocessing-failed");
+
+            _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(type);
+            _validator.Setup(m => m.ValidateReadAsync(It.IsAny<Model>(), It.IsAny<IDictionary<string, string>>())).ReturnsAsync(validationResult);
+            _preprocessingService.Setup(m => m.PreprocessReadAsync(It.IsAny<Model>(), It.IsAny<IDictionary<String, String>>())).ReturnsAsync(preprocessingMessageResult);
+
+            var result = await _controller.ReadAsync(typeName) as ObjectResult;
+
+            Assert.NotNull(result);
+            Assert.Equal(StatusCodes.Status500InternalServerError, result.StatusCode);
+            Assert.Equal(preprocessingMessageResult.Message, result.Value);
+        }
+
+        [Fact]
+        public async Task ReadAsync_WithString_PostprocessingIsNotSuccessful_ReturnsInternalServerError()
+        {
+            var typeName = "some-type-name";
+            Type? type = typeof(Model);
+            var validationResult = new ValidationResult { IsValid = true };
+            var preprocessingMessageResult = new MessageResult(true);
+            var postprocessingMessageResult = new MessageResult(false, "postprocessing-failed");
+
+            _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(type);
+            _validator.Setup(m => m.ValidateReadAsync(It.IsAny<Model>(), It.IsAny<IDictionary<string, string>>())).ReturnsAsync(validationResult);
+            _preprocessingService.Setup(m => m.PreprocessReadAsync(It.IsAny<Model>(), It.IsAny<IDictionary<String, String>>())).ReturnsAsync(preprocessingMessageResult);
+            _postprocessingService.Setup(m => m.PostprocessReadAsync(It.IsAny<IEnumerable<Model>>(), It.IsAny<IDictionary<String, String>>())).ReturnsAsync(postprocessingMessageResult);
+
+            var result = await _controller.ReadAsync(typeName) as ObjectResult;
+
+            Assert.NotNull(result);
+            Assert.Equal(StatusCodes.Status500InternalServerError, result.StatusCode);
+            Assert.Equal(postprocessingMessageResult.Message, result.Value);
+        }
+
+        [Fact]
         public async Task ReadAsync_WithString_ModelsAreFound_ReturnsFoundModels()
         {
             var typeName = "some-type-name";
             Type? type = typeof(Model);
             var models = new List<Model> { new Model { Id = 1 } };
             var validationResult = new ValidationResult { IsValid = true };
+            var preprocessingMessageResult = new MessageResult(true);
+            var postprocessingMessageResult = new MessageResult(true);
 
             _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(type);
             _validator.Setup(m => m.ValidateReadAsync(It.IsAny<Model>(), It.IsAny<IDictionary<string, string>>())).ReturnsAsync(validationResult);
+            _preprocessingService.Setup(m => m.PreprocessReadAsync(It.IsAny<Model>(), It.IsAny<IDictionary<String, String>>())).ReturnsAsync(preprocessingMessageResult);
             _preserver.Setup(m => m.ReadAsync<Model>(It.IsAny<IDictionary<string, string>>())).ReturnsAsync(models);
+            _postprocessingService.Setup(m => m.PostprocessReadAsync(It.IsAny<IEnumerable<Model>>(), It.IsAny<IDictionary<String, String>>())).ReturnsAsync(postprocessingMessageResult);
 
             var result = await _controller.ReadAsync(typeName) as OkObjectResult;
 

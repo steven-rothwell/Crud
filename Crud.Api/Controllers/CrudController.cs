@@ -66,7 +66,7 @@ public class CrudController : BaseApiController
 
             var createdModel = await _preserver.CreateAsync(model);
 
-            var postprocessingMessageResult = (MessageResult)await _postprocessingService.PostprocessCreateAsync(model);
+            var postprocessingMessageResult = (MessageResult)await _postprocessingService.PostprocessCreateAsync(createdModel);
             if (!postprocessingMessageResult.IsSuccessful)
                 return InternalServerError(postprocessingMessageResult.Message);
 
@@ -130,8 +130,16 @@ public class CrudController : BaseApiController
             if (!validationResult.IsValid)
                 return BadRequest(validationResult.Message);
 
+            var preprocessingMessageResult = (MessageResult)await _preprocessingService.PreprocessReadAsync(model!, queryParams);
+            if (!preprocessingMessageResult.IsSuccessful)
+                return InternalServerError(preprocessingMessageResult.Message);
+
             var readAsync = ReflectionHelper.GetGenericMethod(type, typeof(IPreserver), nameof(IPreserver.ReadAsync), new Type[] { typeof(IDictionary<String, String>) });
             var models = await (dynamic)readAsync.Invoke(_preserver, new object[] { queryParams });
+
+            var postprocessingMessageResult = (MessageResult)await _postprocessingService.PostprocessReadAsync(models, queryParams);
+            if (!postprocessingMessageResult.IsSuccessful)
+                return InternalServerError(postprocessingMessageResult.Message);
 
             return Ok(models);
         }

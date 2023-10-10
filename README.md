@@ -421,7 +421,7 @@ if (
 | `Task<ValidationResult> ValidateDeleteAsync(Object model, IDictionary<String, String>? queryParams)` | Validates the model when deleting with [query parameter filtering](#query-parameter-filtering). |
 | `ValidationResult ValidateQuery(Object model, Query query)` | Validates the model when using [body query filtering](#body-query-filtering). |
 
-Each signature above may be overriden by replacing the `Object model` parameter with a specific model type. There are many examples using the [User](/Crud.Api/Models/User.cs) model to override the validating method in the [Validator](/Crud.Api/Validators/Validator.cs) class. These may be removed as they are solely there as examples. 
+Each signature above may be overloaded by replacing the `Object model` parameter with a specific model type. There are many examples using the [User](/Crud.Api/Models/User.cs) model to override the validating method in the [Validator](/Crud.Api/Validators/Validator.cs) class. These may be removed as they are solely there as examples. 
 
 The following example overrides the `Task<ValidationResult> ValidateCreateAsync(Object model)` valdating method and also calls the `Object model` version of the method to reuse the logic.
 
@@ -483,8 +483,8 @@ If a new version is released and these updates would be useful in a forked appli
 | ---- | ----------- |
 | master | Contains the latest v#.#.#. |
 | v#.#.# | Standard branches to create a forked application from. |
-| alpha-v#.#.# | Used to test the next version to be released. |
-| beta-v#.#.# | Used when the next version has major changes and burn in testing is required. |
+| v#.#.#-alpha | Used to integrate changes for the next release. |
+| v#.#.#-beta | Used when the next version has major changes and burn in testing is required. |
 
 # Release Notes
 
