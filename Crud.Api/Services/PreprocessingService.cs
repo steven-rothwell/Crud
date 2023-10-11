@@ -55,5 +55,10 @@ namespace Crud.Api.Services
         {
             return Task.FromResult(new MessageResult(true));
         }
+
+        public Task<MessageResult> PreprocessDeleteAsync(Object model, IDictionary<String, String>? queryParams)
+        {
+            return Task.FromResult(new MessageResult(true));
+        }
     }
 }

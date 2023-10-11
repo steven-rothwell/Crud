@@ -1556,6 +1556,52 @@ namespace Crud.Api.Tests.Controllers
         }
 
         [Fact]
+        public async Task DeleteAsync_WithString_PreprocessingIsNotSuccessful_ReturnsInternalServerError()
+        {
+            var typeName = "some-type-name";
+            Type? type = typeof(Model);
+            var model = new Model { Id = 1 };
+            var json = JsonSerializer.Serialize(model);
+            var validationResult = new ValidationResult { IsValid = true };
+            var preprocessingMessageResult = new MessageResult(false, "preprocessing-failed");
+
+            _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(type);
+            _streamService.Setup(m => m.ReadToEndThenDisposeAsync(It.IsAny<Stream>(), It.IsAny<Encoding>())).ReturnsAsync(json);
+            _validator.Setup(m => m.ValidateDeleteAsync(It.IsAny<Model>(), It.IsAny<IDictionary<string, string>?>())).ReturnsAsync(validationResult);
+            _preprocessingService.Setup(m => m.PreprocessDeleteAsync(It.IsAny<Model>(), It.IsAny<IDictionary<String, String>>())).ReturnsAsync(preprocessingMessageResult);
+
+            var result = await _controller.DeleteAsync(typeName) as ObjectResult;
+
+            Assert.NotNull(result);
+            Assert.Equal(StatusCodes.Status500InternalServerError, result.StatusCode);
+            Assert.Equal(preprocessingMessageResult.Message, result.Value);
+        }
+
+        [Fact]
+        public async Task DeleteAsync_WithString_PostprocessingIsNotSuccessful_ReturnsInternalServerError()
+        {
+            var typeName = "some-type-name";
+            Type? type = typeof(Model);
+            var model = new Model { Id = 1 };
+            var json = JsonSerializer.Serialize(model);
+            var validationResult = new ValidationResult { IsValid = true };
+            var preprocessingMessageResult = new MessageResult(true);
+            var postprocessingMessageResult = new MessageResult(false, "postprocessing-failed");
+
+            _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(type);
+            _streamService.Setup(m => m.ReadToEndThenDisposeAsync(It.IsAny<Stream>(), It.IsAny<Encoding>())).ReturnsAsync(json);
+            _validator.Setup(m => m.ValidateDeleteAsync(It.IsAny<Model>(), It.IsAny<IDictionary<string, string>?>())).ReturnsAsync(validationResult);
+            _preprocessingService.Setup(m => m.PreprocessDeleteAsync(It.IsAny<Model>(), It.IsAny<IDictionary<String, String>>())).ReturnsAsync(preprocessingMessageResult);
+            _postprocessingService.Setup(m => m.PostprocessDeleteAsync(It.IsAny<Model>(), It.IsAny<IDictionary<String, String>>(), It.IsAny<long>())).ReturnsAsync(postprocessingMessageResult);
+
+            var result = await _controller.DeleteAsync(typeName) as ObjectResult;
+
+            Assert.NotNull(result);
+            Assert.Equal(StatusCodes.Status500InternalServerError, result.StatusCode);
+            Assert.Equal(postprocessingMessageResult.Message, result.Value);
+        }
+
+        [Fact]
         public async Task DeleteAsync_WithString_DeletedCountReturned_ReturnsDeletedCount()
         {
             var typeName = "some-type-name";
@@ -1564,11 +1610,15 @@ namespace Crud.Api.Tests.Controllers
             var json = JsonSerializer.Serialize(model);
             var validationResult = new ValidationResult { IsValid = true };
             var deletedCount = 1;
+            var preprocessingMessageResult = new MessageResult(true);
+            var postprocessingMessageResult = new MessageResult(true);
 
             _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(type);
             _streamService.Setup(m => m.ReadToEndThenDisposeAsync(It.IsAny<Stream>(), It.IsAny<Encoding>())).ReturnsAsync(json);
             _validator.Setup(m => m.ValidateDeleteAsync(It.IsAny<Model>(), It.IsAny<IDictionary<string, string>?>())).ReturnsAsync(validationResult);
+            _preprocessingService.Setup(m => m.PreprocessDeleteAsync(It.IsAny<Model>(), It.IsAny<IDictionary<String, String>>())).ReturnsAsync(preprocessingMessageResult);
             _preserver.Setup(m => m.DeleteAsync<Model>(It.IsAny<IDictionary<string, string>>())).ReturnsAsync(deletedCount);
+            _postprocessingService.Setup(m => m.PostprocessDeleteAsync(It.IsAny<Model>(), It.IsAny<IDictionary<String, String>>(), It.IsAny<long>())).ReturnsAsync(postprocessingMessageResult);
 
             var result = await _controller.DeleteAsync(typeName) as OkObjectResult;
 

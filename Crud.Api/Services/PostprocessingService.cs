@@ -55,5 +55,10 @@ namespace Crud.Api.Services
         {
             return Task.FromResult(new MessageResult(true));
         }
+
+        public Task<MessageResult> PostprocessDeleteAsync(Object model, IDictionary<String, String>? queryParams, Int64 deletedCount)
+        {
+            return Task.FromResult(new MessageResult(true));
+        }
     }
 }
