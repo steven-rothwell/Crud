@@ -14,5 +14,6 @@ namespace Crud.Api.Services
         Task<MessageResult> PreprocessUpdateAsync(Object model, Guid id);
         Task<MessageResult> PreprocessPartialUpdateAsync(Object model, Guid id, IDictionary<String, JsonElement> propertyValues);
         Task<MessageResult> PreprocessPartialUpdateAsync(Object model, IDictionary<String, String>? queryParams, IDictionary<String, JsonElement> propertyValues);
+        Task<MessageResult> PreprocessDeleteAsync(Object model, Guid id);
     }
 }

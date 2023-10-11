@@ -1421,14 +1421,34 @@ namespace Crud.Api.Tests.Controllers
         }
 
         [Fact]
+        public async Task DeleteAsync_WithStringGuid_PreprocessingIsNotSuccessful_ReturnsInternalServerError()
+        {
+            var typeName = "some-type-name";
+            Type? type = typeof(Model);
+            Guid id = Guid.Empty;
+            var preprocessingMessageResult = new MessageResult(false, "preprocessing-failed");
+
+            _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(type);
+            _preprocessingService.Setup(m => m.PreprocessDeleteAsync(It.IsAny<Model>(), It.IsAny<Guid>())).ReturnsAsync(preprocessingMessageResult);
+
+            var result = await _controller.DeleteAsync(typeName, id) as ObjectResult;
+
+            Assert.NotNull(result);
+            Assert.Equal(StatusCodes.Status500InternalServerError, result.StatusCode);
+            Assert.Equal(preprocessingMessageResult.Message, result.Value);
+        }
+
+        [Fact]
         public async Task DeleteAsync_WithStringGuid_DeletedCountIsZero_ReturnsNotFound()
         {
             var typeName = "some-type-name";
             Type? type = typeof(Model);
             Guid id = Guid.Empty;
             var deletedCount = 0;
+            var preprocessingMessageResult = new MessageResult(true);
 
             _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(type);
+            _preprocessingService.Setup(m => m.PreprocessDeleteAsync(It.IsAny<Model>(), It.IsAny<Guid>())).ReturnsAsync(preprocessingMessageResult);
             _preserver.Setup(m => m.DeleteAsync<Model>(It.IsAny<Guid>())).ReturnsAsync(deletedCount);
 
             var result = await _controller.DeleteAsync(typeName, id) as NotFoundObjectResult;
@@ -1438,15 +1458,41 @@ namespace Crud.Api.Tests.Controllers
         }
 
         [Fact]
+        public async Task DeleteAsync_WithStringGuid_PostprocessingIsNotSuccessful_ReturnsInternalServerError()
+        {
+            var typeName = "some-type-name";
+            Type? type = typeof(Model);
+            Guid id = Guid.Empty;
+            var deletedCount = 1;
+            var preprocessingMessageResult = new MessageResult(true);
+            var postprocessingMessageResult = new MessageResult(false, "postprocessing-failed");
+
+            _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(type);
+            _preprocessingService.Setup(m => m.PreprocessDeleteAsync(It.IsAny<Model>(), It.IsAny<Guid>())).ReturnsAsync(preprocessingMessageResult);
+            _preserver.Setup(m => m.DeleteAsync<Model>(It.IsAny<Guid>())).ReturnsAsync(deletedCount);
+            _postprocessingService.Setup(m => m.PostprocessDeleteAsync(It.IsAny<Model>(), It.IsAny<Guid>(), It.IsAny<long>())).ReturnsAsync(postprocessingMessageResult);
+
+            var result = await _controller.DeleteAsync(typeName, id) as ObjectResult;
+
+            Assert.NotNull(result);
+            Assert.Equal(StatusCodes.Status500InternalServerError, result.StatusCode);
+            Assert.Equal(postprocessingMessageResult.Message, result.Value);
+        }
+
+        [Fact]
         public async Task DeleteAsync_WithStringGuid_DeletedCountIsNotZero_ReturnsDeletedCount()
         {
             var typeName = "some-type-name";
             Type? type = typeof(Model);
             Guid id = Guid.Empty;
             var deletedCount = 1;
+            var preprocessingMessageResult = new MessageResult(true);
+            var postprocessingMessageResult = new MessageResult(true);
 
             _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(type);
+            _preprocessingService.Setup(m => m.PreprocessDeleteAsync(It.IsAny<Model>(), It.IsAny<Guid>())).ReturnsAsync(preprocessingMessageResult);
             _preserver.Setup(m => m.DeleteAsync<Model>(It.IsAny<Guid>())).ReturnsAsync(deletedCount);
+            _postprocessingService.Setup(m => m.PostprocessDeleteAsync(It.IsAny<Model>(), It.IsAny<Guid>(), It.IsAny<long>())).ReturnsAsync(postprocessingMessageResult);
 
             var result = await _controller.DeleteAsync(typeName, id) as OkObjectResult;
 

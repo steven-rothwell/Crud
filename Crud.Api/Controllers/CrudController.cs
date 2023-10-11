@@ -395,11 +395,21 @@ public class CrudController : BaseApiController
             if (type is null)
                 return BadRequest(ErrorMessage.BadRequestModelType);
 
+            dynamic model = Convert.ChangeType(Activator.CreateInstance(type, null), type)!;
+
+            var preprocessingMessageResult = (MessageResult)await _preprocessingService.PreprocessDeleteAsync(model, id);
+            if (!preprocessingMessageResult.IsSuccessful)
+                return InternalServerError(preprocessingMessageResult.Message);
+
             var deleteAsync = ReflectionHelper.GetGenericMethod(type, typeof(IPreserver), nameof(IPreserver.DeleteAsync), new Type[] { typeof(Guid) });
             var deletedCount = await (dynamic)deleteAsync.Invoke(_preserver, new object[] { id });
 
             if (deletedCount == 0)
                 return NotFound(String.Format(ErrorMessage.NotFoundDelete, typeName));
+
+            var postprocessingMessageResult = (MessageResult)await _postprocessingService.PostprocessDeleteAsync(model, id, deletedCount);
+            if (!postprocessingMessageResult.IsSuccessful)
+                return InternalServerError(postprocessingMessageResult.Message);
 
             return Ok(deletedCount);
         }
