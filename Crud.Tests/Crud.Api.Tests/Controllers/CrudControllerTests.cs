@@ -1739,16 +1739,66 @@ namespace Crud.Api.Tests.Controllers
             Query? query = new Query { Limit = -1 };
             var json = JsonSerializer.Serialize(query);
             var validationResult = new ValidationResult(false, $"{nameof(Query)} {nameof(Query.Limit)} cannot be less than zero.");
+            var preprocessingMessageResult = new MessageResult(true);
 
             _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(type);
             _streamService.Setup(m => m.ReadToEndThenDisposeAsync(It.IsAny<Stream>(), It.IsAny<Encoding>())).ReturnsAsync(json);
             _applicationOptions.Value.ValidateQuery = false;
             _validator.Setup(m => m.ValidateQuery(It.IsAny<Model>(), It.IsAny<Query>())).Returns(validationResult);
+            _preprocessingService.Setup(m => m.PreprocessDeleteAsync(It.IsAny<Model>(), It.IsAny<Query>())).ReturnsAsync(preprocessingMessageResult);
 
             var result = await _controller.QueryDeleteAsync(typeName);
 
             _validator.Verify(m => m.ValidateQuery(It.IsAny<Model>(), It.IsAny<Query>()), Times.Never);
             _preserver.Verify(m => m.QueryDeleteAsync(type, It.Is<Query>(thisQuery => thisQuery.Limit == query.Limit)), Times.Once);
+        }
+
+        [Fact]
+        public async Task QueryDeleteAsync_PreprocessingIsNotSuccessful_ReturnsInternalServerError()
+        {
+            var typeName = "some-type-name";
+            Type? type = typeof(Model);
+            Query? query = new Query { Limit = -1 };
+            var json = JsonSerializer.Serialize(query);
+            var validationResult = new ValidationResult(false, $"{nameof(Query)} {nameof(Query.Limit)} cannot be less than zero.");
+            var preprocessingMessageResult = new MessageResult(false, "preprocessing-failed");
+
+            _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(type);
+            _streamService.Setup(m => m.ReadToEndThenDisposeAsync(It.IsAny<Stream>(), It.IsAny<Encoding>())).ReturnsAsync(json);
+            _applicationOptions.Value.ValidateQuery = false;
+            _validator.Setup(m => m.ValidateQuery(It.IsAny<Model>(), It.IsAny<Query>())).Returns(validationResult);
+            _preprocessingService.Setup(m => m.PreprocessDeleteAsync(It.IsAny<Model>(), It.IsAny<Query>())).ReturnsAsync(preprocessingMessageResult);
+
+            var result = await _controller.QueryDeleteAsync(typeName) as ObjectResult;
+
+            Assert.NotNull(result);
+            Assert.Equal(StatusCodes.Status500InternalServerError, result.StatusCode);
+            Assert.Equal(preprocessingMessageResult.Message, result.Value);
+        }
+
+        [Fact]
+        public async Task QueryDeleteAsync_PostprocessingIsNotSuccessful_ReturnsInternalServerError()
+        {
+            var typeName = "some-type-name";
+            Type? type = typeof(Model);
+            Query? query = new Query { Limit = -1 };
+            var json = JsonSerializer.Serialize(query);
+            var validationResult = new ValidationResult(false, $"{nameof(Query)} {nameof(Query.Limit)} cannot be less than zero.");
+            var preprocessingMessageResult = new MessageResult(true);
+            var postprocessingMessageResult = new MessageResult(false, "postprocessing-failed");
+
+            _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(type);
+            _streamService.Setup(m => m.ReadToEndThenDisposeAsync(It.IsAny<Stream>(), It.IsAny<Encoding>())).ReturnsAsync(json);
+            _applicationOptions.Value.ValidateQuery = false;
+            _validator.Setup(m => m.ValidateQuery(It.IsAny<Model>(), It.IsAny<Query>())).Returns(validationResult);
+            _preprocessingService.Setup(m => m.PreprocessDeleteAsync(It.IsAny<Model>(), It.IsAny<Query>())).ReturnsAsync(preprocessingMessageResult);
+            _postprocessingService.Setup(m => m.PostprocessDeleteAsync(It.IsAny<Model>(), It.IsAny<Query>(), It.IsAny<long>())).ReturnsAsync(postprocessingMessageResult);
+
+            var result = await _controller.QueryDeleteAsync(typeName) as ObjectResult;
+
+            Assert.NotNull(result);
+            Assert.Equal(StatusCodes.Status500InternalServerError, result.StatusCode);
+            Assert.Equal(postprocessingMessageResult.Message, result.Value);
         }
 
         [Fact]
@@ -1760,11 +1810,15 @@ namespace Crud.Api.Tests.Controllers
             var json = JsonSerializer.Serialize(query);
             var model = new Model { Id = 1 };
             var models = new List<Model> { model };
+            var preprocessingMessageResult = new MessageResult(true);
+            var postprocessingMessageResult = new MessageResult(true);
 
             _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(type);
             _streamService.Setup(m => m.ReadToEndThenDisposeAsync(It.IsAny<Stream>(), It.IsAny<Encoding>())).ReturnsAsync(json);
             _applicationOptions.Value.ValidateQuery = false;
             _preserver.Setup(m => m.QueryDeleteAsync(It.IsAny<Type>(), It.IsAny<Query>())).ReturnsAsync(models.Count);
+            _preprocessingService.Setup(m => m.PreprocessDeleteAsync(It.IsAny<Model>(), It.IsAny<Query>())).ReturnsAsync(preprocessingMessageResult);
+            _postprocessingService.Setup(m => m.PostprocessDeleteAsync(It.IsAny<Model>(), It.IsAny<Query>(), It.IsAny<long>())).ReturnsAsync(postprocessingMessageResult);
 
             var result = await _controller.QueryDeleteAsync(typeName) as OkObjectResult;
 

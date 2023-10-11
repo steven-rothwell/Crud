@@ -16,5 +16,6 @@ namespace Crud.Api.Services
         Task<MessageResult> PostprocessPartialUpdateAsync(Object model, IDictionary<String, String>? queryParams, IDictionary<String, JsonElement> propertyValues, Int64 updatedCount);
         Task<MessageResult> PostprocessDeleteAsync(Object model, Guid id, Int64 deletedCount);
         Task<MessageResult> PostprocessDeleteAsync(Object model, IDictionary<String, String>? queryParams, Int64 deletedCount);
+        Task<MessageResult> PostprocessDeleteAsync(Object model, Query query, Int64 deletedCount);
     }
 }
