@@ -443,39 +443,11 @@ public async Task<ValidationResult> ValidateCreateAsync(User user)
 
 # Preprocessing
 
-Preprocessing is optional. These methods may be used to do any sort of preprocessing actions.
-
-| Signature | Description |
-| --------- | ----------- |
-| `Task<MessageResult> PreprocessCreateAsync(Object model)` | Preprocessing when creating. |
-| `Task<MessageResult> PreprocessReadAsync(Object model, Guid id)` | Preprocessing when reading with an Id. |
-| `Task<MessageResult> PreprocessReadAsync(Object model, IDictionary<String, String>? queryParams)` | Preprocessing when reading with [query parameter filtering](#query-parameter-filtering). |
-| `Task<MessageResult> PreprocessReadAsync(Object model, Query query)` | Preprocessing when reading with [body query filtering](#body-query-filtering). |
-| `Task<MessageResult> PreprocessReadCountAsync(Object model, Query query)` | Preprocessing when reading the count with [body query filtering](#body-query-filtering). |
-| `Task<MessageResult> PreprocessUpdateAsync(Object model, Guid id)` | Preprocessing when updating with an Id. |
-| `Task<MessageResult> PreprocessPartialUpdateAsync(Object model, Guid id, IDictionary<String, JsonElement> propertyValues)` | Preprocessing when partially updating with an Id. |
-| `Task<MessageResult> PreprocessPartialUpdateAsync(Object model, IDictionary<String, String>? queryParams, IDictionary<String, JsonElement> propertyValues)` | Preprocessing when partially updating with [query parameter filtering](#query-parameter-filtering). |
-| `Task<MessageResult> PreprocessDeleteAsync(Object model, Guid id)` | Preprocessing when deleting with an Id. |
-| `Task<MessageResult> PreprocessDeleteAsync(Object model, IDictionary<String, String>? queryParams)` | Preprocessing when deleting with [query parameter filtering](#query-parameter-filtering). |
-| `Task<MessageResult> PreprocessDeleteAsync(Object model, Query query)` | Preprocessing when deleting with [body query filtering](#body-query-filtering). |
+Preprocessing is optional. These methods may be used to do any sort of preprocessing actions. See details [here](/docs/PREPROCESSING.md).
 
 # Postprocessing
 
-Postprocessing is optional. These methods may be used to do any sort of postprocessing actions.
-
-| Signature | Description |
-| --------- | ----------- |
-| `Task<MessageResult> PostprocessCreateAsync(Object createdModel)` | Postprocessing when creating. |
-| `Task<MessageResult> PostprocessReadAsync(Object model, Guid id)` | Postprocessing when reading with an Id. |
-| `Task<MessageResult> PostprocessReadAsync(IEnumerable<Object> models, IDictionary<String, String>? queryParams)` | Postprocessing when reading with [query parameter filtering](#query-parameter-filtering). |
-| `Task<MessageResult> PostprocessReadAsync(IEnumerable<Object> models, Query query)` | Postprocessing when reading with [body query filtering](#body-query-filtering). |
-| `Task<MessageResult> PostprocessReadCountAsync(Object model, Query query, Int64 count)` | Postprocessing when reading the count with [body query filtering](#body-query-filtering). |
-| `Task<MessageResult> PostprocessUpdateAsync(Object updatedModel, Guid id)` | Postprocessing when updating with an Id. |
-| `Task<MessageResult> PostprocessPartialUpdateAsync(Object updatedModel, Guid id, IDictionary<String, JsonElement> propertyValues)` | Postprocessing when partially updating with an Id. |
-| `Task<MessageResult> PostprocessPartialUpdateAsync(Object model, IDictionary<String, String>? queryParams, IDictionary<String, JsonElement> propertyValues, Int64 updatedCount)` | Postprocessing when partially updating with [query parameter filtering](#query-parameter-filtering). |
-| `Task<MessageResult> PostprocessDeleteAsync(Object model, Guid id, Int64 deletedCount)` | Postprocessing when deleting with an Id. |
-| `Task<MessageResult> PostprocessDeleteAsync(Object model, IDictionary<String, String>? queryParams, Int64 deletedCount)` | Postprocessing when deleting with [query parameter filtering](#query-parameter-filtering). |
-| `Task<MessageResult> PostprocessDeleteAsync(Object model, Query query, Int64 deletedCount)` | Postprocessing when deleting with [body query filtering](#body-query-filtering). |
+Postprocessing is optional. These methods may be used to do any sort of postprocessing actions. See details [here](/docs/POSTPROCESSING.md).
 
 # ExternalEntity
 
@@ -523,6 +495,9 @@ If a new version is released and these updates would be useful in a forked appli
 | v#.#.# | Standard branches to create a forked application from. |
 | v#.#.#-alpha | Used to integrate changes for the next release. |
 | v#.#.#-beta | Used when the next version has major changes and burn in testing is required. |
+| feature/* | Used to contribute new feature code. |
+| bugfix/* | Used to contribute code to fix a bug. |
+| test/* | Used to experiment with the code. |
 
 # Release Notes
 
