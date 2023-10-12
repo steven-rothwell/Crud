@@ -1,6 +1,5 @@
 using System.Text;
 using System.Text.Json;
-using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using Crud.Api.Constants;
 using Crud.Api.Helpers;
@@ -8,6 +7,7 @@ using Crud.Api.Options;
 using Crud.Api.Preservers;
 using Crud.Api.QueryModels;
 using Crud.Api.Services;
+using Crud.Api.Services.Models;
 using Crud.Api.Validators;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -24,8 +24,11 @@ public class CrudController : BaseApiController
     private readonly IStreamService _streamService;
     private readonly ITypeService _typeService;
     private readonly IQueryCollectionService _queryCollectionService;
+    private readonly IPreprocessingService _preprocessingService;
+    private readonly IPostprocessingService _postprocessingService;
 
-    public CrudController(IOptions<ApplicationOptions> applicationOptions, ILogger<CrudController> logger, IValidator validator, IPreserver preserver, IStreamService streamService, ITypeService typeService, IQueryCollectionService queryCollectionService)
+    public CrudController(IOptions<ApplicationOptions> applicationOptions, ILogger<CrudController> logger, IValidator validator, IPreserver preserver, IStreamService streamService, ITypeService typeService, IQueryCollectionService queryCollectionService,
+        IPreprocessingService preprocessingService, IPostprocessingService postprocessingService)
         : base(applicationOptions)
     {
         _logger = logger;
@@ -34,6 +37,8 @@ public class CrudController : BaseApiController
         _streamService = streamService;
         _typeService = typeService;
         _queryCollectionService = queryCollectionService;
+        _preprocessingService = preprocessingService;
+        _postprocessingService = postprocessingService;
     }
 
     [Route("{typeName}"), HttpPost]
@@ -55,7 +60,15 @@ public class CrudController : BaseApiController
             if (!validationResult.IsValid)
                 return BadRequest(validationResult.Message);
 
+            var preprocessingMessageResult = (MessageResult)await _preprocessingService.PreprocessCreateAsync(model);
+            if (!preprocessingMessageResult.IsSuccessful)
+                return InternalServerError(preprocessingMessageResult.Message);
+
             var createdModel = await _preserver.CreateAsync(model);
+
+            var postprocessingMessageResult = (MessageResult)await _postprocessingService.PostprocessCreateAsync(createdModel);
+            if (!postprocessingMessageResult.IsSuccessful)
+                return InternalServerError(postprocessingMessageResult.Message);
 
             return Ok(createdModel);
         }
@@ -75,11 +88,21 @@ public class CrudController : BaseApiController
             if (type is null)
                 return BadRequest(ErrorMessage.BadRequestModelType);
 
+            dynamic model = Convert.ChangeType(Activator.CreateInstance(type, null), type)!;
+
+            var preprocessingMessageResult = (MessageResult)await _preprocessingService.PreprocessReadAsync(model, id);
+            if (!preprocessingMessageResult.IsSuccessful)
+                return InternalServerError(preprocessingMessageResult.Message);
+
             var readAsync = ReflectionHelper.GetGenericMethod(type, typeof(IPreserver), nameof(IPreserver.ReadAsync), new Type[] { typeof(Guid) });
-            var model = await (dynamic)readAsync.Invoke(_preserver, new object[] { id });
+            model = await (dynamic)readAsync.Invoke(_preserver, new object[] { id });
 
             if (model is null)
                 return NotFound(String.Format(ErrorMessage.NotFoundRead, typeName));
+
+            var postprocessingMessageResult = (MessageResult)await _postprocessingService.PostprocessReadAsync(model, id);
+            if (!postprocessingMessageResult.IsSuccessful)
+                return InternalServerError(postprocessingMessageResult.Message);
 
             return Ok(model);
         }
@@ -107,8 +130,16 @@ public class CrudController : BaseApiController
             if (!validationResult.IsValid)
                 return BadRequest(validationResult.Message);
 
+            var preprocessingMessageResult = (MessageResult)await _preprocessingService.PreprocessReadAsync(model!, queryParams);
+            if (!preprocessingMessageResult.IsSuccessful)
+                return InternalServerError(preprocessingMessageResult.Message);
+
             var readAsync = ReflectionHelper.GetGenericMethod(type, typeof(IPreserver), nameof(IPreserver.ReadAsync), new Type[] { typeof(IDictionary<String, String>) });
             var models = await (dynamic)readAsync.Invoke(_preserver, new object[] { queryParams });
+
+            var postprocessingMessageResult = (MessageResult)await _postprocessingService.PostprocessReadAsync(models, queryParams);
+            if (!postprocessingMessageResult.IsSuccessful)
+                return InternalServerError(postprocessingMessageResult.Message);
 
             return Ok(models);
         }
@@ -142,17 +173,25 @@ public class CrudController : BaseApiController
             if (query is null)
                 return BadRequest(String.Format(ErrorMessage.BadRequestQuery, jsonExMessage));
 
+            dynamic model = Convert.ChangeType(Activator.CreateInstance(type, null), type)!;
+
             if (_applicationOptions.ValidateQuery)
             {
-                dynamic model = Convert.ChangeType(Activator.CreateInstance(type, null), type)!;
-
                 var validationResult = (ValidationResult)_validator.ValidateQuery(model!, query);
                 if (!validationResult.IsValid)
                     return BadRequest(validationResult.Message);
             }
 
+            var preprocessingMessageResult = (MessageResult)await _preprocessingService.PreprocessReadAsync(model!, query);
+            if (!preprocessingMessageResult.IsSuccessful)
+                return InternalServerError(preprocessingMessageResult.Message);
+
             var queryReadAsync = ReflectionHelper.GetGenericMethod(type, typeof(IPreserver), nameof(IPreserver.QueryReadAsync), new Type[] { typeof(Query) });
             var models = await (dynamic)queryReadAsync.Invoke(_preserver, new object[] { query });
+
+            var postprocessingMessageResult = (MessageResult)await _postprocessingService.PostprocessReadAsync(models, query);
+            if (!postprocessingMessageResult.IsSuccessful)
+                return InternalServerError(postprocessingMessageResult.Message);
 
             if ((query.Includes is not null && query.Includes.Count > 0) || (query.Excludes is not null && query.Excludes.Count > 0))
             {
@@ -193,16 +232,24 @@ public class CrudController : BaseApiController
             if (query is null)
                 return BadRequest(String.Format(ErrorMessage.BadRequestQuery, jsonExMessage));
 
+            dynamic model = Convert.ChangeType(Activator.CreateInstance(type, null), type)!;
+
             if (_applicationOptions.ValidateQuery)
             {
-                dynamic model = Convert.ChangeType(Activator.CreateInstance(type, null), type)!;
-
                 var validationResult = (ValidationResult)_validator.ValidateQuery(model!, query);
                 if (!validationResult.IsValid)
                     return BadRequest(validationResult.Message);
             }
 
+            var preprocessingMessageResult = (MessageResult)await _preprocessingService.PreprocessReadCountAsync(model!, query);
+            if (!preprocessingMessageResult.IsSuccessful)
+                return InternalServerError(preprocessingMessageResult.Message);
+
             long count = await _preserver.QueryReadCountAsync(type, query);
+
+            var postprocessingMessageResult = (MessageResult)await _postprocessingService.PostprocessReadCountAsync(model!, query, count);
+            if (!postprocessingMessageResult.IsSuccessful)
+                return InternalServerError(postprocessingMessageResult.Message);
 
             return Ok(count);
         }
@@ -228,14 +275,22 @@ public class CrudController : BaseApiController
 
             dynamic? model = JsonSerializer.Deserialize(json, type, JsonSerializerOption.Default);
 
-            var validationResult = (ValidationResult)await _validator.ValidateUpdateAsync(id, model);
+            var validationResult = (ValidationResult)await _validator.ValidateUpdateAsync(model, id);
             if (!validationResult.IsValid)
                 return BadRequest(validationResult.Message);
 
-            var updatedModel = await _preserver.UpdateAsync(id, model);
+            var preprocessingMessageResult = (MessageResult)await _preprocessingService.PreprocessUpdateAsync(model, id);
+            if (!preprocessingMessageResult.IsSuccessful)
+                return InternalServerError(preprocessingMessageResult.Message);
+
+            var updatedModel = await _preserver.UpdateAsync(model, id);
 
             if (updatedModel is null)
                 return NotFound(String.Format(ErrorMessage.NotFoundUpdate, typeName));
+
+            var postprocessingMessageResult = (MessageResult)await _postprocessingService.PostprocessUpdateAsync(updatedModel, id);
+            if (!postprocessingMessageResult.IsSuccessful)
+                return InternalServerError(postprocessingMessageResult.Message);
 
             return Ok(updatedModel);
         }
@@ -262,15 +317,23 @@ public class CrudController : BaseApiController
             dynamic? model = JsonSerializer.Deserialize(json, type, JsonSerializerOption.Default);
             var propertyValues = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(json, JsonSerializerOption.Default);
 
-            var validationResult = (ValidationResult)await _validator.ValidatePartialUpdateAsync(id, model, propertyValues?.Keys);
+            var validationResult = (ValidationResult)await _validator.ValidatePartialUpdateAsync(model, id, propertyValues?.Keys);
             if (!validationResult.IsValid)
                 return BadRequest(validationResult.Message);
+
+            var preprocessingMessageResult = (MessageResult)await _preprocessingService.PreprocessPartialUpdateAsync(model, id, propertyValues);
+            if (!preprocessingMessageResult.IsSuccessful)
+                return InternalServerError(preprocessingMessageResult.Message);
 
             var partialUpdateAsync = ReflectionHelper.GetGenericMethod(type, typeof(IPreserver), nameof(IPreserver.PartialUpdateAsync), new Type[] { typeof(Guid), typeof(IDictionary<String, JsonElement>) });
             var updatedModel = await (dynamic)partialUpdateAsync.Invoke(_preserver, new object[] { id, propertyValues });
 
             if (updatedModel is null)
                 return NotFound(String.Format(ErrorMessage.NotFoundUpdate, typeName));
+
+            var postprocessingMessageResult = (MessageResult)await _postprocessingService.PostprocessPartialUpdateAsync(updatedModel, id, propertyValues);
+            if (!postprocessingMessageResult.IsSuccessful)
+                return InternalServerError(postprocessingMessageResult.Message);
 
             return Ok(updatedModel);
         }
@@ -303,8 +366,16 @@ public class CrudController : BaseApiController
             if (!validationResult.IsValid)
                 return BadRequest(validationResult.Message);
 
+            var preprocessingMessageResult = (MessageResult)await _preprocessingService.PreprocessPartialUpdateAsync(model, queryParams, propertyValues);
+            if (!preprocessingMessageResult.IsSuccessful)
+                return InternalServerError(preprocessingMessageResult.Message);
+
             var partialUpdateAsync = ReflectionHelper.GetGenericMethod(type, typeof(IPreserver), nameof(IPreserver.PartialUpdateAsync), new Type[] { typeof(IDictionary<String, String>), typeof(IDictionary<String, JsonElement>) });
             var updatedCount = await (dynamic)partialUpdateAsync.Invoke(_preserver, new object[] { queryParams, propertyValues });
+
+            var postprocessingMessageResult = (MessageResult)await _postprocessingService.PostprocessPartialUpdateAsync(model, queryParams, propertyValues, updatedCount);
+            if (!postprocessingMessageResult.IsSuccessful)
+                return InternalServerError(postprocessingMessageResult.Message);
 
             return Ok(updatedCount);
         }
@@ -324,11 +395,21 @@ public class CrudController : BaseApiController
             if (type is null)
                 return BadRequest(ErrorMessage.BadRequestModelType);
 
+            dynamic model = Convert.ChangeType(Activator.CreateInstance(type, null), type)!;
+
+            var preprocessingMessageResult = (MessageResult)await _preprocessingService.PreprocessDeleteAsync(model, id);
+            if (!preprocessingMessageResult.IsSuccessful)
+                return InternalServerError(preprocessingMessageResult.Message);
+
             var deleteAsync = ReflectionHelper.GetGenericMethod(type, typeof(IPreserver), nameof(IPreserver.DeleteAsync), new Type[] { typeof(Guid) });
             var deletedCount = await (dynamic)deleteAsync.Invoke(_preserver, new object[] { id });
 
             if (deletedCount == 0)
                 return NotFound(String.Format(ErrorMessage.NotFoundDelete, typeName));
+
+            var postprocessingMessageResult = (MessageResult)await _postprocessingService.PostprocessDeleteAsync(model, id, deletedCount);
+            if (!postprocessingMessageResult.IsSuccessful)
+                return InternalServerError(postprocessingMessageResult.Message);
 
             return Ok(deletedCount);
         }
@@ -356,8 +437,16 @@ public class CrudController : BaseApiController
             if (!validationResult.IsValid)
                 return BadRequest(validationResult.Message);
 
+            var preprocessingMessageResult = (MessageResult)await _preprocessingService.PreprocessDeleteAsync(model, queryParams);
+            if (!preprocessingMessageResult.IsSuccessful)
+                return InternalServerError(preprocessingMessageResult.Message);
+
             var deleteAsync = ReflectionHelper.GetGenericMethod(type, typeof(IPreserver), nameof(IPreserver.DeleteAsync), new Type[] { typeof(IDictionary<String, String>) });
             var deletedCount = await (dynamic)deleteAsync.Invoke(_preserver, new object[] { queryParams });
+
+            var postprocessingMessageResult = (MessageResult)await _postprocessingService.PostprocessDeleteAsync(model, queryParams, deletedCount);
+            if (!postprocessingMessageResult.IsSuccessful)
+                return InternalServerError(postprocessingMessageResult.Message);
 
             return Ok(deletedCount);
         }
@@ -391,16 +480,24 @@ public class CrudController : BaseApiController
             if (query is null)
                 return BadRequest(String.Format(ErrorMessage.BadRequestQuery, jsonExMessage));
 
+            dynamic model = Convert.ChangeType(Activator.CreateInstance(type, null), type)!;
+
             if (_applicationOptions.ValidateQuery)
             {
-                dynamic model = Convert.ChangeType(Activator.CreateInstance(type, null), type)!;
-
                 var validationResult = (ValidationResult)_validator.ValidateQuery(model!, query);
                 if (!validationResult.IsValid)
                     return BadRequest(validationResult.Message);
             }
 
+            var preprocessingMessageResult = (MessageResult)await _preprocessingService.PreprocessDeleteAsync(model, query);
+            if (!preprocessingMessageResult.IsSuccessful)
+                return InternalServerError(preprocessingMessageResult.Message);
+
             var deletedCount = await _preserver.QueryDeleteAsync(type, query);
+
+            var postprocessingMessageResult = (MessageResult)await _postprocessingService.PostprocessDeleteAsync(model, query, deletedCount);
+            if (!postprocessingMessageResult.IsSuccessful)
+                return InternalServerError(postprocessingMessageResult.Message);
 
             return Ok(deletedCount);
         }

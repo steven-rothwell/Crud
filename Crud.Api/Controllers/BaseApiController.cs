@@ -25,5 +25,10 @@ namespace Crud.Api.Controllers
 
             return InternalServerError();
         }
+
+        protected virtual IActionResult InternalServerError(String? message)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, message);
+        }
     }
 }

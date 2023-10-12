@@ -72,7 +72,7 @@ namespace Crud.Api.Validators
             return ValidateReadAsync((object)user, queryParams);
         }
 
-        public Task<ValidationResult> ValidateUpdateAsync(Guid id, Object model)
+        public Task<ValidationResult> ValidateUpdateAsync(Object model, Guid id)
         {
             var validationResult = model.ValidateDataAnnotations();
             if (!validationResult.IsValid)
@@ -81,9 +81,9 @@ namespace Crud.Api.Validators
             return Task.FromResult(new ValidationResult(true));
         }
 
-        public async Task<ValidationResult> ValidateUpdateAsync(Guid id, User user)
+        public async Task<ValidationResult> ValidateUpdateAsync(User user, Guid id)
         {
-            var objectValidationResult = await ValidateUpdateAsync(id, (object)user);
+            var objectValidationResult = await ValidateUpdateAsync((object)user, id);
             if (!objectValidationResult.IsValid)
                 return objectValidationResult;
 
@@ -105,7 +105,7 @@ namespace Crud.Api.Validators
             return new ValidationResult(true);
         }
 
-        public Task<ValidationResult> ValidatePartialUpdateAsync(Guid id, Object model, IReadOnlyCollection<String>? propertiesToBeUpdated)
+        public Task<ValidationResult> ValidatePartialUpdateAsync(Object model, Guid id, IReadOnlyCollection<String>? propertiesToBeUpdated)
         {
             if (propertiesToBeUpdated is null || propertiesToBeUpdated.Count == 0)
                 return Task.FromResult(new ValidationResult(false, "Updated properties cannot be empty."));
@@ -120,9 +120,9 @@ namespace Crud.Api.Validators
             return Task.FromResult(new ValidationResult(true));
         }
 
-        public async Task<ValidationResult> ValidatePartialUpdateAsync(Guid id, User user, IReadOnlyCollection<String>? propertiesToBeUpdated)
+        public async Task<ValidationResult> ValidatePartialUpdateAsync(User user, Guid id, IReadOnlyCollection<String>? propertiesToBeUpdated)
         {
-            var objectValidationResult = await ValidatePartialUpdateAsync(id, (object)user, propertiesToBeUpdated);
+            var objectValidationResult = await ValidatePartialUpdateAsync((object)user, id, propertiesToBeUpdated);
             if (!objectValidationResult.IsValid)
                 return objectValidationResult;
 

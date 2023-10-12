@@ -411,19 +411,21 @@ if (
 
 # Validation
 
+These methods may be used to prevent a CRUD operation and optionally return a message stating why the operation was invalid.
+
 | Signature | Description |
 | --------- | ----------- |
-| `Task<ValidationResult> ValidateCreateAsync(Object model)` | Validates the model when creating. |
-| `Task<ValidationResult> ValidateReadAsync(Object model, IDictionary<String, String>? queryParams)` | Validates the model when reading with [query parameter filtering](#query-parameter-filtering). |
-| `Task<ValidationResult> ValidateUpdateAsync(Guid id, Object model)` | Validates the model when replacement updating with an Id. |
-| `Task<ValidationResult> ValidatePartialUpdateAsync(Guid id, Object model, IReadOnlyCollection<String>? propertiesToBeUpdated)` | Validates the model when partially updating with an Id. |
-| `Task<ValidationResult> ValidatePartialUpdateAsync(Object model, IDictionary<String, String>? queryParams, IReadOnlyCollection<String>? propertiesToBeUpdated)` | Validates the model when partially updating with [query parameter filtering](#query-parameter-filtering). |
-| `Task<ValidationResult> ValidateDeleteAsync(Object model, IDictionary<String, String>? queryParams)` | Validates the model when deleting with [query parameter filtering](#query-parameter-filtering). |
+| `Task<ValidationResult> ValidateCreateAsync(Object model)` | Validates the model when creating. By default, data annotations on the model are validated. |
+| `Task<ValidationResult> ValidateReadAsync(Object model, IDictionary<String, String>? queryParams)` | Validates the model when reading with [query parameter filtering](#query-parameter-filtering). By default, all query parameters are ensured to be properties of the model. |
+| `Task<ValidationResult> ValidateUpdateAsync(Object model, Guid id)` | Validates the model when replacement updating with an Id. By default, data annotations on the model are validated. |
+| `Task<ValidationResult> ValidatePartialUpdateAsync(Object model, Guid id, IReadOnlyCollection<String>? propertiesToBeUpdated)` | Validates the model when partially updating with an Id. By default, all properties to be updated are ensured to be properties of the model and data annotations on the model are validated. |
+| `Task<ValidationResult> ValidatePartialUpdateAsync(Object model, IDictionary<String, String>? queryParams, IReadOnlyCollection<String>? propertiesToBeUpdated)` | Validates the model when partially updating with [query parameter filtering](#query-parameter-filtering). By default, all query parameters are ensured to be properties of the model, all properties to be updated are ensured to be properties of the model, and data annotations on the model are validated. |
+| `Task<ValidationResult> ValidateDeleteAsync(Object model, IDictionary<String, String>? queryParams)` | Validates the model when deleting with [query parameter filtering](#query-parameter-filtering). By default, all query parameters are ensured to be properties of the model. |
 | `ValidationResult ValidateQuery(Object model, Query query)` | Validates the model when using [body query filtering](#body-query-filtering). |
 
-Each signature above may be overriden by replacing the `Object model` parameter with a specific model type. There are many examples using the [User](/Crud.Api/Models/User.cs) model to override the validating method in the [Validator](/Crud.Api/Validators/Validator.cs) class. These may be removed as they are solely there as examples. 
+Each signature above may be overloaded by replacing the `Object model` parameter with a specific model type. There are many examples using the [User](/Crud.Api/Models/User.cs) model to override the validating method in the [Validator](/Crud.Api/Validators/Validator.cs) class. These may be removed as they are solely there as examples. 
 
-The following example overrides the `Task<ValidationResult> ValidateCreateAsync(Object model)` valdating method and also calls the `Object model` version of the method to reuse the logic.
+The following example overrides the `Task<ValidationResult> ValidateCreateAsync(Object model)` validating method and also calls the `Object model` version of the method to reuse the logic.
 
 ```c#
 public async Task<ValidationResult> ValidateCreateAsync(User user)
@@ -439,13 +441,21 @@ public async Task<ValidationResult> ValidateCreateAsync(User user)
 }
 ```
 
+# Preprocessing
+
+Preprocessing is optional. These methods may be used to do any sort of preprocessing actions. See details [here](/docs/PREPROCESSING.md).
+
+# Postprocessing
+
+Postprocessing is optional. These methods may be used to do any sort of postprocessing actions. See details [here](/docs/POSTPROCESSING.md).
+
 # ExternalEntity
 
 This class and IExternalEntity interface should not be removed from the application. Although not necessary, it is highly suggested to inherit from for [models](#models) that map directly to a collection/table. Example: [User](/Crud.Api/Models/User.cs) maps to the `Users` collection while [Address](/Crud.Api/Models/Address.cs) is stored within a document in that collection. The purpose of this class is to give each document/row a unique "random" identifier so that it may be safely referenced by external applications. Sequential identifiers are not as safe to use as they can be easily manipulated and without the proper checks, allow access to other data. They do make for better clustered indexes, so they should continue to be used within the data store.
 
 # Metrics
 
-All of this is well and good. CRUD operations on models has been simplified. But at what cost? The following metrics were obtained by running the exact same [Postman requests](/Postman/Crud.postman_collection.json) against this application versus running them against an application that does the same operations, but without the dynamic model capabilities, called [CrudMetrics](https://github.com/steven-rothwell/CrudMetrics).
+CRUD operations on models has been simplified. But at what cost? The following metrics were obtained by running the exact same [Postman requests](/Postman/Crud.postman_collection.json) against this application versus running them against an application that does the same operations, but without the dynamic model capabilities, called [CrudMetrics](https://github.com/steven-rothwell/CrudMetrics).
 
 The following is the average of each request which was run with 100 iterations and no indexes on the collections.
 
@@ -483,8 +493,11 @@ If a new version is released and these updates would be useful in a forked appli
 | ---- | ----------- |
 | master | Contains the latest v#.#.#. |
 | v#.#.# | Standard branches to create a forked application from. |
-| alpha-v#.#.# | Used to test the next version to be released. |
-| beta-v#.#.# | Used when the next version has major changes and burn in testing is required. |
+| v#.#.#-alpha | Used to integrate changes for the next release. |
+| v#.#.#-beta | Used when the next version has major changes and burn in testing is required. |
+| feature/* | Used to contribute new feature code. |
+| bugfix/* | Used to contribute code to fix a bug. |
+| test/* | Used to experiment with the code. |
 
 # Release Notes
 
