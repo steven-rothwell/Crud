@@ -30,5 +30,10 @@ namespace Crud.Api.Controllers
         {
             return StatusCode(StatusCodes.Status500InternalServerError, message);
         }
+
+        protected virtual IActionResult MethodNotAllowed(String? message)
+        {
+            return StatusCode(StatusCodes.Status405MethodNotAllowed, message);
+        }
     }
 }
