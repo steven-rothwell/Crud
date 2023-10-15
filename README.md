@@ -24,7 +24,7 @@ Examples in the following documentation use the [User](/Crud.Api/Models/User.cs)
 
 ### Table Data Annotation
 
-This is not required. It may be used to specify the name of the collection/table that the model will be stored in. Otherwise, the name that will be used as the collection/table will default to the pluralized version of the class name.
+The [Table](https://learn.microsoft.com/en-us/dotnet/api/system.componentmodel.dataannotations.schema.tableattribute?view=net-7.0) data annotation is optional. It may be used to specify the name of the collection/table that the model will be stored in. Otherwise, the name that will be used as the collection/table will default to the pluralized version of the class name.
 
 The following example will specify that the name of the collection/table to store the model in should be "users".
 
@@ -36,6 +36,22 @@ public class User : ExternalEntity
 ### Validator Data Annotations
 
 Standard and custom [data annotation](https://learn.microsoft.com/en-us/dotnet/api/system.componentmodel.dataannotations?view=net-7.0) validators may be added to properties in the model. These will automatically be used to validate the model without adding any additional code to the [Validator](/Crud.Api/Validators/Validator.cs).
+
+### JSON Attributes
+
+Standard System.Text.Json attributes, like [JsonPropertyNameAttribute](https://learn.microsoft.com/en-us/dotnet/api/system.text.json.serialization.jsonpropertynameattribute?view=net-7.0), can be added to the properties in the model to customize the JSON serialization and deserialization.
+
+### PreventCrud Attribute
+
+The [PreventCrud](/Crud.Api/Attributes/PreventCrudAttribute.cs) attribute is optional. This is used to prevent some or all [CRUD operations](/Crud.Api/Enums/CrudOperation.cs) on a model. See details [here](/docs/PREVENTCRUDATTRIBUTE.md).
+
+### PreventQuery Attribute
+
+The [PreventQuery](/Crud.Api/Attributes/PreventQueryAttribute.cs) attribute is optional. This is used to prevent some or all [Query operators](/Crud.Api/QueryModels/Operator.cs) on a model's property. See details [here](/docs/PREVENTQUERYATTRIBUTE.md).
+
+## ExternalEntity
+
+This class and IExternalEntity interface should not be removed from the application. Although not necessary, it is highly suggested to inherit from for [models](#models) that map directly to a collection/table. Example: [User](/Crud.Api/Models/User.cs) maps to the `Users` collection while [Address](/Crud.Api/Models/Address.cs) is stored within a document in that collection. The purpose of this class is to give each document/row a unique "random" identifier so that it may be safely referenced by external applications. Sequential identifiers are not as safe to use as they can be easily manipulated and without the proper checks, allow access to other data. They do make for better clustered indexes, so they should continue to be used within the data store.
 
 # Routing
 
@@ -70,6 +86,8 @@ This returns the `number` of documents/rows that the [query filtering](#body-que
 ## api/{typeName}/{id:guid} - HttpPut
 
 Replace `{id:guid}` with the `Id` of the model to be updated. The document/row that this `Id` matches will be replaced by the JSON object in the body of the request.
+
+# Partial Update
 
 ## api/{typeName}/{id:guid} - HttpPatch
 
@@ -207,7 +225,7 @@ Constrains what documents/rows are filtered on in the data store.
 | `String?` | ComparisonOperator | The operator used in the evaluation. <br/>Should be null if [GroupedConditions](#grouped-conditions) is populated. |
 | `String?` | Value | Value that the [ComparisonOperator](#comparison-operators) will compare the `Field` against in the evaluation. <br/>Should be null if `Values` or [GroupedConditions](#grouped-conditions) is populated. |
 | `Array[String]?` | Values | Values that the [ComparisonOperator](#comparison-operators) will compare the `Field` against in the evaluation. <br/>Should be null if `Value` or [GroupedConditions](#grouped-conditions) is populated. |
-| `Array[GroupedCondition]?` | GroupedConditions | Groups of conditions used for complex logic to constrain what documents/rows are filtered on in the data store. For more details, check out the [GroupedConditions](#grouped-conditions) section. |
+| `Array[GroupedCondition]?` | GroupedConditions | Groups of conditions used for complex logic to constrain what documents/rows are filtered on in the data store. For more details, see the [GroupedConditions](#grouped-conditions) section. |
 
 The following example will filter on [Users](/Crud.Api/Models/User.cs) with an age less than 30.
 
@@ -255,7 +273,7 @@ The following example will filter on [Users](/Crud.Api/Models/User.cs) with `cit
 
 ### Comparison Operators
 
-The aliases are put in a [Condition](#condition)'s `ComparisonOperator`. Aliases are not case sensitive. Some operators have multiple aliases for the same operator. These may be mixed at matched to fit any style.
+The aliases are put in a [Condition](#condition)'s `ComparisonOperator`. Aliases are not case sensitive. Some operators have multiple aliases for the same operator. These may be mixed and matched to fit any style.
 
 | Name | Aliases | Description |
 | ---- | ------- | ----------- |
@@ -268,9 +286,9 @@ The aliases are put in a [Condition](#condition)'s `ComparisonOperator`. Aliases
 | In | `IN` | If any value in `Field` matches any value in `Values`. |
 | NotIn | `NotIn`<br/>`NIN` | If all values in `Field` do not match any value in `Values`. |
 | All | `All` | If all values in `Values` match any value in `Field`. |
-| Contains | `Contains` | For use with `Field` properties of type `String`. If value in `Field` contains the value in `Value`. There may be hits to performance when using this operator. All [queries](#body-query-filtering) may be prevented from using this operator by setting `PreventAllQueryContains` to `true` in the [appsettings.json](/Crud.Api/appsettings.json). Instead of preventing all, individual properties may be prevented from being being [queried](#body-query-filtering) on using this operator by decorating it with the [PreventQueryContainsAttribute](/Crud.Api/Validators/Attributes/PreventQueryContainsAttribute.cs). |
-| StartsWith | `StartsWith` | For use with `Field` properties of type `String`. If value in `Field` starts with the value in `Value`. There may be hits to performance when using this operator. All [queries](#body-query-filtering) may be prevented from using this operator by setting `PreventAllQueryStartsWith` to `true` in the [appsettings.json](/Crud.Api/appsettings.json). Instead of preventing all, individual properties may be prevented from being being [queried](#body-query-filtering) on using this operator by decorating it with the [PreventQueryStartsWithAttribute](/Crud.Api/Validators/Attributes/PreventQueryStartsWithAttribute.cs). |
-| EndsWith | `EndsWith` | For use with `Field` properties of type `String`. If value in `Field` ends with the value in `Value`. There may be hits to performance when using this operator. All [queries](#body-query-filtering) may be prevented from using this operator by setting `PreventAllQueryEndsWith` to `true` in the [appsettings.json](/Crud.Api/appsettings.json). Instead of preventing all, individual properties may be prevented from being being [queried](#body-query-filtering) on using this operator by decorating it with the [PreventQueryEndsWithAttribute](/Crud.Api/Validators/Attributes/PreventQueryEndsWithAttribute.cs). |
+| Contains | `Contains` | For use with `Field` properties of type `String`. If value in `Field` contains the value in `Value`. There may be hits to performance when using this operator. All [queries](#body-query-filtering) may be prevented from using this operator by setting `PreventAllQueryContains` to `true` in the [appsettings.json](/Crud.Api/appsettings.json). Instead of preventing all, individual properties may be prevented from being being [queried](#body-query-filtering) on using this operator by decorating it with the [PreventQuery](/Crud.Api/Attributes/PreventQueryAttribute.cs)([Operator](/Crud.Api/QueryModels/Operator.cs).Contains). |
+| StartsWith | `StartsWith` | For use with `Field` properties of type `String`. If value in `Field` starts with the value in `Value`. There may be hits to performance when using this operator. All [queries](#body-query-filtering) may be prevented from using this operator by setting `PreventAllQueryStartsWith` to `true` in the [appsettings.json](/Crud.Api/appsettings.json). Instead of preventing all, individual properties may be prevented from being being [queried](#body-query-filtering) on using this operator by decorating it with the [PreventQuery](/Crud.Api/Attributes/PreventQueryAttribute.cs)([Operator](/Crud.Api/QueryModels/Operator.cs).StartsWith). |
+| EndsWith | `EndsWith` | For use with `Field` properties of type `String`. If value in `Field` ends with the value in `Value`. There may be hits to performance when using this operator. All [queries](#body-query-filtering) may be prevented from using this operator by setting `PreventAllQueryEndsWith` to `true` in the [appsettings.json](/Crud.Api/appsettings.json). Instead of preventing all, individual properties may be prevented from being being [queried](#body-query-filtering) on using this operator by decorating it with the [PreventQuery](/Crud.Api/Attributes/PreventQueryAttribute.cs)([Operator](/Crud.Api/QueryModels/Operator.cs).EndsWith). |
 
 ### Logical Operators
 
@@ -443,15 +461,11 @@ public async Task<ValidationResult> ValidateCreateAsync(User user)
 
 # Preprocessing
 
-Preprocessing is optional. These methods may be used to do any sort of preprocessing actions. See details [here](/docs/PREPROCESSING.md).
+[Preprocessing](/Crud.Api/Services/PreprocessingService.cs) is optional. These methods may be used to do any sort of preprocessing actions. See details [here](/docs/PREPROCESSING.md).
 
 # Postprocessing
 
-Postprocessing is optional. These methods may be used to do any sort of postprocessing actions. See details [here](/docs/POSTPROCESSING.md).
-
-# ExternalEntity
-
-This class and IExternalEntity interface should not be removed from the application. Although not necessary, it is highly suggested to inherit from for [models](#models) that map directly to a collection/table. Example: [User](/Crud.Api/Models/User.cs) maps to the `Users` collection while [Address](/Crud.Api/Models/Address.cs) is stored within a document in that collection. The purpose of this class is to give each document/row a unique "random" identifier so that it may be safely referenced by external applications. Sequential identifiers are not as safe to use as they can be easily manipulated and without the proper checks, allow access to other data. They do make for better clustered indexes, so they should continue to be used within the data store.
+[Postprocessing](/Crud.Api/Services/PostprocessingService.cs) is optional. These methods may be used to do any sort of postprocessing actions. See details [here](/docs/POSTPROCESSING.md).
 
 # Metrics
 
@@ -494,7 +508,7 @@ If a new version is released and these updates would be useful in a forked appli
 | master | Contains the latest v#.#.#. |
 | v#.#.# | Standard branches to create a forked application from. |
 | v#.#.#-alpha | Used to integrate changes for the next release. |
-| v#.#.#-beta | Used when the next version has major changes and burn in testing is required. |
+| v#.#.#-beta | Used when the next version requires burn in testing. |
 | feature/* | Used to contribute new feature code. |
 | bugfix/* | Used to contribute code to fix a bug. |
 | test/* | Used to experiment with the code. |
