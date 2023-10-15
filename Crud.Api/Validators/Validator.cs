@@ -1,10 +1,10 @@
 using System.Reflection;
+using Crud.Api.Attributes;
 using Crud.Api.Constants;
 using Crud.Api.Models;
 using Crud.Api.Options;
 using Crud.Api.Preservers;
 using Crud.Api.QueryModels;
-using Crud.Api.Validators.Attributes;
 using Microsoft.Extensions.Options;
 
 namespace Crud.Api.Validators
@@ -304,10 +304,12 @@ namespace Crud.Api.Validators
         {
             if (comparisonOperator is not null)
             {
-                if ((comparisonOperator == Operator.Contains && Attribute.IsDefined(propertyInfo, typeof(PreventQueryContainsAttribute)))
-                || (comparisonOperator == Operator.StartsWith && Attribute.IsDefined(propertyInfo, typeof(PreventQueryStartsWithAttribute)))
-                || (comparisonOperator == Operator.EndsWith && Attribute.IsDefined(propertyInfo, typeof(PreventQueryEndsWithAttribute))))
-                    return new ValidationResult(false, $"{nameof(Condition.ComparisonOperator)} '{comparisonOperator}' may not be used on the {propertyInfo.Name} property.");
+                var attribute = propertyInfo.GetCustomAttribute<PreventQueryAttribute>();
+                if (attribute is not null)
+                {
+                    if (!attribute.AllowsOperator(comparisonOperator))
+                        return new ValidationResult(false, $"{nameof(Condition.ComparisonOperator)} '{comparisonOperator}' may not be used on the {propertyInfo.Name} property.");
+                }
             }
 
             return new ValidationResult(true);

@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Crud.Api.Validators.Attributes;
+using Crud.Api.Attributes;
+using Crud.Api.QueryModels;
 
 namespace Crud.Api.Models
 {
@@ -12,9 +13,7 @@ namespace Crud.Api.Models
         public Address? Address { get; set; }
         [Range(0, Int32.MaxValue)]
         public Int32? Age { get; set; }
-        [PreventQueryContains]
-        [PreventQueryStartsWith]
-        [PreventQueryEndsWith]
+        [PreventQuery(Operator.Contains)]
         public String? HairColor { get; set; }
         public ICollection<String>? FavoriteThings { get; set; }
         public ICollection<Address>? FormerAddresses { get; set; }
