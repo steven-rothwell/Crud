@@ -29,8 +29,6 @@ public class CrudController : BaseApiController
     private readonly IPreprocessingService _preprocessingService;
     private readonly IPostprocessingService _postprocessingService;
 
-    public CrudOperation CurdOperation { get; private set; }
-
     public CrudController(IOptions<ApplicationOptions> applicationOptions, ILogger<CrudController> logger, IValidator validator, IPreserver preserver, IStreamService streamService, ITypeService typeService, IQueryCollectionService queryCollectionService,
         IPreprocessingService preprocessingService, IPostprocessingService postprocessingService)
         : base(applicationOptions)
