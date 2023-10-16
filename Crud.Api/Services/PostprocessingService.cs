@@ -1,6 +1,6 @@
 using System.Text.Json;
 using Crud.Api.QueryModels;
-using Crud.Api.Services.Models;
+using Crud.Api.Results;
 
 namespace Crud.Api.Services
 {

@@ -1,5 +1,6 @@
 using Crud.Api.Models;
 using Crud.Api.QueryModels;
+using Crud.Api.Results;
 
 namespace Crud.Api.Validators
 {
