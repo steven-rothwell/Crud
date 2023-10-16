@@ -484,6 +484,15 @@ The following is the average of each request which was run with 100 iterations a
 | DeleteUser_Id  | 3 ms | 3 ms |
 | DeleteUser_Name  | 3 ms | 3 ms |
 
+# Mutable Code
+
+The following are files and folders that may be altered when using this code to create a microservice. All other files and folders should only be modified by [contributors](#contributing).
+
+- [Models](/Crud.Api/Models/) - See details [here](#models).
+- [Validator](/Crud.Api/Validators/Validator.cs) - See details [here](#validation).
+- [PreprocessingService](/Crud.Api/Services/PreprocessingService.cs) - See details [here](#preprocessing).
+- [PostprocessingService](/Crud.Api/Services/PostprocessingService.cs) - See details [here](#postprocessing).
+
 # Versions
 
 Pattern: #.#.# - *breaking-change*.*new-features*.*maintenance*
