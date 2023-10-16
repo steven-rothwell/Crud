@@ -1,4 +1,4 @@
-namespace Crud.Api.Validators
+namespace Crud.Api.Results
 {
     public class ValidationResult
     {

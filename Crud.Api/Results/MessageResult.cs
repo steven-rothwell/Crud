@@ -1,4 +1,4 @@
-namespace Crud.Api.Services.Models
+namespace Crud.Api.Results
 {
     public class MessageResult
     {

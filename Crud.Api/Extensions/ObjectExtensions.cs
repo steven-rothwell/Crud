@@ -1,4 +1,4 @@
-using Crud.Api.Validators;
+using Crud.Api.Results;
 using DataAnnotations = System.ComponentModel.DataAnnotations;
 
 namespace Crud.Api

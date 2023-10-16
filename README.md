@@ -484,6 +484,15 @@ The following is the average of each request which was run with 100 iterations a
 | DeleteUser_Id  | 3 ms | 3 ms |
 | DeleteUser_Name  | 3 ms | 3 ms |
 
+# Mutable Code
+
+The following are files and folders that may be altered when using this code to create a microservice. All other files and folders should only be modified by [contributors](#contributing).
+
+- [Models](/Crud.Api/Models/) - See details [here](#models).
+- [Validator](/Crud.Api/Validators/Validator.cs) - See details [here](#validation).
+- [PreprocessingService](/Crud.Api/Services/PreprocessingService.cs) - See details [here](#preprocessing).
+- [PostprocessingService](/Crud.Api/Services/PostprocessingService.cs) - See details [here](#postprocessing).
+
 # Versions
 
 Pattern: #.#.# - *breaking-change*.*new-features*.*maintenance*
@@ -494,7 +503,7 @@ Pattern: #.#.# - *breaking-change*.*new-features*.*maintenance*
 
 If a new version is released and these updates would be useful in a forked application:
 
-1. At minimum, read all release notes for each v# since the last fetch. (Example: Last forked from v1.0.3. Desired updated version is v4.2.6. At least read release notes of v2.0.0, v3.0.0, and v4.0.0 as they may require code changes.)
+1. At minimum, read all [release notes](#release-notes) for each breaking change since the last fetch. (Example: Last forked from v1.0.3. Desired updated version is v4.2.6. At least read release notes of v2.0.0, v3.0.0, and v4.0.0 as code changes may be required.)
 1. Fetch the desired v#.#.# branch from this repository into the forked repository.
 2. Create a new branch.
 3. Merge existing forked application code and v#.#.# branch.
@@ -517,7 +526,7 @@ If a new version is released and these updates would be useful in a forked appli
 
 | Number | Available Preservers | Framework | Notes                                                                                        |
 | ------ | -------------------- | --------- | -------------------------------------------------------------------------------------------- |
-| 1.0.0 | MongoDB | .NET 7 | Initial release with basic CRUD operations, filtering by query parameters, and body queries. |
+| 1.0.0 | MongoDB | .NET 7 | See deatils [here](/docs/release-notes/RELEASE-1.0.0.md). |
 
 # Contributing
 
