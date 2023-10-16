@@ -503,7 +503,7 @@ Pattern: #.#.# - *breaking-change*.*new-features*.*maintenance*
 
 If a new version is released and these updates would be useful in a forked application:
 
-1. At minimum, read all release notes for each v# since the last fetch. (Example: Last forked from v1.0.3. Desired updated version is v4.2.6. At least read release notes of v2.0.0, v3.0.0, and v4.0.0 as they may require code changes.)
+1. At minimum, read all [release notes](#release-notes) for each breaking change since the last fetch. (Example: Last forked from v1.0.3. Desired updated version is v4.2.6. At least read release notes of v2.0.0, v3.0.0, and v4.0.0 as code changes may be required.)
 1. Fetch the desired v#.#.# branch from this repository into the forked repository.
 2. Create a new branch.
 3. Merge existing forked application code and v#.#.# branch.
