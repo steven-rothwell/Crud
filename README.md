@@ -526,7 +526,7 @@ If a new version is released and these updates would be useful in a forked appli
 
 | Number | Available Preservers | Framework | Notes                                                                                        |
 | ------ | -------------------- | --------- | -------------------------------------------------------------------------------------------- |
-| 1.0.0 | MongoDB | .NET 7 | Initial release with basic CRUD operations, filtering by query parameters, and body queries. |
+| 1.0.0 | MongoDB | .NET 7 | See deatils [here](/docs/release-notes/RELEASE-1.0.0.md). |
 
 # Contributing
 
