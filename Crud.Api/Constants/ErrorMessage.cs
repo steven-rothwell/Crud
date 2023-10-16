@@ -11,5 +11,7 @@ namespace Crud.Api.Constants
         public const String BadRequestModelType = "No model type found.";
         public const String BadRequestBody = "Request body cannot be null or whitespace.";
         public const String BadRequestQuery = $"A {nameof(Query)} object could not be created from the request body. Reason: {{0}}";
+
+        public const String MethodNotAllowedType = "{0} is not allowed on type {1}.";
     }
 }

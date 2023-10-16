@@ -2,6 +2,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Crud.Api.Constants;
+using Crud.Api.Enums;
 using Crud.Api.Helpers;
 using Crud.Api.Options;
 using Crud.Api.Preservers;
@@ -9,6 +10,7 @@ using Crud.Api.QueryModels;
 using Crud.Api.Services;
 using Crud.Api.Services.Models;
 using Crud.Api.Validators;
+using Humanizer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 
@@ -50,6 +52,10 @@ public class CrudController : BaseApiController
             if (type is null)
                 return BadRequest(ErrorMessage.BadRequestModelType);
 
+            var crudOperation = CrudOperation.Create;
+            if (!type.AllowsCrudOperation(crudOperation))
+                return MethodNotAllowed(String.Format(ErrorMessage.MethodNotAllowedType, crudOperation.ToString().Humanize(), type.Name));
+
             string json = await _streamService.ReadToEndThenDisposeAsync(Request.Body, Encoding.UTF8);
             if (String.IsNullOrWhiteSpace(json))
                 return BadRequest(ErrorMessage.BadRequestBody);
@@ -88,6 +94,10 @@ public class CrudController : BaseApiController
             if (type is null)
                 return BadRequest(ErrorMessage.BadRequestModelType);
 
+            var crudOperation = CrudOperation.ReadWithId;
+            if (!type.AllowsCrudOperation(crudOperation))
+                return MethodNotAllowed(String.Format(ErrorMessage.MethodNotAllowedType, crudOperation.ToString().Humanize(), type.Name));
+
             dynamic model = Convert.ChangeType(Activator.CreateInstance(type, null), type)!;
 
             var preprocessingMessageResult = (MessageResult)await _preprocessingService.PreprocessReadAsync(model, id);
@@ -121,6 +131,10 @@ public class CrudController : BaseApiController
             var type = _typeService.GetModelType(typeName);
             if (type is null)
                 return BadRequest(ErrorMessage.BadRequestModelType);
+
+            var crudOperation = CrudOperation.ReadWithQueryParams;
+            if (!type.AllowsCrudOperation(crudOperation))
+                return MethodNotAllowed(String.Format(ErrorMessage.MethodNotAllowedType, crudOperation.ToString().Humanize(), type.Name));
 
             var queryParams = _queryCollectionService.ConvertToDictionary(Request.Query);
 
@@ -158,6 +172,10 @@ public class CrudController : BaseApiController
             var type = _typeService.GetModelType(typeName);
             if (type is null)
                 return BadRequest(ErrorMessage.BadRequestModelType);
+
+            var crudOperation = CrudOperation.ReadWithQuery;
+            if (!type.AllowsCrudOperation(crudOperation))
+                return MethodNotAllowed(String.Format(ErrorMessage.MethodNotAllowedType, crudOperation.ToString().Humanize(), type.Name));
 
             string json = await _streamService.ReadToEndThenDisposeAsync(Request.Body, Encoding.UTF8);
             if (String.IsNullOrWhiteSpace(json))
@@ -218,6 +236,10 @@ public class CrudController : BaseApiController
             if (type is null)
                 return BadRequest(ErrorMessage.BadRequestModelType);
 
+            var crudOperation = CrudOperation.ReadCount;
+            if (!type.AllowsCrudOperation(crudOperation))
+                return MethodNotAllowed(String.Format(ErrorMessage.MethodNotAllowedType, crudOperation.ToString().Humanize(), type.Name));
+
             string json = await _streamService.ReadToEndThenDisposeAsync(Request.Body, Encoding.UTF8);
             if (String.IsNullOrWhiteSpace(json))
                 return BadRequest(ErrorMessage.BadRequestBody);
@@ -269,6 +291,10 @@ public class CrudController : BaseApiController
             if (type is null)
                 return BadRequest(ErrorMessage.BadRequestModelType);
 
+            var crudOperation = CrudOperation.Update;
+            if (!type.AllowsCrudOperation(crudOperation))
+                return MethodNotAllowed(String.Format(ErrorMessage.MethodNotAllowedType, crudOperation.ToString().Humanize(), type.Name));
+
             string json = await _streamService.ReadToEndThenDisposeAsync(Request.Body, Encoding.UTF8);
             if (String.IsNullOrWhiteSpace(json))
                 return BadRequest(ErrorMessage.BadRequestBody);
@@ -309,6 +335,10 @@ public class CrudController : BaseApiController
             var type = _typeService.GetModelType(typeName);
             if (type is null)
                 return BadRequest(ErrorMessage.BadRequestModelType);
+
+            var crudOperation = CrudOperation.PartialUpdateWithId;
+            if (!type.AllowsCrudOperation(crudOperation))
+                return MethodNotAllowed(String.Format(ErrorMessage.MethodNotAllowedType, crudOperation.ToString().Humanize(), type.Name));
 
             string json = await _streamService.ReadToEndThenDisposeAsync(Request.Body, Encoding.UTF8);
             if (String.IsNullOrWhiteSpace(json))
@@ -353,6 +383,10 @@ public class CrudController : BaseApiController
             if (type is null)
                 return BadRequest(ErrorMessage.BadRequestModelType);
 
+            var crudOperation = CrudOperation.PartialUpdateWithQueryParams;
+            if (!type.AllowsCrudOperation(crudOperation))
+                return MethodNotAllowed(String.Format(ErrorMessage.MethodNotAllowedType, crudOperation.ToString().Humanize(), type.Name));
+
             string json = await _streamService.ReadToEndThenDisposeAsync(Request.Body, Encoding.UTF8);
             if (String.IsNullOrWhiteSpace(json))
                 return BadRequest(ErrorMessage.BadRequestBody);
@@ -395,6 +429,10 @@ public class CrudController : BaseApiController
             if (type is null)
                 return BadRequest(ErrorMessage.BadRequestModelType);
 
+            var crudOperation = CrudOperation.DeleteWithId;
+            if (!type.AllowsCrudOperation(crudOperation))
+                return MethodNotAllowed(String.Format(ErrorMessage.MethodNotAllowedType, crudOperation.ToString().Humanize(), type.Name));
+
             dynamic model = Convert.ChangeType(Activator.CreateInstance(type, null), type)!;
 
             var preprocessingMessageResult = (MessageResult)await _preprocessingService.PreprocessDeleteAsync(model, id);
@@ -428,6 +466,10 @@ public class CrudController : BaseApiController
             var type = _typeService.GetModelType(typeName);
             if (type is null)
                 return BadRequest(ErrorMessage.BadRequestModelType);
+
+            var crudOperation = CrudOperation.DeleteWithQueryParams;
+            if (!type.AllowsCrudOperation(crudOperation))
+                return MethodNotAllowed(String.Format(ErrorMessage.MethodNotAllowedType, crudOperation.ToString().Humanize(), type.Name));
 
             var queryParams = _queryCollectionService.ConvertToDictionary(Request.Query);
 
@@ -465,6 +507,10 @@ public class CrudController : BaseApiController
             var type = _typeService.GetModelType(typeName);
             if (type is null)
                 return BadRequest(ErrorMessage.BadRequestModelType);
+
+            var crudOperation = CrudOperation.DeleteWithQuery;
+            if (!type.AllowsCrudOperation(crudOperation))
+                return MethodNotAllowed(String.Format(ErrorMessage.MethodNotAllowedType, crudOperation.ToString().Humanize(), type.Name));
 
             string json = await _streamService.ReadToEndThenDisposeAsync(Request.Body, Encoding.UTF8);
             if (String.IsNullOrWhiteSpace(json))

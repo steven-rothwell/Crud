@@ -1,4 +1,6 @@
 using System.ComponentModel.DataAnnotations.Schema;
+using Crud.Api.Attributes;
+using Crud.Api.Enums;
 
 namespace Crud.Api.Tests.Extensions
 {
@@ -85,6 +87,28 @@ namespace Crud.Api.Tests.Extensions
             Assert.Equal("ModelWithoutTableAttributes", result);
         }
 
+        [Fact]
+        public void AllowsCrudOperation_AttributeIsNull_ReturnsTrue()
+        {
+            Type type = typeof(ModelWithoutPreventCrudAttribute);
+            var crudOperation = CrudOperation.Create;
+
+            var result = type.AllowsCrudOperation(crudOperation);
+
+            Assert.True(result);
+        }
+
+        [Fact]
+        public void AllowsCrudOperation_AttributeIsNotNull_ReturnsAllowsCrudOperationResult()
+        {
+            Type type = typeof(ModelWithPreventCrudAttribute);
+            var crudOperation = CrudOperation.Create;
+
+            var result = type.AllowsCrudOperation(crudOperation);
+
+            Assert.False(result);
+        }
+
         [Table(nameof(ModelWithTableAttribute))]
         private class ModelWithTableAttribute
         {
@@ -92,6 +116,17 @@ namespace Crud.Api.Tests.Extensions
         }
 
         private class ModelWithoutTableAttribute
+        {
+            public Int32 Id { get; set; }
+        }
+
+        [PreventCrud]
+        private class ModelWithPreventCrudAttribute
+        {
+            public Int32 Id { get; set; }
+        }
+
+        private class ModelWithoutPreventCrudAttribute
         {
             public Int32 Id { get; set; }
         }

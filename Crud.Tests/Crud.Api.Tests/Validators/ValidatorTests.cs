@@ -1,9 +1,8 @@
-using System.Reflection;
+using Crud.Api.Attributes;
 using Crud.Api.Options;
 using Crud.Api.Preservers;
 using Crud.Api.QueryModels;
 using Crud.Api.Validators;
-using Crud.Api.Validators.Attributes;
 using Microsoft.Extensions.Options;
 using Moq;
 using DataAnnotations = System.ComponentModel.DataAnnotations;
@@ -596,7 +595,7 @@ namespace Crud.Api.Tests.Validators
             object model = new PreventQueryModel();
             var condition = new Condition
             {
-                Field = nameof(PreventQueryModel.NameContains),
+                Field = nameof(PreventQueryModel.PropertyWithPreventQueryContainsAttribute),
                 ComparisonOperator = Operator.Contains
             };
 
@@ -697,7 +696,7 @@ namespace Crud.Api.Tests.Validators
         [Fact]
         public void ValidatePropertyQueryAttributes_ComparisonOperatorIsNull_ReturnsTrueValidationsResult()
         {
-            var propertyInfo = typeof(PreventQueryModel).GetProperty(nameof(PreventQueryModel.NameContains));
+            var propertyInfo = typeof(PreventQueryModel).GetProperty(nameof(PreventQueryModel.PropertyWithPreventQueryContainsAttribute));
             string? comparisonOperator = null;
 
             var result = _validator.ValidatePropertyQueryAttributes(propertyInfo!, comparisonOperator);
@@ -707,36 +706,34 @@ namespace Crud.Api.Tests.Validators
         }
 
         [Fact]
-        public void ValidatePropertyQueryAttributes_ComparisonOperatorContainsAndPropertyHasPreventQueryContainsAttribute_ReturnsFalseValidationsResult()
+        public void ValidatePropertyQueryAttributes_AttributeIsNull_ReturnsTrueValidationsResult()
         {
-            var propertyInfo = typeof(PreventQueryModel).GetProperty(nameof(PreventQueryModel.NameContains))!;
+            var propertyInfo = typeof(PreventQueryModel).GetProperty(nameof(PreventQueryModel.PropertyWithoutPreventQueryAttribute))!;
             string? comparisonOperator = Operator.Contains;
 
             var result = _validator.ValidatePropertyQueryAttributes(propertyInfo, comparisonOperator);
 
             Assert.NotNull(result);
-            Assert.False(result.IsValid);
-            Assert.Equal($"{nameof(Condition.ComparisonOperator)} '{comparisonOperator}' may not be used on the {propertyInfo.Name} property.", result.Message);
+            Assert.True(result.IsValid);
         }
 
         [Fact]
-        public void ValidatePropertyQueryAttributes_ComparisonOperatorStartsWithAndPropertyHasPreventQueryStartsWithAttribute_ReturnsFalseValidationsResult()
+        public void ValidatePropertyQueryAttributes_AttributeAllowsOperator_ReturnsTrueValidationsResult()
         {
-            var propertyInfo = typeof(PreventQueryModel).GetProperty(nameof(PreventQueryModel.NameStartsWith))!;
+            var propertyInfo = typeof(PreventQueryModel).GetProperty(nameof(PreventQueryModel.PropertyWithPreventQueryContainsAttribute))!;
             string? comparisonOperator = Operator.StartsWith;
 
             var result = _validator.ValidatePropertyQueryAttributes(propertyInfo, comparisonOperator);
 
             Assert.NotNull(result);
-            Assert.False(result.IsValid);
-            Assert.Equal($"{nameof(Condition.ComparisonOperator)} '{comparisonOperator}' may not be used on the {propertyInfo.Name} property.", result.Message);
+            Assert.True(result.IsValid);
         }
 
         [Fact]
-        public void ValidatePropertyQueryAttributes_ComparisonOperatorEndsWithAndPropertyHasPreventQueryEndsWithAttribute_ReturnsFalseValidationsResult()
+        public void ValidatePropertyQueryAttributes_AttributeDoesNotAllowOperator_ReturnsFalseValidationsResult()
         {
-            var propertyInfo = typeof(PreventQueryModel).GetProperty(nameof(PreventQueryModel.NameEndsWith))!;
-            string? comparisonOperator = Operator.EndsWith;
+            var propertyInfo = typeof(PreventQueryModel).GetProperty(nameof(PreventQueryModel.PropertyWithPreventQueryContainsAttribute))!;
+            string? comparisonOperator = Operator.Contains;
 
             var result = _validator.ValidatePropertyQueryAttributes(propertyInfo, comparisonOperator);
 
@@ -909,12 +906,9 @@ namespace Crud.Api.Tests.Validators
 
         private class PreventQueryModel
         {
-            [PreventQueryContains]
-            public String? NameContains { get; set; }
-            [PreventQueryStartsWith]
-            public String? NameStartsWith { get; set; }
-            [PreventQueryEndsWith]
-            public String? NameEndsWith { get; set; }
+            [PreventQuery(Operator.Contains)]
+            public String? PropertyWithPreventQueryContainsAttribute { get; set; }
+            public String? PropertyWithoutPreventQueryAttribute { get; set; }
         }
 
         private class QueryParamsIsNullOrEmpty : TheoryData<IDictionary<String, String>?>

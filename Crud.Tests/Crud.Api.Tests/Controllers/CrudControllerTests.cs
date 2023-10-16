@@ -1,8 +1,10 @@
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using Crud.Api.Attributes;
 using Crud.Api.Constants;
 using Crud.Api.Controllers;
+using Crud.Api.Enums;
 using Crud.Api.Options;
 using Crud.Api.Preservers;
 using Crud.Api.QueryModels;
@@ -69,6 +71,21 @@ namespace Crud.Api.Tests.Controllers
 
             Assert.NotNull(result);
             Assert.Equal(ErrorMessage.BadRequestModelType, result.Value);
+        }
+
+        [Fact]
+        public async Task CreateAsync_TypeDoesNotAllowCrudOperation_ReturnsMethodNotAllowed()
+        {
+            var typeName = "some-type-name";
+            Type? type = typeof(ModelWithPreventCrudAttribute);
+
+            _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(type);
+
+            var result = await _controller.CreateAsync(typeName) as ObjectResult;
+
+            Assert.NotNull(result);
+            Assert.Equal(StatusCodes.Status405MethodNotAllowed, result.StatusCode);
+            Assert.Equal(String.Format(ErrorMessage.MethodNotAllowedType, CrudOperation.Create.ToString().Humanize(), type.Name), result.Value);
         }
 
         [Theory]
@@ -214,6 +231,22 @@ namespace Crud.Api.Tests.Controllers
         }
 
         [Fact]
+        public async Task ReadAsync_WithStringGuid_TypeDoesNotAllowCrudOperation_ReturnsMethodNotAllowed()
+        {
+            var typeName = "some-type-name";
+            Type? type = typeof(ModelWithPreventCrudAttribute);
+            Guid id = Guid.Empty;
+
+            _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(type);
+
+            var result = await _controller.ReadAsync(typeName, id) as ObjectResult;
+
+            Assert.NotNull(result);
+            Assert.Equal(StatusCodes.Status405MethodNotAllowed, result.StatusCode);
+            Assert.Equal(String.Format(ErrorMessage.MethodNotAllowedType, CrudOperation.ReadWithId.ToString().Humanize(), type.Name), result.Value);
+        }
+
+        [Fact]
         public async Task ReadAsync_WithStringGuid_PreprocessingIsNotSuccessful_ReturnsInternalServerError()
         {
             var typeName = "some-type-name";
@@ -326,6 +359,21 @@ namespace Crud.Api.Tests.Controllers
 
             Assert.NotNull(result);
             Assert.Equal(ErrorMessage.BadRequestModelType, result.Value);
+        }
+
+        [Fact]
+        public async Task ReadAsync_WithString_TypeDoesNotAllowCrudOperation_ReturnsMethodNotAllowed()
+        {
+            var typeName = "some-type-name";
+            Type? type = typeof(ModelWithPreventCrudAttribute);
+
+            _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(type);
+
+            var result = await _controller.ReadAsync(typeName) as ObjectResult;
+
+            Assert.NotNull(result);
+            Assert.Equal(StatusCodes.Status405MethodNotAllowed, result.StatusCode);
+            Assert.Equal(String.Format(ErrorMessage.MethodNotAllowedType, CrudOperation.ReadWithQueryParams.ToString().Humanize(), type.Name), result.Value);
         }
 
         [Fact]
@@ -443,6 +491,21 @@ namespace Crud.Api.Tests.Controllers
 
             Assert.NotNull(result);
             Assert.Equal(ErrorMessage.BadRequestModelType, result.Value);
+        }
+
+        [Fact]
+        public async Task QueryReadAsync_TypeDoesNotAllowCrudOperation_ReturnsMethodNotAllowed()
+        {
+            var typeName = "some-type-name";
+            Type? type = typeof(ModelWithPreventCrudAttribute);
+
+            _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(type);
+
+            var result = await _controller.QueryReadAsync(typeName) as ObjectResult;
+
+            Assert.NotNull(result);
+            Assert.Equal(StatusCodes.Status405MethodNotAllowed, result.StatusCode);
+            Assert.Equal(String.Format(ErrorMessage.MethodNotAllowedType, CrudOperation.ReadWithQuery.ToString().Humanize(), type.Name), result.Value);
         }
 
         [Theory]
@@ -723,6 +786,21 @@ namespace Crud.Api.Tests.Controllers
             Assert.Equal(ErrorMessage.BadRequestModelType, result.Value);
         }
 
+        [Fact]
+        public async Task QueryReadCountAsync_TypeDoesNotAllowCrudOperation_ReturnsMethodNotAllowed()
+        {
+            var typeName = "some-type-name";
+            Type? type = typeof(ModelWithPreventCrudAttribute);
+
+            _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(type);
+
+            var result = await _controller.QueryReadCountAsync(typeName) as ObjectResult;
+
+            Assert.NotNull(result);
+            Assert.Equal(StatusCodes.Status405MethodNotAllowed, result.StatusCode);
+            Assert.Equal(String.Format(ErrorMessage.MethodNotAllowedType, CrudOperation.ReadCount.ToString().Humanize(), type.Name), result.Value);
+        }
+
         [Theory]
         [InlineData(null)]
         [InlineData("")]
@@ -922,6 +1000,22 @@ namespace Crud.Api.Tests.Controllers
             Assert.Equal(ErrorMessage.BadRequestModelType, result.Value);
         }
 
+        [Fact]
+        public async Task UpdateAsync_TypeDoesNotAllowCrudOperation_ReturnsMethodNotAllowed()
+        {
+            var typeName = "some-type-name";
+            Type? type = typeof(ModelWithPreventCrudAttribute);
+            Guid id = Guid.Empty;
+
+            _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(type);
+
+            var result = await _controller.UpdateAsync(typeName, id) as ObjectResult;
+
+            Assert.NotNull(result);
+            Assert.Equal(StatusCodes.Status405MethodNotAllowed, result.StatusCode);
+            Assert.Equal(String.Format(ErrorMessage.MethodNotAllowedType, CrudOperation.Update.ToString().Humanize(), type.Name), result.Value);
+        }
+
         [Theory]
         [InlineData(null)]
         [InlineData("")]
@@ -1098,6 +1192,22 @@ namespace Crud.Api.Tests.Controllers
 
             Assert.NotNull(result);
             Assert.Equal(ErrorMessage.BadRequestModelType, result.Value);
+        }
+
+        [Fact]
+        public async Task PartialUpdateAsync_WithStringGuid_TypeDoesNotAllowCrudOperation_ReturnsMethodNotAllowed()
+        {
+            var typeName = "some-type-name";
+            Type? type = typeof(ModelWithPreventCrudAttribute);
+            Guid id = Guid.Empty;
+
+            _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(type);
+
+            var result = await _controller.PartialUpdateAsync(typeName, id) as ObjectResult;
+
+            Assert.NotNull(result);
+            Assert.Equal(StatusCodes.Status405MethodNotAllowed, result.StatusCode);
+            Assert.Equal(String.Format(ErrorMessage.MethodNotAllowedType, CrudOperation.PartialUpdateWithId.ToString().Humanize(), type.Name), result.Value);
         }
 
         [Theory]
@@ -1277,6 +1387,21 @@ namespace Crud.Api.Tests.Controllers
             Assert.Equal(ErrorMessage.BadRequestModelType, result.Value);
         }
 
+        [Fact]
+        public async Task PartialUpdateAsync_WithString_TypeDoesNotAllowCrudOperation_ReturnsMethodNotAllowed()
+        {
+            var typeName = "some-type-name";
+            Type? type = typeof(ModelWithPreventCrudAttribute);
+
+            _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(type);
+
+            var result = await _controller.PartialUpdateAsync(typeName) as ObjectResult;
+
+            Assert.NotNull(result);
+            Assert.Equal(StatusCodes.Status405MethodNotAllowed, result.StatusCode);
+            Assert.Equal(String.Format(ErrorMessage.MethodNotAllowedType, CrudOperation.PartialUpdateWithQueryParams.ToString().Humanize(), type.Name), result.Value);
+        }
+
         [Theory]
         [InlineData(null)]
         [InlineData("")]
@@ -1421,6 +1546,22 @@ namespace Crud.Api.Tests.Controllers
         }
 
         [Fact]
+        public async Task DeleteAsync_WithStringGuid_TypeDoesNotAllowCrudOperation_ReturnsMethodNotAllowed()
+        {
+            var typeName = "some-type-name";
+            Type? type = typeof(ModelWithPreventCrudAttribute);
+            Guid id = Guid.Empty;
+
+            _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(type);
+
+            var result = await _controller.DeleteAsync(typeName, id) as ObjectResult;
+
+            Assert.NotNull(result);
+            Assert.Equal(StatusCodes.Status405MethodNotAllowed, result.StatusCode);
+            Assert.Equal(String.Format(ErrorMessage.MethodNotAllowedType, CrudOperation.DeleteWithId.ToString().Humanize(), type.Name), result.Value);
+        }
+
+        [Fact]
         public async Task DeleteAsync_WithStringGuid_PreprocessingIsNotSuccessful_ReturnsInternalServerError()
         {
             var typeName = "some-type-name";
@@ -1530,6 +1671,21 @@ namespace Crud.Api.Tests.Controllers
 
             Assert.NotNull(result);
             Assert.Equal(ErrorMessage.BadRequestModelType, result.Value);
+        }
+
+        [Fact]
+        public async Task DeleteAsync_WithString_TypeDoesNotAllowCrudOperation_ReturnsMethodNotAllowed()
+        {
+            var typeName = "some-type-name";
+            Type? type = typeof(ModelWithPreventCrudAttribute);
+
+            _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(type);
+
+            var result = await _controller.DeleteAsync(typeName) as ObjectResult;
+
+            Assert.NotNull(result);
+            Assert.Equal(StatusCodes.Status405MethodNotAllowed, result.StatusCode);
+            Assert.Equal(String.Format(ErrorMessage.MethodNotAllowedType, CrudOperation.DeleteWithQueryParams.ToString().Humanize(), type.Name), result.Value);
         }
 
         [Fact]
@@ -1657,6 +1813,21 @@ namespace Crud.Api.Tests.Controllers
 
             Assert.NotNull(result);
             Assert.Equal(ErrorMessage.BadRequestModelType, result.Value);
+        }
+
+        [Fact]
+        public async Task QueryDeleteAsync_TypeDoesNotAllowCrudOperation_ReturnsMethodNotAllowed()
+        {
+            var typeName = "some-type-name";
+            Type? type = typeof(ModelWithPreventCrudAttribute);
+
+            _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(type);
+
+            var result = await _controller.QueryDeleteAsync(typeName) as ObjectResult;
+
+            Assert.NotNull(result);
+            Assert.Equal(StatusCodes.Status405MethodNotAllowed, result.StatusCode);
+            Assert.Equal(String.Format(ErrorMessage.MethodNotAllowedType, CrudOperation.DeleteWithQuery.ToString().Humanize(), type.Name), result.Value);
         }
 
         [Theory]
@@ -1845,5 +2016,11 @@ namespace Crud.Api.Tests.Controllers
         }
 
         #endregion
+
+        [PreventCrud]
+        private class ModelWithPreventCrudAttribute
+        {
+            public Int32 Id { get; set; }
+        }
     }
 }

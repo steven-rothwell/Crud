@@ -1,5 +1,9 @@
+using Crud.Api.Attributes;
+
 namespace Crud.Api.Models
 {
+
+    [PreventCrud]
     public class Address
     {
         public String? Street { get; set; }

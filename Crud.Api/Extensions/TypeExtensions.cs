@@ -1,4 +1,7 @@
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Reflection;
+using Crud.Api.Attributes;
+using Crud.Api.Enums;
 using Humanizer;
 
 namespace Crud.Api
@@ -32,6 +35,18 @@ namespace Crud.Api
                 return null;
 
             return type.Name.Pluralize();
+        }
+
+        public static Boolean AllowsCrudOperation(this Type type, CrudOperation crudOperation)
+        {
+            var attribute = type.GetCustomAttribute<PreventCrudAttribute>();
+
+            if (attribute is not null)
+            {
+                return attribute.AllowsCrudOperation(crudOperation);
+            }
+
+            return true;
         }
     }
 }
