@@ -512,25 +512,10 @@ If a new version is released and these updates would be useful in a forked appli
 
 # Branching Strategy
 
-## Consumer Branches
-
-These are branches that consumers should fork from.
-
 | Name | Description |
 | ---- | ----------- |
 | v#.#.# | Standard branches to create a forked application from. |
 | v#.#.#-beta | Used when the next version requires burn in testing. This may be forked from to test out new features, but should not be used in a production environment. |
-
-## Contributor Branches
-
-These branches are used to contribute to this project.
-
-| Name | Description |
-| ---- | ----------- |
-| v#.#.#-alpha | Used to integrate changes for the next release. |
-| feature/* | Used to contribute new feature code. |
-| bugfix/* | Used to contribute code to fix a bug. |
-| test/* | Used to experiment with the code. |
 
 # Release Notes
 

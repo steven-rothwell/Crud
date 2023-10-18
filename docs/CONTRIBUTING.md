@@ -8,7 +8,12 @@ The main goal as stated in the [README](/README.md) is to give developers the ab
 
 ## Branching
 
-Branching naming convention and purpose can be found [here](/README.md#branching-strategy).
+| Name         | Description                                     |
+| ------------ | ----------------------------------------------- |
+| v#.#.#-alpha | Used to integrate changes for the next release. |
+| feature/\*   | Used to contribute new feature code.            |
+| bugfix/\*    | Used to contribute code to fix a bug.           |
+| test/\*      | Used to experiment with the code.               |
 
 Beyond the initial directory style naming convention, feel free to name branches to your style. You could even have subdirectories like `feature/steven-rothwell/my-sweet-new-feature` to help identify which branches are yours.
 
