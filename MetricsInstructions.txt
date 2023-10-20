@@ -1,0 +1,3 @@
+- dotnet publish -c Release -o ./bin/Publish
+- cd D:\GitLocal/Crud/bin/Publish
+- dotnet Crud.Api.dll --urls "https://localhost:7289"

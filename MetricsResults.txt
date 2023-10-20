@@ -1,0 +1,14 @@
+100 Iterations (no indexes)
+---------------------------
+All requests use the User model.
+-------------------------------------------------
+Request				Avg Response Time
+--------------			-----------------
+Create				4 ms
+Read_Id				3 ms
+Read_Name			3 ms
+Update_Id			3 ms
+PartialUpdate_Id		4 ms
+PartialUpdate_Name		3 ms
+Delete_Id			3 ms
+Delete_Name			3 ms
