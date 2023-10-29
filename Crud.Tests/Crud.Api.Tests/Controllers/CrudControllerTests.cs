@@ -32,6 +32,7 @@ namespace Crud.Api.Tests.Controllers
         private Mock<IQueryCollectionService> _queryCollectionService;
         private Mock<IPreprocessingService> _preprocessingService;
         private Mock<IPostprocessingService> _postprocessingService;
+        private Mock<ISanitizerService> _sanitizerService;
         private CrudController _controller;
         private Stream _stream;
 
@@ -46,11 +47,12 @@ namespace Crud.Api.Tests.Controllers
             _queryCollectionService = new Mock<IQueryCollectionService>();
             _preprocessingService = new Mock<IPreprocessingService>();
             _postprocessingService = new Mock<IPostprocessingService>();
+            _sanitizerService = new Mock<ISanitizerService>();
             _stream = new MemoryStream(Encoding.UTF8.GetBytes("this-does-not-matter"));
             var httpContext = new DefaultHttpContext() { Request = { Body = _stream, ContentLength = _stream.Length } };
             var controllerContext = new ControllerContext { HttpContext = httpContext };
 
-            _controller = new CrudController(_applicationOptions, _logger.Object, _validator.Object, _preserver.Object, _streamService.Object, _typeService.Object, _queryCollectionService.Object, _preprocessingService.Object, _postprocessingService.Object) { ControllerContext = controllerContext };
+            _controller = new CrudController(_applicationOptions, _logger.Object, _validator.Object, _preserver.Object, _streamService.Object, _typeService.Object, _queryCollectionService.Object, _preprocessingService.Object, _postprocessingService.Object, _sanitizerService.Object) { ControllerContext = controllerContext };
         }
 
         public void Dispose()
@@ -273,6 +275,7 @@ namespace Crud.Api.Tests.Controllers
             Model? model = null;
             var preprocessingMessageResult = new MessageResult(true);
 
+            _sanitizerService.Setup(m => m.SanitizeTypeName(It.IsAny<string>())).Returns(typeName);
             _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(type);
             _preprocessingService.Setup(m => m.PreprocessReadAsync(It.IsAny<Model>(), It.IsAny<Guid>())).ReturnsAsync(preprocessingMessageResult);
             _preserver.Setup(m => m.ReadAsync<Model>(It.IsAny<Guid>())).ReturnsAsync(model);
@@ -1093,6 +1096,7 @@ namespace Crud.Api.Tests.Controllers
             Model? updatedModel = null;
             var preprocessingMessageResult = new MessageResult(true);
 
+            _sanitizerService.Setup(m => m.SanitizeTypeName(It.IsAny<string>())).Returns(typeName);
             _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(type);
             _streamService.Setup(m => m.ReadToEndThenDisposeAsync(It.IsAny<Stream>(), It.IsAny<Encoding>())).ReturnsAsync(json);
             _validator.Setup(m => m.ValidateUpdateAsync(It.IsAny<Model>(), It.IsAny<Guid>())).ReturnsAsync(validationResult);
@@ -1287,6 +1291,7 @@ namespace Crud.Api.Tests.Controllers
             Model? updatedModel = null;
             var preprocessingMessageResult = new MessageResult(true);
 
+            _sanitizerService.Setup(m => m.SanitizeTypeName(It.IsAny<string>())).Returns(typeName);
             _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(type);
             _streamService.Setup(m => m.ReadToEndThenDisposeAsync(It.IsAny<Stream>(), It.IsAny<Encoding>())).ReturnsAsync(json);
             _validator.Setup(m => m.ValidatePartialUpdateAsync(It.IsAny<Model>(), It.IsAny<Guid>(), It.IsAny<IReadOnlyCollection<string>>())).ReturnsAsync(validationResult);
@@ -1588,6 +1593,7 @@ namespace Crud.Api.Tests.Controllers
             var deletedCount = 0;
             var preprocessingMessageResult = new MessageResult(true);
 
+            _sanitizerService.Setup(m => m.SanitizeTypeName(It.IsAny<string>())).Returns(typeName);
             _typeService.Setup(m => m.GetModelType(It.IsAny<string>())).Returns(type);
             _preprocessingService.Setup(m => m.PreprocessDeleteAsync(It.IsAny<Model>(), It.IsAny<Guid>())).ReturnsAsync(preprocessingMessageResult);
             _preserver.Setup(m => m.DeleteAsync<Model>(It.IsAny<Guid>())).ReturnsAsync(deletedCount);
