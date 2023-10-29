@@ -28,9 +28,10 @@ public class CrudController : BaseApiController
     private readonly IQueryCollectionService _queryCollectionService;
     private readonly IPreprocessingService _preprocessingService;
     private readonly IPostprocessingService _postprocessingService;
+    private readonly ISanitizerService _sanitizerService;
 
     public CrudController(IOptions<ApplicationOptions> applicationOptions, ILogger<CrudController> logger, IValidator validator, IPreserver preserver, IStreamService streamService, ITypeService typeService, IQueryCollectionService queryCollectionService,
-        IPreprocessingService preprocessingService, IPostprocessingService postprocessingService)
+        IPreprocessingService preprocessingService, IPostprocessingService postprocessingService, ISanitizerService sanitizerService)
         : base(applicationOptions)
     {
         _logger = logger;
@@ -41,14 +42,19 @@ public class CrudController : BaseApiController
         _queryCollectionService = queryCollectionService;
         _preprocessingService = preprocessingService;
         _postprocessingService = postprocessingService;
+        _sanitizerService = sanitizerService;
     }
 
     [Route("{typeName}"), HttpPost]
     public async Task<IActionResult> CreateAsync(String typeName)
     {
+        var sanitizedTypeName = Default.TypeName;
+
         try
         {
-            var type = _typeService.GetModelType(typeName);
+            sanitizedTypeName = _sanitizerService.SanitizeTypeName(typeName);
+
+            var type = _typeService.GetModelType(sanitizedTypeName);
             if (type is null)
                 return BadRequest(ErrorMessage.BadRequestModelType);
 
@@ -80,7 +86,7 @@ public class CrudController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, $"Error creating with typeName: {typeName}.");
+            _logger.LogError(ex, $"Error creating with typeName: {sanitizedTypeName}.");
             return InternalServerError(ex);
         }
     }
@@ -88,9 +94,13 @@ public class CrudController : BaseApiController
     [Route("{typeName}/{id:guid}"), HttpGet]
     public async Task<IActionResult> ReadAsync(String typeName, Guid id)
     {
+        var sanitizedTypeName = Default.TypeName;
+
         try
         {
-            var type = _typeService.GetModelType(typeName);
+            sanitizedTypeName = _sanitizerService.SanitizeTypeName(typeName);
+
+            var type = _typeService.GetModelType(sanitizedTypeName);
             if (type is null)
                 return BadRequest(ErrorMessage.BadRequestModelType);
 
@@ -108,7 +118,7 @@ public class CrudController : BaseApiController
             model = await (dynamic)readAsync.Invoke(_preserver, new object[] { id });
 
             if (model is null)
-                return NotFound(String.Format(ErrorMessage.NotFoundRead, typeName));
+                return NotFound(String.Format(ErrorMessage.NotFoundRead, sanitizedTypeName));
 
             var postprocessingMessageResult = (MessageResult)await _postprocessingService.PostprocessReadAsync(model, id);
             if (!postprocessingMessageResult.IsSuccessful)
@@ -118,7 +128,7 @@ public class CrudController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, $"Error reading with typeName: {typeName}, id: {id}.");
+            _logger.LogError(ex, $"Error reading with typeName: {sanitizedTypeName}, id: {id}.");
             return InternalServerError(ex);
         }
     }
@@ -126,9 +136,13 @@ public class CrudController : BaseApiController
     [Route("{typeName}"), HttpGet]
     public async Task<IActionResult> ReadAsync(String typeName)
     {
+        var sanitizedTypeName = Default.TypeName;
+
         try
         {
-            var type = _typeService.GetModelType(typeName);
+            sanitizedTypeName = _sanitizerService.SanitizeTypeName(typeName);
+
+            var type = _typeService.GetModelType(sanitizedTypeName);
             if (type is null)
                 return BadRequest(ErrorMessage.BadRequestModelType);
 
@@ -159,7 +173,7 @@ public class CrudController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, $"Error reading with typeName: {typeName}.");
+            _logger.LogError(ex, $"Error reading with typeName: {sanitizedTypeName}.");
             return InternalServerError(ex);
         }
     }
@@ -167,9 +181,13 @@ public class CrudController : BaseApiController
     [Route("query/{typeName}"), HttpPost]
     public async Task<IActionResult> QueryReadAsync(String typeName)
     {
+        var sanitizedTypeName = Default.TypeName;
+
         try
         {
-            var type = _typeService.GetModelType(typeName);
+            sanitizedTypeName = _sanitizerService.SanitizeTypeName(typeName);
+
+            var type = _typeService.GetModelType(sanitizedTypeName);
             if (type is null)
                 return BadRequest(ErrorMessage.BadRequestModelType);
 
@@ -222,7 +240,7 @@ public class CrudController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, $"Error query reading with typeName: {typeName}.");
+            _logger.LogError(ex, $"Error query reading with typeName: {sanitizedTypeName}.");
             return InternalServerError(ex);
         }
     }
@@ -230,9 +248,13 @@ public class CrudController : BaseApiController
     [Route("query/{typeName}/count"), HttpPost]
     public async Task<IActionResult> QueryReadCountAsync(String typeName)
     {
+        var sanitizedTypeName = Default.TypeName;
+
         try
         {
-            var type = _typeService.GetModelType(typeName);
+            sanitizedTypeName = _sanitizerService.SanitizeTypeName(typeName);
+
+            var type = _typeService.GetModelType(sanitizedTypeName);
             if (type is null)
                 return BadRequest(ErrorMessage.BadRequestModelType);
 
@@ -277,7 +299,7 @@ public class CrudController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, $"Error query reading count with typeName: {typeName}.");
+            _logger.LogError(ex, $"Error query reading count with typeName: {sanitizedTypeName}.");
             return InternalServerError(ex);
         }
     }
@@ -285,9 +307,13 @@ public class CrudController : BaseApiController
     [Route("{typeName}/{id:guid}"), HttpPut]
     public async Task<IActionResult> UpdateAsync(String typeName, Guid id)
     {
+        var sanitizedTypeName = Default.TypeName;
+
         try
         {
-            var type = _typeService.GetModelType(typeName);
+            sanitizedTypeName = _sanitizerService.SanitizeTypeName(typeName);
+
+            var type = _typeService.GetModelType(sanitizedTypeName);
             if (type is null)
                 return BadRequest(ErrorMessage.BadRequestModelType);
 
@@ -312,7 +338,7 @@ public class CrudController : BaseApiController
             var updatedModel = await _preserver.UpdateAsync(model, id);
 
             if (updatedModel is null)
-                return NotFound(String.Format(ErrorMessage.NotFoundUpdate, typeName));
+                return NotFound(String.Format(ErrorMessage.NotFoundUpdate, sanitizedTypeName));
 
             var postprocessingMessageResult = (MessageResult)await _postprocessingService.PostprocessUpdateAsync(updatedModel, id);
             if (!postprocessingMessageResult.IsSuccessful)
@@ -322,7 +348,7 @@ public class CrudController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, $"Error updating with typeName: {typeName}, id: {id}.");
+            _logger.LogError(ex, $"Error updating with typeName: {sanitizedTypeName}, id: {id}.");
             return InternalServerError(ex);
         }
     }
@@ -330,9 +356,13 @@ public class CrudController : BaseApiController
     [Route("{typeName}/{id:guid}"), HttpPatch]
     public async Task<IActionResult> PartialUpdateAsync(String typeName, Guid id)
     {
+        var sanitizedTypeName = Default.TypeName;
+
         try
         {
-            var type = _typeService.GetModelType(typeName);
+            sanitizedTypeName = _sanitizerService.SanitizeTypeName(typeName);
+
+            var type = _typeService.GetModelType(sanitizedTypeName);
             if (type is null)
                 return BadRequest(ErrorMessage.BadRequestModelType);
 
@@ -359,7 +389,7 @@ public class CrudController : BaseApiController
             var updatedModel = await (dynamic)partialUpdateAsync.Invoke(_preserver, new object[] { id, propertyValues });
 
             if (updatedModel is null)
-                return NotFound(String.Format(ErrorMessage.NotFoundUpdate, typeName));
+                return NotFound(String.Format(ErrorMessage.NotFoundUpdate, sanitizedTypeName));
 
             var postprocessingMessageResult = (MessageResult)await _postprocessingService.PostprocessPartialUpdateAsync(updatedModel, id, propertyValues);
             if (!postprocessingMessageResult.IsSuccessful)
@@ -369,7 +399,7 @@ public class CrudController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, $"Error partially updating with typeName: {typeName}, id {id}.");
+            _logger.LogError(ex, $"Error partially updating with typeName: {sanitizedTypeName}, id {id}.");
             return InternalServerError(ex);
         }
     }
@@ -377,9 +407,13 @@ public class CrudController : BaseApiController
     [Route("{typeName}"), HttpPatch]
     public async Task<IActionResult> PartialUpdateAsync(String typeName)
     {
+        var sanitizedTypeName = Default.TypeName;
+
         try
         {
-            var type = _typeService.GetModelType(typeName);
+            sanitizedTypeName = _sanitizerService.SanitizeTypeName(typeName);
+
+            var type = _typeService.GetModelType(sanitizedTypeName);
             if (type is null)
                 return BadRequest(ErrorMessage.BadRequestModelType);
 
@@ -415,7 +449,7 @@ public class CrudController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, $"Error partially updating with typeName: {typeName}.");
+            _logger.LogError(ex, $"Error partially updating with typeName: {sanitizedTypeName}.");
             return InternalServerError(ex);
         }
     }
@@ -423,9 +457,13 @@ public class CrudController : BaseApiController
     [Route("{typeName}/{id:guid}"), HttpDelete]
     public async Task<IActionResult> DeleteAsync(String typeName, Guid id)
     {
+        var sanitizedTypeName = Default.TypeName;
+
         try
         {
-            var type = _typeService.GetModelType(typeName);
+            sanitizedTypeName = _sanitizerService.SanitizeTypeName(typeName);
+
+            var type = _typeService.GetModelType(sanitizedTypeName);
             if (type is null)
                 return BadRequest(ErrorMessage.BadRequestModelType);
 
@@ -443,7 +481,7 @@ public class CrudController : BaseApiController
             var deletedCount = await (dynamic)deleteAsync.Invoke(_preserver, new object[] { id });
 
             if (deletedCount == 0)
-                return NotFound(String.Format(ErrorMessage.NotFoundDelete, typeName));
+                return NotFound(String.Format(ErrorMessage.NotFoundDelete, sanitizedTypeName));
 
             var postprocessingMessageResult = (MessageResult)await _postprocessingService.PostprocessDeleteAsync(model, id, deletedCount);
             if (!postprocessingMessageResult.IsSuccessful)
@@ -453,7 +491,7 @@ public class CrudController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, $"Error deleting with typeName: {typeName}, id: {id}.");
+            _logger.LogError(ex, $"Error deleting with typeName: {sanitizedTypeName}, id: {id}.");
             return InternalServerError(ex);
         }
     }
@@ -461,9 +499,13 @@ public class CrudController : BaseApiController
     [Route("{typeName}"), HttpDelete]
     public async Task<IActionResult> DeleteAsync(String typeName)
     {
+        var sanitizedTypeName = Default.TypeName;
+
         try
         {
-            var type = _typeService.GetModelType(typeName);
+            sanitizedTypeName = _sanitizerService.SanitizeTypeName(typeName);
+
+            var type = _typeService.GetModelType(sanitizedTypeName);
             if (type is null)
                 return BadRequest(ErrorMessage.BadRequestModelType);
 
@@ -494,7 +536,7 @@ public class CrudController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, $"Error deleting with typeName: {typeName}.");
+            _logger.LogError(ex, $"Error deleting with typeName: {sanitizedTypeName}.");
             return InternalServerError(ex);
         }
     }
@@ -502,9 +544,13 @@ public class CrudController : BaseApiController
     [Route("query/{typeName}"), HttpDelete]
     public async Task<IActionResult> QueryDeleteAsync(String typeName)
     {
+        var sanitizedTypeName = Default.TypeName;
+
         try
         {
-            var type = _typeService.GetModelType(typeName);
+            sanitizedTypeName = _sanitizerService.SanitizeTypeName(typeName);
+
+            var type = _typeService.GetModelType(sanitizedTypeName);
             if (type is null)
                 return BadRequest(ErrorMessage.BadRequestModelType);
 
@@ -549,7 +595,7 @@ public class CrudController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, $"Error deleting with typeName: {typeName}.");
+            _logger.LogError(ex, $"Error deleting with typeName: {sanitizedTypeName}.");
             return InternalServerError(ex);
         }
     }
