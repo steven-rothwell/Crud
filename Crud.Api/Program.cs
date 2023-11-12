@@ -19,6 +19,7 @@ builder.Services.AddScoped<IStreamService, StreamService>();
 builder.Services.AddScoped<ITypeService, TypeService>();
 builder.Services.AddScoped<IPreprocessingService, PreprocessingService>();
 builder.Services.AddScoped<IPostprocessingService, PostprocessingService>();
+builder.Services.AddScoped<ISanitizerService, SanitizerService>();
 
 var conventionPack = new ConventionPack
 {
