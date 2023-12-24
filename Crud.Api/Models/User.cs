@@ -6,6 +6,9 @@ using Crud.Api.QueryModels;
 namespace Crud.Api.Models
 {
     [Table("users")]
+    /// <summary>
+    /// This is used to test the Crud application and as an example model. This may be removed in any forked application.
+    /// </summary>
     public class User : ExternalEntity
     {
         [Required]

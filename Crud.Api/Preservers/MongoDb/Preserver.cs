@@ -63,7 +63,7 @@ namespace Crud.Api.Preservers.MongoDb
             return bsonDocument.FromBsonDocument<T>();
         }
 
-        public async Task<IEnumerable<T>> ReadAsync<T>(IDictionary<String, String>? queryParams)
+        public async Task<IEnumerable<T>> ReadAsync<T>(IDictionary<String, String>? queryParams) where T : class
         {
             var dbClient = new MongoClient(_mongoDbOptions.ConnectionString);
             var database = dbClient.GetDatabase(_mongoDbOptions.DatabaseName);
