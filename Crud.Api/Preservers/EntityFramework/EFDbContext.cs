@@ -1,5 +1,6 @@
 using System.Reflection;
 using Crud.Api.Constants;
+using Crud.Api.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace Crud.Api.Preservers.EntityFramework
@@ -22,6 +23,16 @@ namespace Crud.Api.Preservers.EntityFramework
 
                 var tableName = modelType.GetTableName();
                 modelBuilder.Entity(modelType).ToTable(tableName);
+
+                CheckIfIExternalEntity(modelBuilder, modelType);
+            }
+        }
+
+        private void CheckIfIExternalEntity(ModelBuilder modelBuilder, Type modelType)
+        {
+            if (modelType.GetInterface(nameof(IExternalEntity)) is not null)
+            {
+                modelBuilder.Entity(modelType).Property(nameof(IExternalEntity.ExternalId)).ValueGeneratedOnAdd();
             }
         }
     }

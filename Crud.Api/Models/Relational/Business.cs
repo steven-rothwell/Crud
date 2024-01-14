@@ -7,5 +7,6 @@ namespace Crud.Api.Models
     {
         public String? Name { get; set; }
         public String? Slogan { get; set; }
+        public Owner? Owner { get; set; }
     }
 }
