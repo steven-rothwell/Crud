@@ -521,6 +521,8 @@ If a new version is released and these updates would be useful in a forked appli
 
 | Number | Available Preservers | Framework | Notes |
 | ------ | -------------------- | --------- | ----- |
+| 2.0.0 | MongoDB | .NET 8 | See details [here](/docs/release-notes/RELEASE-2.0.0.md). |
+| 1.0.1 | MongoDB | .NET 7 | See details [here](/docs/release-notes/RELEASE-1.0.1.md). |
 | 1.0.0 | MongoDB | .NET 7 | See details [here](/docs/release-notes/RELEASE-1.0.0.md). |
 
 # Contributing
