@@ -2,7 +2,7 @@
 
 ## Notes
 
-Upgraded to .NET 8.
+Upgraded to .NET 8 and updated NuGet packages.
 
 ### Breaking Changes
 
@@ -15,7 +15,16 @@ Upgraded to .NET 8.
 
 ### Maintenance
 
-- None
+- Updated NuGet packages.
+  - Crud.Api
+    - MongoDB.Driver
+    - MongoDB.Bson
+    - System.Text.Json
+  - Crud.Api.Tests
+    - Moq
+    - System.Text.Json
+    - xunit
+    - xunit.runner.visualstudio
 
 ## Available Preservers
 
