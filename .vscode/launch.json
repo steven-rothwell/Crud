@@ -10,7 +10,7 @@
       "request": "launch",
       "preLaunchTask": "build",
       // If you have changed target frameworks, make sure to update the program path.
-      "program": "${workspaceFolder}/Crud.Api/bin/Debug/net7.0/Crud.Api.dll",
+      "program": "${workspaceFolder}/Crud.Api/bin/Debug/net8.0/Crud.Api.dll",
       "args": [],
       "cwd": "${workspaceFolder}/Crud.Api",
       "stopAtEntry": false,

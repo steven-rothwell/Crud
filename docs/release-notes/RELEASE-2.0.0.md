@@ -1,12 +1,13 @@
-# Release v1.0.1
+# Release v2.0.0
 
 ## Notes
 
-Fix security issues with type name and updated NuGet packages.
+Upgraded to .NET 8 and updated NuGet packages.
 
 ### Breaking Changes
 
-- None
+- Upgraded to .NET 8.
+  - Ensure local and servers can run .NET 8 applications.
 
 ### New Features
 
@@ -14,13 +15,14 @@ Fix security issues with type name and updated NuGet packages.
 
 ### Maintenance
 
-- Sanitized `typeName` prior to use.
 - Updated NuGet packages.
   - Crud.Api
     - MongoDB.Driver
     - MongoDB.Bson
+    - System.Text.Json
   - Crud.Api.Tests
-    - Microsoft.NET.Test.Sdk
+    - Moq
+    - System.Text.Json
     - xunit
     - xunit.runner.visualstudio
 
@@ -30,4 +32,4 @@ Fix security issues with type name and updated NuGet packages.
 
 ## Framework
 
-- .NET 7
+- .NET 8
